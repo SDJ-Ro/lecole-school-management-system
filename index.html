@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L'École Admin</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="Admin/shared/sidebar.css" />
+  
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #F7F3EC; font-family: 'Inter', sans-serif; }
+    
+    .c-app-shell { display: flex; height: 100vh; width: 100vw; }
+    
+    /* The iframe container */
+    .c-main-frame-container {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+    }
+    
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+  <link rel="stylesheet" href="Admin/shared/theme.css" />
+</head>
+<body>
+
+  <div class="c-app-shell">
+    <aside class="c-sidebar" id="j-sidebar" aria-label="Primary"></aside>
+    
+    <main class="c-main-frame-container" id="j-main-container">
+      <!-- The iframe where the actual tab pages are loaded -->
+      <iframe id="main-frame" name="main-frame" src="Admin/dashboard/index.html" title="Main Content"></iframe>
+    </main>
+  </div>
+
+  <script src="Admin/shared/sidebar.js"></script>
+</body>
+</html>

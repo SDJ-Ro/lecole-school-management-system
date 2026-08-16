@@ -1,0 +1,278 @@
+/* ---------------------------------------------------------------------
+   SHARED SIDEBAR STYLES (extracted from dashboard/styles.css)
+   --------------------------------------------------------------------- */
+
+.c-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  height: 100vh;
+  width: 16rem;
+  flex-direction: column;
+  background-color: var(--midnight, #0F414A);
+  color: #fff;
+  box-shadow: 0 20px 40px -12px rgba(15, 65, 74, 0.30);
+  transition: width 300ms ease;
+}
+
+.c-sidebar.c-is-collapsed { width: 5rem; }
+
+.c-sidebar__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+.c-sidebar.c-is-collapsed .c-sidebar__brand { justify-content: center; }
+
+.c-sidebar__brand-mark {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: transparent;
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: hidden;
+}
+
+.c-sidebar__brand-text { min-width: 0; }
+.c-sidebar__brand-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--alabaster, #EFE8DF);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.c-sidebar__brand-subtitle {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-sidebar__collapse-btn {
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  z-index: 40;
+  transform: translateY(-50%) scale(0.75);
+  border-radius: 9999px;
+  border: 1px solid var(--alabaster, #EFE8DF);
+  background: #fff;
+  padding: 0.375rem;
+  color: var(--midnight, #0F414A);
+  box-shadow: 0 10px 24px -6px rgba(15, 65, 74, 0.18);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 300ms ease;
+  cursor: pointer;
+}
+.c-sidebar:hover .c-sidebar__collapse-btn,
+.c-sidebar__collapse-btn:focus-visible {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+.c-sidebar__collapse-btn:hover { background: var(--alabaster, #EFE8DF); }
+
+.c-sidebar__nav {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem;
+}
+
+.c-sidebar__nav-label {
+  margin: 0 0 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.c-sidebar__nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.c-nav-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.625rem;
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 200ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+.c-sidebar.c-is-collapsed .c-nav-item {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  margin: 0 auto;
+  justify-content: center;
+}
+.c-nav-item:hover { color: #fff; }
+.c-nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+.c-nav-item.c-is-selected { color: #fff; }
+
+.c-nav-item__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.625rem;
+  background: var(--flame-orange, #F47A20);
+  box-shadow: 0 1px 2px 0 rgba(15, 65, 74, 0.06);
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.c-nav-item.c-is-selected .c-nav-item__pill {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.c-nav-item__icon { position: relative; z-index: 1; flex-shrink: 0; display: flex; }
+.c-nav-item__label {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-sidebar__profile-wrap {
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+}
+
+.c-profile-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.625rem 0.5rem;
+  text-align: left;
+  transition: background-color 200ms ease, border-color 200ms ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.c-sidebar.c-is-collapsed .c-profile-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  margin: 0 auto;
+  justify-content: center;
+}
+.c-profile-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.c-profile-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+.c-profile-btn.c-is-selected {
+  border-color: rgba(127, 199, 204, 0.35);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.c-profile-btn__avatar {
+  flex-shrink: 0;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  object-fit: cover;
+}
+.c-profile-btn__meta { min-width: 0; flex: 1 1 auto; }
+.c-profile-btn__name {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.c-profile-btn__role {
+  margin: 0.125rem 0 0;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sky-blue, #7FC7CC);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.c-profile-btn__status-dot {
+  flex-shrink: 0;
+  height: 0.375rem;
+  width: 0.375rem;
+  border-radius: 9999px;
+  background: var(--sky-blue, #7FC7CC);
+}
+
+/* Hide collapsible text when collapsed */
+.c-sidebar.c-is-collapsed .j-collapsible-text {
+  display: none !important;
+}
+
+/* Adjust main content when collapsed */
+.c-main.c-is-sidebar-collapsed, .c-main.is-shifted {
+  margin-left: 5rem !important;
+}
+
+/* Global main content positioning to accommodate the fixed shared sidebar */
+.c-main {
+  margin-left: 16rem !important;
+  transition: margin-left 300ms ease;
+}
+.c-sidebar.c-is-collapsed ~ .c-main,
+.c-main.c-is-sidebar-collapsed,
+.c-main.is-shifted {
+  margin-left: 5rem !important;
+}
+
+/* When the page is loaded inside an iframe (SPA mode), hide the sidebar */
+html.is-iframe .c-sidebar {
+  display: none !important;
+}
+html.c-is-sidebar-collapsed .c-main {
+  margin-left: 5rem !important;
+}

@@ -1,0 +1,1709 @@
+/* =====================================================================
+   L'ÉCOLE — NOTICE BOARD MODULE — STYLESHEET
+   -----------------------------------------------------------------------
+   NAMING CONVENTION USED THROUGHOUT THIS PROJECT (same convention as the
+   rest of the L'École admin dashboard, kept identical on purpose so this
+   module drops into the same codebase without re-learning a new system):
+
+     c-*     -> "class, CSS-only" hook. All visual styling lives here.
+                JavaScript NEVER selects a c-* class to attach behaviour.
+     j-*     -> "JavaScript hook" class or id. Carries NO visual styling
+                of its own. JavaScript uses these purely as
+                querySelector/getElementById hooks to attach behaviour or
+                to read/write dynamic content.
+     c-is-*  -> state class toggled by JS on top of a c-* element
+                (e.g. c-is-open, c-is-selected, c-is-active,
+                c-is-pinned). These DO carry styling — that is their
+                whole purpose — but they always represent a state flag
+                that JS flips, never a structural hook JS searches for.
+
+   Because of this split you can freely restyle any c-* class without
+   ever breaking a JS selector, and you can freely refactor JS selectors
+   without touching a single visual rule.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. FONTS + RESET + DESIGN TOKENS
+   --------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ---- brand palette (copied 1:1 from the original design tokens) ---- */
+  --alabaster: #EFE8DF;
+  --cream: #F7F3EC;
+  --sand: #E4CBA9;
+  --tan: #D8BA98;
+  --deep-sea: #092F33;
+  --midnight: #0F414A;
+  --light-blue: #96C0CE;
+  --sky-blue: #7FC7CC;
+  --terracotta: #AF5031;
+  --red-wine: #980204;
+  --maroon: #7F0303;
+  --sunshine: #EA8913;
+  --flame-orange: #F47A20;
+  --moss: #4B5B34;
+  --cherry: #FDABA5;
+  --bright-orange: #F5821F;
+
+  /* ---- semantic tokens ---- */
+  --color-bg-app: var(--cream);
+  --color-surface: #ffffff;
+  --color-border: var(--alabaster);
+  --color-text: var(--midnight);
+
+  /* ---- radii ---- */
+  --radius-lg: 0.625rem;
+  /* rounded-lg  */
+  --radius-xl: 0.875rem;
+  /* rounded-xl  */
+  --radius-2xl: 1.25rem;
+  /* rounded-2xl */
+  --radius-full: 9999px;
+
+  /* ---- shadows ---- */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 65, 74, 0.06);
+  --shadow-md: 0 4px 10px -2px rgba(15, 65, 74, 0.12);
+  --shadow-lg: 0 10px 24px -6px rgba(15, 65, 74, 0.18);
+  --shadow-xl: 0 20px 40px -12px rgba(15, 65, 74, 0.30);
+
+  /* ---- layout ---- */
+  --sidebar-width-expanded: 16rem;
+  /* w-64 */
+  --sidebar-width-collapsed: 5rem;
+  /* w-20 */
+  --transition-standard: 300ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#j-app-root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background-color: var(--color-bg-app);
+  color: var(--color-text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+ul,
+ol,
+dl,
+dd,
+p,
+h1,
+h2,
+h3,
+h4,
+form,
+fieldset {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+fieldset {
+  border: none;
+}
+
+.c-font-display {
+  font-family: 'Poppins', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.c-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- scrollbars (webkit) ---- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(9, 47, 51, 0.2);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(9, 47, 51, 0.35);
+}
+
+/* ---- shared entrance keyframes ---- */
+@keyframes c-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes c-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes c-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   2. APP SHELL
+   --------------------------------------------------------------------- */
+.c-app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-app);
+}
+
+.c-main {
+  height: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-left: var(--sidebar-width-expanded);
+  transition: margin var(--transition-standard) ease;
+}
+
+/* toggled by JS when the sidebar is collapsed */
+.c-main.c-is-sidebar-collapsed {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+.c-main-inner {
+  min-height: 100%;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .c-main-inner {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .c-main-inner {
+    padding: 2rem;
+  }
+}
+
+.c-main-container {
+  margin: 0 auto;
+  max-width: 72rem;
+  /* max-w-6xl */
+}
+
+.c-page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* each "page" the sidebar can switch to; JS toggles c-is-active */
+.c-view {
+  display: none;
+}
+
+.c-view.c-is-active {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: c-fade-in 200ms ease;
+}
+
+/* ---------------------------------------------------------------------
+   3. SIDEBAR (shared shell — identical pattern across every admin module)
+   --------------------------------------------------------------------- */
+.c-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  height: 100vh;
+  width: var(--sidebar-width-expanded);
+  flex-direction: column;
+  background-color: var(--midnight);
+  color: #fff;
+  box-shadow: var(--shadow-xl);
+  transition: width var(--transition-standard) ease;
+}
+
+.c-sidebar.c-is-collapsed {
+  width: var(--sidebar-width-collapsed);
+}
+
+.c-sidebar__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+}
+
+.c-sidebar.c-is-collapsed .c-sidebar__brand {
+  justify-content: center;
+}
+
+.c-sidebar__brand-mark {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  background: #fff;
+  padding: 0.375rem;
+  color: var(--midnight);
+  box-shadow: var(--shadow-sm);
+}
+
+.c-sidebar__brand-text {
+  min-width: 0;
+}
+
+.c-sidebar__brand-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--alabaster);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-sidebar__brand-subtitle {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hidden entirely while collapsed (brand text, nav labels, nav text, profile meta) */
+.c-sidebar.c-is-collapsed .j-collapsible-text {
+  display: none;
+}
+
+.c-sidebar__collapse-btn {
+  position: absolute;
+  right: -1rem;
+  top: 50%;
+  z-index: 40;
+  transform: translateY(-50%) scale(0.75);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--alabaster);
+  background: #fff;
+  padding: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--midnight);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition: all var(--transition-standard) ease;
+}
+
+.c-sidebar:hover .c-sidebar__collapse-btn,
+.c-sidebar__collapse-btn:focus-visible {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.c-sidebar__collapse-btn:hover {
+  background: var(--alabaster);
+}
+
+.c-sidebar__nav {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0.5rem 0.75rem;
+}
+
+.c-sidebar__nav-label {
+  margin: 0 0 0.5rem;
+  padding: 0 0.5rem;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.c-sidebar__nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.c-nav-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 200ms ease;
+}
+
+.c-sidebar.c-is-collapsed .c-nav-item {
+  justify-content: center;
+}
+
+.c-nav-item:hover {
+  color: #fff;
+}
+
+.c-nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.c-nav-item.c-is-selected {
+  color: #fff;
+}
+
+.c-nav-item__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: var(--flame-orange);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.c-nav-item.c-is-selected .c-nav-item__pill {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.c-nav-item__icon {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.c-nav-item__label {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-sidebar__profile-wrap {
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+}
+
+.c-profile-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+
+.c-sidebar.c-is-collapsed .c-profile-btn {
+  justify-content: center;
+}
+
+.c-profile-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.c-profile-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
+.c-profile-btn.c-is-selected {
+  border-color: rgba(127, 199, 204, 0.35);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.c-profile-btn__avatar {
+  flex-shrink: 0;
+  height: 2rem;
+  width: 2rem;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  object-fit: cover;
+}
+
+.c-profile-btn__meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.c-profile-btn__name {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-profile-btn__role {
+  margin: 0.125rem 0 0;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--sky-blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-profile-btn__status-dot {
+  flex-shrink: 0;
+  height: 0.375rem;
+  width: 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--sky-blue);
+}
+
+.c-icon {
+  display: block;
+}
+
+/* ---------------------------------------------------------------------
+   4. PAGE HEADER (Notice Board + Post Notice both use this)
+   --------------------------------------------------------------------- */
+.c-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+@media (min-width: 640px) {
+  .c-page-header {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.c-page-header__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-page-header__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(15, 65, 74, 0.7);
+}
+
+/* ---------------------------------------------------------------------
+   5. BUTTONS (shared across the module)
+   --------------------------------------------------------------------- */
+.c-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: background-color 150ms ease, color 150ms ease;
+  white-space: nowrap;
+}
+
+.c-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.45);
+}
+
+.c-btn--sky {
+  background: var(--sky-blue);
+  color: var(--midnight);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.75rem;
+}
+
+.c-btn--sky:hover {
+  background: rgba(127, 199, 204, 0.8);
+}
+
+.c-btn--dark {
+  background: var(--midnight);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.c-btn--dark:hover {
+  background: var(--deep-sea);
+}
+
+.c-btn--ghost {
+  background: transparent;
+  color: rgba(15, 65, 74, 0.65);
+}
+
+.c-btn--ghost:hover {
+  background: var(--alabaster);
+}
+
+.c-btn--outline {
+  background: transparent;
+  border: 1px solid var(--alabaster);
+  color: var(--midnight);
+}
+
+.c-btn--outline:hover {
+  background: rgba(239, 232, 223, 0.5);
+}
+
+.c-btn--danger {
+  background: var(--maroon);
+  color: #fff;
+}
+
+.c-btn--danger:hover {
+  background: rgba(127, 3, 3, 0.9);
+}
+
+.c-btn--link {
+  background: transparent;
+  color: var(--sky-blue);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0;
+  border-radius: 0;
+}
+
+.c-btn--link:hover {
+  color: var(--midnight);
+}
+
+.c-back-link {
+  display: inline-flex !important;
+  width: fit-content !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  margin-bottom: 1.5rem;
+  background-color: var(--midnight, #0F414A) !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: var(--radius-lg, 0.5rem) !important;
+  padding: 0.375rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: opacity 150ms ease !important;
+  box-shadow: var(--shadow-sm);
+  text-decoration: none !important;
+}
+
+.c-back-link:hover {
+  opacity: 0.9 !important;
+  color: #ffffff !important;
+}
+
+.c-back-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(15, 65, 74, 0.4);
+}
+
+/* small square icon-only buttons used on notice cards / modal headers */
+.c-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  color: inherit;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.c-icon-btn:hover {
+  color: var(--midnight);
+}
+
+.c-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.35);
+}
+
+.c-icon-btn--danger:hover {
+  color: var(--maroon);
+}
+
+/* ---------------------------------------------------------------------
+   6. FILTER BAR (search input + two custom selects)
+   --------------------------------------------------------------------- */
+.c-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .c-filter-bar {
+    flex-direction: row;
+  }
+}
+
+.c-search-field {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  max-width: 28rem;
+}
+
+.c-search-field__icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1rem;
+  margin: auto 0;
+  color: rgba(15, 65, 74, 0.4);
+  pointer-events: none;
+}
+
+.c-search-field__input {
+  height: 2.625rem;
+  width: 100%;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  padding: 0 1rem 0 2.625rem;
+  font-size: 0.8125rem;
+  color: var(--midnight);
+  outline: none;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.c-search-field__input::placeholder {
+  color: rgba(15, 65, 74, 0.4);
+}
+
+.c-search-field__input:focus {
+  border-color: var(--sky-blue);
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.3);
+}
+
+.c-filter-bar__selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.c-filter-bar__selects .c-select {
+  min-width: 8rem;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 640px) {
+  .c-filter-bar__selects .c-select {
+    flex: 0 0 auto;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   7. CUSTOM SELECT DROPDOWN (light theme — used for every picker in
+      this module: audience filter, category filter, category field,
+      "add audience" field)
+   --------------------------------------------------------------------- */
+.c-select {
+  position: relative;
+}
+
+.c-select__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  height: 2.625rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  padding: 0 1.25rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--midnight);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.c-select__trigger:hover {
+  border-color: rgba(127, 199, 204, 0.7);
+}
+
+.c-select__trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.3);
+}
+
+.c-select.c-is-open .c-select__trigger {
+  border-color: var(--sky-blue);
+}
+
+.c-select__trigger.c-has-value {
+  color: var(--midnight);
+}
+
+.c-select.c-is-disabled .c-select__trigger {
+  cursor: not-allowed;
+  border-color: var(--alabaster);
+  background: rgba(239, 232, 223, 0.55);
+  color: rgba(15, 65, 74, 0.4);
+}
+
+.c-select__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.c-select__chevron {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  color: rgba(15, 65, 74, 0.45);
+  transition: transform 150ms ease;
+}
+
+.c-select.c-is-open .c-select__chevron {
+  transform: rotate(180deg);
+}
+
+.c-select__menu {
+  position: fixed;
+  z-index: 70;
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(127, 199, 204, 0.4);
+  background: #fff;
+  box-shadow: var(--shadow-xl);
+  padding: 0.375rem;
+  display: none;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.c-select.c-is-open .c-select__menu {
+  display: block;
+}
+
+.c-select.c-is-open.c-is-menu-visible .c-select__menu {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.c-select__menu.c-placement-above {
+  transform: translateY(5px);
+}
+
+.c-select.c-is-open.c-is-menu-visible .c-select__menu.c-placement-above {
+  transform: translateY(0);
+}
+
+.c-select__option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--radius-lg);
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--midnight);
+  transition: background-color 150ms ease;
+}
+
+.c-select__option:hover {
+  background: rgba(127, 199, 204, 0.2);
+}
+
+.c-select__option.c-is-selected {
+  background: #7FC7CC;
+  color: var(--midnight);
+  font-weight: 700;
+}
+
+.c-select__option-check {
+  flex-shrink: 0;
+}
+
+.c-select__empty {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(15, 65, 74, 0.5);
+}
+
+/* ---------------------------------------------------------------------
+   8. NOTICE GRID + NOTICE CARD
+   --------------------------------------------------------------------- */
+.c-notice-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .c-notice-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.c-notice-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 6px solid var(--sky-blue);
+  background: #ffffff !important;
+  padding: 1.25rem 1.25rem 0 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  opacity: 0;
+  animation: c-fade-in-up 320ms ease forwards;
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.c-notice-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.c-notice-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.5);
+}
+
+/* category accent -> left border colour */
+.c-notice-card[data-category="Academic"] {
+  border-left-color: #7FC7CC !important;
+}
+
+.c-notice-card[data-category="Extracurricular"] {
+  border-left-color: #EA8913 !important;
+}
+
+.c-notice-card[data-category="General"] {
+  border-left-color: #D5C3A5 !important;
+}
+
+.c-notice-card[data-category="Administrative"] {
+  border-left-color: #7F0303 !important;
+}
+
+.c-notice-card__pin {
+  position: absolute;
+  right: 1.25rem;
+  top: 1.25rem;
+  color: #7FC7CC;
+  display: flex;
+}
+
+.c-notice-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-right: 2rem;
+}
+
+.c-tag {
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #EBEAE5 !important;
+  color: rgba(15, 65, 74, 0.75) !important;
+}
+
+.c-notice-card__title {
+  margin: 0 0 0.5rem;
+  padding-right: 1.75rem;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--midnight);
+}
+
+.c-notice-card__body {
+  margin: 0 0 1.25rem;
+  flex: 1 1 auto;
+  padding-right: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgba(15, 65, 74, 0.7);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.c-notice-card__footer {
+  margin: 0 -1.25rem 0 -1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 0.9375rem 0.9375rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(127, 199, 204, 0.12);
+}
+
+.c-notice-card[data-category="Academic"] .c-notice-card__footer {
+  border-top-color: rgba(127, 199, 204, 0.2);
+  background: rgba(127, 199, 204, 0.12);
+}
+
+.c-notice-card[data-category="Extracurricular"] .c-notice-card__footer {
+  border-top-color: rgba(234, 137, 19, 0.2);
+  background: rgba(234, 137, 19, 0.12);
+}
+
+.c-notice-card[data-category="General"] .c-notice-card__footer {
+  border-top-color: rgba(185, 140, 85, 0.35);
+  background: rgba(213, 170, 115, 0.32);
+}
+
+.c-notice-card[data-category="Administrative"] .c-notice-card__footer {
+  border-top-color: rgba(127, 3, 3, 0.12);
+  background: rgba(127, 3, 3, 0.06);
+}
+
+.c-notice-card__author {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.c-avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.1rem;
+  width: 2.1rem;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--midnight);
+}
+
+.c-notice-card__author-name {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--midnight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.c-notice-card__date {
+  margin: 0.0625rem 0 0;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 65, 74, 0.5);
+}
+
+.c-notice-card__actions {
+  display: flex;
+  gap: 0.375rem;
+  color: rgba(15, 65, 74, 0.45);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------------
+   9. EMPTY STATE
+   --------------------------------------------------------------------- */
+.c-empty-state {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--alabaster);
+  background: #fff;
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.c-empty-state__message {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(15, 65, 74, 0.5);
+}
+
+.c-empty-state__clear {
+  margin-top: 0.75rem;
+}
+
+/* ---------------------------------------------------------------------
+   10. POST NOTICE — FORM PAGE
+   --------------------------------------------------------------------- */
+.c-post-notice {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.c-notice-form {
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--alabaster);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.c-notice-form__header {
+  background: var(--sky-blue);
+  padding: 1.25rem;
+  color: var(--midnight);
+}
+
+.c-notice-form__header-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.c-notice-form__header-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(15, 65, 74, 0.8);
+}
+
+.c-notice-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.c-info-banner {
+  display: flex;
+  gap: 0.75rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(127, 199, 204, 0.3);
+  background: rgba(127, 199, 204, 0.1);
+  padding: 1rem;
+  color: var(--midnight);
+}
+
+.c-info-banner__icon {
+  flex-shrink: 0;
+  color: var(--sky-blue);
+}
+
+.c-info-banner__text {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.c-form-message {
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: none;
+}
+
+.c-form-message.c-is-visible {
+  display: block;
+}
+
+.c-form-message.c-is-error {
+  border-color: rgba(127, 3, 3, 0.25);
+  background: rgba(127, 3, 3, 0.05);
+  color: var(--maroon);
+}
+
+.c-form-message.c-is-success {
+  border-color: rgba(75, 91, 52, 0.25);
+  background: rgba(75, 91, 52, 0.1);
+  color: var(--moss);
+}
+
+.c-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .c-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.c-form-grid>.c-form-field--span-2 {
+  grid-column: 1 / -1;
+}
+
+.c-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.c-form-field__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 65, 74, 0.7);
+}
+
+.c-form-field__required {
+  color: var(--sky-blue);
+}
+
+.c-text-input,
+.c-textarea {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--alabaster);
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--midnight);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.c-text-input::placeholder,
+.c-textarea::placeholder {
+  color: rgba(15, 65, 74, 0.3);
+}
+
+.c-text-input:focus,
+.c-textarea:focus {
+  border-color: var(--sky-blue);
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.4);
+}
+
+.c-textarea {
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.c-textarea--edit {
+  min-height: 8rem;
+}
+
+/* ---- audience tag field (chips + "add audience" select) ---- */
+.c-tag-field__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  min-height: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.c-tag-field__placeholder {
+  font-size: 0.75rem;
+  color: rgba(15, 65, 74, 0.4);
+}
+
+.c-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border-radius: 0.25rem;
+  background: rgba(127, 199, 204, 0.15);
+  padding: 0.25rem 0.5rem;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-chip__remove {
+  display: flex;
+  align-items: center;
+  color: rgba(15, 65, 74, 0.6);
+  transition: color 150ms ease;
+}
+
+.c-chip__remove:hover {
+  color: var(--maroon);
+}
+
+.c-chip__remove:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(127, 3, 3, 0.4);
+  border-radius: 2px;
+}
+
+/* ---- attachment dropzone ---- */
+.c-file-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  border: 2px dashed var(--alabaster);
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(15, 65, 74, 0.5);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.c-file-drop:hover {
+  border-color: rgba(127, 199, 204, 0.5);
+  background: rgba(239, 232, 223, 0.1);
+}
+
+.c-file-drop:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.35);
+}
+
+.c-file-drop__icon {
+  color: var(--sky-blue);
+  margin-bottom: 0.5rem;
+}
+
+.c-file-drop__filename {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--midnight);
+}
+
+.c-file-drop__hint {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* ---- checkbox (pin notice) ---- */
+.c-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.c-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--alabaster);
+  background: #fff;
+  color: transparent;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.c-checkbox__box:hover {
+  border-color: rgba(127, 199, 204, 0.5);
+}
+
+.c-checkbox__box:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.35);
+}
+
+.c-checkbox.c-is-checked .c-checkbox__box {
+  border-color: var(--sky-blue);
+  background: var(--sky-blue);
+  color: var(--midnight);
+}
+
+.c-checkbox__label {
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--midnight);
+}
+
+.c-notice-form__footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--alabaster);
+  padding-top: 1.5rem;
+}
+
+/* ---------------------------------------------------------------------
+   11. MODAL (generic layer, shared by view / edit / delete notice states)
+   --------------------------------------------------------------------- */
+.c-modal-layer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.c-modal-layer.c-is-open {
+  display: flex;
+}
+
+.c-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 65, 74, 0.45);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.c-modal-layer.c-is-open .c-modal-backdrop {
+  opacity: 1;
+}
+
+.c-modal {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 42rem;
+  max-height: 90vh;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  background: #fff;
+  box-shadow: var(--shadow-xl);
+  opacity: 0;
+  transform: scale(0.97) translateY(10px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.c-modal-layer.c-is-open .c-modal {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  animation: c-pop-in 200ms ease;
+}
+
+/* -- view-notice mode -- */
+.c-modal__accent-bar {
+  height: 0.5rem;
+  flex-shrink: 0;
+}
+
+.c-modal__accent-bar[data-category="Academic"] {
+  background: var(--sky-blue);
+}
+
+.c-modal__accent-bar[data-category="Extracurricular"] {
+  background: var(--sunshine);
+}
+
+.c-modal__accent-bar[data-category="General"] {
+  background: var(--sand);
+}
+
+.c-modal__accent-bar[data-category="Administrative"] {
+  background: var(--maroon);
+}
+
+.c-modal__scroll {
+  overflow-y: auto;
+}
+
+.c-modal__view-body {
+  padding: 1.5rem;
+}
+
+.c-modal__view-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.c-modal__view-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.c-modal__view-pin {
+  color: var(--sky-blue);
+  display: flex;
+}
+
+.c-modal__title {
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--midnight);
+}
+
+.c-modal__body-text {
+  margin: 0 0 2rem;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: rgba(15, 65, 74, 0.8);
+  white-space: pre-wrap;
+}
+
+.c-modal__view-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--alabaster);
+  padding-top: 1rem;
+}
+
+.c-modal__view-author {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.c-modal__author-avatar {
+  height: 2.5rem;
+  width: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.c-modal__author-name {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-modal__author-date {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(15, 65, 74, 0.5);
+}
+
+/* -- delete-confirm mode -- */
+.c-modal__delete-body {
+  padding: 2rem;
+  text-align: center;
+}
+
+.c-modal__delete-icon {
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4rem;
+  width: 4rem;
+  border-radius: var(--radius-full);
+  background: rgba(127, 3, 3, 0.1);
+  color: var(--maroon);
+}
+
+.c-modal__delete-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-modal__delete-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(15, 65, 74, 0.7);
+}
+
+.c-modal__delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.c-modal__delete-actions .c-btn {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+}
+
+/* -- edit-notice mode -- */
+.c-modal__edit-form {
+  display: flex;
+  max-height: 90vh;
+  flex-direction: column;
+}
+
+.c-modal__edit-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--sky-blue);
+  padding: 1.25rem;
+  color: var(--midnight);
+}
+
+.c-modal__edit-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.c-modal__edit-subtitle {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(15, 65, 74, 0.8);
+}
+
+.c-modal__edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.c-modal__edit-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  border-top: 1px solid var(--alabaster);
+  background: rgba(239, 232, 223, 0.2);
+  padding: 1.25rem;
+}
+
+/* -- generic modal close (top-right icon button shared by view + edit) -- */
+.c-modal__close-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.c-modal__close-btn:hover {
+  color: var(--midnight);
+}
+
+.c-modal__close-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(127, 199, 204, 0.35);
+}
+
+/* ---------------------------------------------------------------------
+   12. RESPONSIVE — sidebar collapses to icons only on small screens is
+       handled purely by the existing collapse toggle; no extra rules
+       needed beyond the ones above for this module.
+   --------------------------------------------------------------------- */
+}
+
+/* ---------------------------------------------------------------------
+   12. RESPONSIVE — sidebar collapses to icons only on small screens is
+       handled purely by the existing collapse toggle; no extra rules
+       needed beyond the ones above for this module.
+   --------------------------------------------------------------------- */

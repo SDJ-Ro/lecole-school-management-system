@@ -1,0 +1,511 @@
+/* =====================================================================
+   L'ÉCOLE ADMIN — APPROVALS & VERIFICATIONS — STYLESHEET
+   -----------------------------------------------------------------------
+   NAMING CONVENTION USED THROUGHOUT THIS PROJECT:
+     c-*     -> "class, CSS-only" hook. Styling lives here. JavaScript
+                NEVER selects these to add logic (it may still toggle a
+                small state variant like c-is-open, see below).
+     j-*     -> "JavaScript hook" class or id. Carries NO visual styling
+                of its own. JavaScript uses these as querySelector hooks
+                to attach behaviour, and NOTHING here should style a j-*
+                selector directly.
+     c-is-*  -> state classes toggled by JS on top of a c-* element
+                (e.g. c-is-open, c-is-active, c-is-selected). These DO
+                carry styling (that's the point) but are always state
+                flags, not structural hooks.
+   This split means you can freely restyle any c-* class without ever
+   breaking a JS selector, and you can freely refactor JS selectors
+   without touching a single visual rule.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. FONTS + RESET + DESIGN TOKENS
+   --------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ---- brand palette (copied 1:1 from the original design tokens) ---- */
+  --alabaster: #EFE8DF;
+  --cream: #F7F3EC;
+  --sand: #E4CBA9;
+  --tan: #D8BA98;
+  --deep-sea: #092F33;
+  --midnight: #0F414A;
+  --light-blue: #96C0CE;
+  --sky-blue: #7FC7CC;
+  --terracotta: #AF5031;
+  --red-wine: #980204;
+  --maroon: #7F0303;
+  --sunshine: #EA8913;
+  --flame-orange: #F47A20;
+  --moss: #4B5B34;
+  --cherry: #FDABA5;
+  --bright-orange: #F5821F;
+
+  /* ---- semantic tokens ---- */
+  --color-bg-app: var(--cream);
+  --color-surface: #ffffff;
+  --color-border: var(--alabaster);
+  --color-text: var(--midnight);
+
+  /* ---- radii ---- */
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* ---- shadows ---- */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 65, 74, 0.06);
+  --shadow-md: 0 4px 10px -2px rgba(15, 65, 74, 0.12);
+  --shadow-lg: 0 10px 24px -6px rgba(15, 65, 74, 0.18);
+  --shadow-xl: 0 20px 40px -12px rgba(15, 65, 74, 0.30);
+  --shadow-2xl: 0 25px 55px -15px rgba(9, 47, 51, 0.45);
+
+  /* ---- layout ---- */
+  --sidebar-width-expanded: 16rem;
+  --sidebar-width-collapsed: 5rem;
+  --transition-standard: 300ms;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #j-app-root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background-color: var(--color-bg-app);
+  color: var(--color-text);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+textarea { font-family: inherit; color: inherit; }
+
+ul, ol, dl, dd, p, h1, h2, h3, h4 { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+
+.c-font-display {
+  font-family: 'Poppins', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* ---- scrollbars (webkit) ---- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(9, 47, 51, 0.2); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: rgba(9, 47, 51, 0.35); }
+
+/* ---------------------------------------------------------------------
+   2. APP SHELL
+   --------------------------------------------------------------------- */
+.c-app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--color-bg-app);
+}
+
+.c-main {
+  height: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin-left: var(--sidebar-width-expanded);
+  transition: margin var(--transition-standard) ease;
+}
+
+/* toggled by JS when the sidebar is collapsed */
+.c-main.c-is-sidebar-collapsed { margin-left: var(--sidebar-width-collapsed); }
+
+.c-main-inner { min-height: 100%; padding: 1rem; }
+@media (min-width: 640px) { .c-main-inner { padding: 1.5rem; } }
+@media (min-width: 1024px) { .c-main-inner { padding: 2rem; } }
+
+.c-main-container { margin: 0 auto; max-width: 72rem; }
+
+.c-page-stack { display: flex; flex-direction: column; gap: 1.5rem; }
+
+/* ---------------------------------------------------------------------
+   3. SIDEBAR
+   --------------------------------------------------------------------- */
+.c-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  display: flex;
+  height: 100vh;
+  width: var(--sidebar-width-expanded);
+  flex-direction: column;
+  background-color: var(--midnight);
+  color: #fff;
+  box-shadow: var(--shadow-xl);
+  transition: width var(--transition-standard) ease;
+}
+.c-sidebar.c-is-collapsed { width: var(--sidebar-width-collapsed); }
+
+.c-sidebar__brand { position: relative; display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem; }
+.c-sidebar.c-is-collapsed .c-sidebar__brand { justify-content: center; }
+
+.c-sidebar__brand-mark {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-lg); background: #fff; padding: 0.375rem;
+  color: var(--midnight); box-shadow: var(--shadow-sm);
+}
+
+.c-sidebar__brand-text { min-width: 0; }
+.c-sidebar__brand-title {
+  margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.2;
+  letter-spacing: 0.02em; color: var(--alabaster);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c-sidebar__brand-subtitle {
+  margin: 0; font-size: 9px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.c-sidebar__collapse-btn {
+  position: absolute; right: -1rem; top: 50%; z-index: 40;
+  transform: translateY(-50%) scale(0.75);
+  border-radius: var(--radius-full); border: 1px solid var(--alabaster);
+  background: #fff; padding: 0.375rem; color: var(--midnight);
+  box-shadow: var(--shadow-lg); opacity: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-standard) ease;
+}
+.c-sidebar:hover .c-sidebar__collapse-btn,
+.c-sidebar__collapse-btn:focus-visible { opacity: 1; transform: translateY(-50%) scale(1); }
+.c-sidebar__collapse-btn:hover { background: var(--alabaster); }
+
+.c-sidebar__nav { flex: 1 1 auto; overflow-x: hidden; overflow-y: auto; padding: 0.5rem 0.75rem; }
+
+.c-sidebar__nav-label {
+  margin: 0 0 0.5rem; padding: 0 0.5rem; font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.16em; color: rgba(255, 255, 255, 0.4);
+}
+
+.c-sidebar__nav-list { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.c-nav-item {
+  position: relative; display: flex; width: 100%; align-items: center; gap: 0.625rem;
+  border-radius: var(--radius-lg); padding: 0.5rem 0.75rem; text-align: left;
+  font-size: 0.75rem; font-weight: 500; background: transparent; border: none;
+  color: rgba(255, 255, 255, 0.7); transition: color 200ms ease;
+}
+.c-sidebar.c-is-collapsed .c-nav-item { justify-content: center; }
+.c-nav-item:hover { color: #fff; }
+.c-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
+.c-nav-item.c-is-selected { color: #fff; }
+
+.c-nav-item__pill {
+  position: absolute; inset: 0; border-radius: var(--radius-lg);
+  background: var(--flame-orange); box-shadow: var(--shadow-sm);
+  opacity: 0; transform: scale(0.94);
+  transition: opacity 220ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.c-nav-item.c-is-selected .c-nav-item__pill { opacity: 1; transform: scale(1); }
+
+.c-nav-item__icon { position: relative; z-index: 1; flex-shrink: 0; display: flex; }
+.c-nav-item__label { position: relative; z-index: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.c-sidebar__profile-wrap { overflow: hidden; border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 0.75rem; }
+
+.c-profile-btn {
+  position: relative; display: flex; width: 100%; align-items: center; gap: 0.625rem;
+  border-radius: var(--radius-xl); border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1); padding: 0.625rem 0.75rem; text-align: left;
+  transition: background-color 200ms ease, border-color 200ms ease;
+}
+.c-sidebar.c-is-collapsed .c-profile-btn { justify-content: center; }
+.c-profile-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.c-profile-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7); }
+.c-profile-btn.c-is-selected { border-color: rgba(127, 199, 204, 0.35); background: rgba(255, 255, 255, 0.2); }
+
+.c-profile-btn__avatar {
+  flex-shrink: 0; height: 2rem; width: 2rem; border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.25); object-fit: cover;
+}
+.c-profile-btn__meta { min-width: 0; flex: 1 1 auto; }
+.c-profile-btn__name {
+  margin: 0; font-size: 0.75rem; font-weight: 700; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c-profile-btn__role {
+  margin: 0.125rem 0 0; font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--sky-blue);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c-profile-btn__status-dot { flex-shrink: 0; height: 0.375rem; width: 0.375rem; border-radius: var(--radius-full); background: var(--sky-blue); }
+
+/* ---------------------------------------------------------------------
+   4. PAGE HEADER
+   --------------------------------------------------------------------- */
+.c-page-header__title { margin: 0 0 0.25rem; font-size: 1.5rem; font-weight: 700; color: var(--midnight); }
+.c-page-header__subtitle { margin: 0; font-size: 0.875rem; font-weight: 500; color: rgba(15, 65, 74, 0.7); }
+
+/* ---------------------------------------------------------------------
+   5. TAB / METRIC CARDS
+   --------------------------------------------------------------------- */
+.c-tab-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 768px) { .c-tab-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.c-tab-card {
+  text-align: left; border-radius: var(--radius-xl); padding: 1.25rem;
+  background: var(--color-surface); color: var(--midnight);
+  border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);
+  transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+.c-tab-card:hover { border-color: rgba(15, 65, 74, 0.2); }
+
+.c-tab-card--sky.c-is-active { background: var(--sky-blue); color: var(--midnight); transform: scale(1.02); border-color: transparent; }
+.c-tab-card--sky:not(.c-is-active):hover { border-color: rgba(127, 199, 204, 0.5); }
+
+.c-tab-card--sunshine.c-is-active { background: var(--sunshine); color: #fff; transform: scale(1.02); border-color: transparent; }
+.c-tab-card--sunshine:not(.c-is-active):hover { border-color: rgba(234, 137, 19, 0.5); }
+
+.c-tab-card--terracotta.c-is-active { background: var(--terracotta); color: #fff; transform: scale(1.02); border-color: transparent; }
+.c-tab-card--terracotta:not(.c-is-active):hover { border-color: rgba(175, 80, 49, 0.5); }
+
+.c-tab-card__icon-wrap {
+  display: inline-flex; padding: 0.5rem; margin-bottom: 0.75rem;
+  border-radius: var(--radius-lg); background: var(--alabaster);
+}
+.c-tab-card.c-is-active .c-tab-card__icon-wrap { background: rgba(255, 255, 255, 0.3); }
+
+.c-tab-card__value { margin: 0 0 0.125rem; font-size: 1.5rem; font-weight: 700; font-family: 'Poppins', system-ui, sans-serif; }
+.c-tab-card__label { margin: 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.6; }
+.c-tab-card.c-is-active .c-tab-card__label { opacity: 0.85; }
+
+/* ---------------------------------------------------------------------
+   6. STATUS FILTER ROW
+   --------------------------------------------------------------------- */
+.c-filter-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.c-filter-row__label { margin: 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(15, 65, 74, 0.5); }
+
+.c-filter-dropdown { position: relative; }
+
+.c-filter-btn {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  border-radius: var(--radius-lg); border: 1px solid var(--color-border);
+  background: var(--color-surface); padding: 0.5rem 0.75rem;
+  font-size: 0.75rem; font-weight: 600; color: rgba(15, 65, 74, 0.7);
+  box-shadow: var(--shadow-sm); transition: color 150ms ease, border-color 150ms ease;
+}
+.c-filter-btn:hover { color: var(--midnight); }
+.c-filter-btn.c-is-modified { border-color: var(--sky-blue); color: var(--sky-blue); }
+
+.c-filter-btn__chevron { transition: transform 150ms ease; }
+.c-filter-btn__chevron.c-is-open { transform: rotate(180deg); }
+
+.c-filter-menu {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 20;
+  width: 11rem; border-radius: var(--radius-xl); border: 1px solid var(--color-border);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+  padding: 0.25rem 0; display: none;
+  opacity: 0; transform: translateY(4px);
+  animation: c-dropdown-in 150ms ease forwards;
+}
+.c-filter-menu.c-is-open { display: block; }
+
+@keyframes c-dropdown-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.c-filter-menu__item {
+  display: flex; width: 100%; align-items: center; justify-content: space-between;
+  padding: 0.5rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 500;
+  color: var(--midnight); background: transparent; border: none;
+}
+.c-filter-menu__item:hover { background: rgba(239, 232, 223, 0.5); }
+.c-filter-menu__check { color: var(--sky-blue); }
+
+/* ---------------------------------------------------------------------
+   7. TAB PANELS + APPROVAL CARD GRID
+   --------------------------------------------------------------------- */
+.c-tab-panel { display: none; flex-direction: column; gap: 1rem; }
+.c-tab-panel.c-is-active { display: flex; }
+
+.c-approval-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 768px) { .c-approval-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.c-approval-card {
+  display: flex; flex-direction: column; gap: 1rem;
+  border-radius: var(--radius-xl); background: var(--color-surface);
+  padding: 1.25rem; box-shadow: var(--shadow-sm);
+  border-top: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  border-left: 6px solid transparent;
+  opacity: 0; transform: translateY(10px);
+  animation: c-fade-up 320ms ease forwards;
+}
+.c-approval-card--sky { border-left-color: var(--sky-blue); }
+.c-approval-card--sunshine { border-left-color: var(--sunshine); }
+.c-approval-card--terracotta { border-left-color: var(--terracotta); }
+
+/* the card is hidden by JS (via [hidden]) when it no longer matches the
+   active status filter — no extra c-is-* class needed for that */
+.c-approval-card[hidden] { display: none; }
+
+@keyframes c-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.c-approval-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+.c-approval-card__heading { min-width: 0; }
+
+.c-approval-card__badges { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+.c-approval-card__tag {
+  display: inline-block; border-radius: 4px; padding: 0.25rem 0.5rem;
+  margin-bottom: 0.5rem; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.c-approval-card__badges .c-approval-card__tag { margin-bottom: 0; }
+.c-approval-card__tag--sky { background: rgba(127, 199, 204, 0.1); color: var(--sky-blue); }
+.c-approval-card__tag--sunshine { background: rgba(234, 137, 19, 0.1); color: var(--sunshine); }
+.c-approval-card__tag--terracotta { background: rgba(175, 80, 49, 0.1); color: var(--terracotta); }
+.c-approval-card__tag--neutral { background: var(--alabaster); color: rgba(15, 65, 74, 0.7); }
+
+.c-approval-card__title { font-size: 1.125rem; font-weight: 700; color: var(--midnight); line-height: 1.25; }
+.c-approval-card__title--tight { line-height: 1.2; }
+.c-approval-card__meta { margin-top: 0.125rem; font-size: 0.875rem; color: rgba(15, 65, 74, 0.6); }
+
+.c-approval-card__description { font-size: 0.75rem; line-height: 1.5; color: rgba(15, 65, 74, 0.7); }
+.c-approval-card__description--clamp-3 {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.c-approval-card__info { border-radius: var(--radius-xl); border: 1px solid var(--color-border); background: rgba(239, 232, 223, 0.3); padding: 0.75rem; }
+.c-approval-card__info-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.c-approval-card__info-text { margin: 0; font-size: 0.75rem; color: rgba(15, 65, 74, 0.6); }
+.c-approval-card__info-strong { font-weight: 600; color: var(--midnight); }
+.c-approval-card__info-date { margin: 0; font-size: 0.75rem; color: rgba(15, 65, 74, 0.5); }
+.c-approval-card__audience { margin: 0.25rem 0 0; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(15, 65, 74, 0.5); }
+
+/* ---------------------------------------------------------------------
+   8. STATUS BADGE
+   --------------------------------------------------------------------- */
+.c-status-badge {
+  flex-shrink: 0; padding: 0.25rem 0.625rem; border-radius: 4px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.c-status-badge--pending { background: rgba(228, 203, 169, 0.4); color: rgba(15, 65, 74, 0.7); }
+.c-status-badge--approved { background: rgba(75, 91, 52, 0.1); color: var(--moss); }
+.c-status-badge--rejected { background: rgba(127, 3, 3, 0.1); color: var(--maroon); }
+
+/* ---------------------------------------------------------------------
+   9. FEEDBACK NOTE (shown once an item is rejected)
+   --------------------------------------------------------------------- */
+.c-feedback-note {
+  display: flex; gap: 0.625rem; border-radius: var(--radius-lg);
+  border: 1px solid rgba(127, 3, 3, 0.15); background: rgba(127, 3, 3, 0.05); padding: 0.75rem;
+}
+.c-feedback-note[hidden] { display: none; }
+.c-feedback-note__icon { flex-shrink: 0; margin-top: 2px; color: var(--maroon); }
+.c-feedback-note__author { margin: 0 0 0.125rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--maroon); }
+.c-feedback-note__text { margin: 0; font-size: 0.75rem; line-height: 1.5; color: rgba(15, 65, 74, 0.7); }
+
+/* ---------------------------------------------------------------------
+   10. CARD ACTIONS / BUTTONS
+   --------------------------------------------------------------------- */
+.c-approval-card__actions { display: flex; gap: 0.5rem; margin-top: auto; padding-top: 0.5rem; }
+.c-approval-card__actions[hidden] { display: none; }
+
+.c-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+  border-radius: var(--radius-lg); border: none; padding: 0.5rem 1rem;
+  font-size: 0.875rem; font-weight: 700; transition: background-color 150ms ease, opacity 150ms ease;
+}
+.c-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.c-btn--reject { flex: 1 1 0; padding: 0.5rem 0.75rem; font-size: 0.75rem; background: var(--maroon); color: #fff; box-shadow: var(--shadow-sm); }
+.c-btn--reject:hover { background: rgba(127, 3, 3, 0.9); }
+
+.c-btn--approve { flex: 1 1 0; padding: 0.5rem 0.75rem; font-size: 0.75rem; background: var(--midnight); color: #fff; }
+.c-btn--approve:hover { background: rgba(15, 65, 74, 0.8); }
+
+.c-btn--ghost { background: transparent; color: rgba(15, 65, 74, 0.65); font-size: 0.875rem; padding: 0.5rem 1.25rem; }
+.c-btn--ghost:hover { background: var(--alabaster); }
+
+.c-btn--solid-maroon { background: var(--maroon); color: #fff; padding: 0.5rem 1.25rem; }
+.c-btn--solid-maroon:hover:not(:disabled) { background: rgba(127, 3, 3, 0.9); }
+
+/* ---------------------------------------------------------------------
+   11. EMPTY STATE
+   --------------------------------------------------------------------- */
+.c-empty-state { border-radius: var(--radius-xl); border: 1px solid var(--color-border); background: var(--color-surface); padding: 2.5rem; text-align: center; }
+.c-empty-state[hidden] { display: none; }
+.c-empty-state__text { margin: 0; font-size: 0.875rem; font-weight: 500; color: rgba(15, 65, 74, 0.5); }
+
+/* ---------------------------------------------------------------------
+   12. MODAL: REJECT CONFIRMATION
+   --------------------------------------------------------------------- */
+.c-modal-layer {
+  position: fixed; inset: 0; z-index: 50;
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.c-modal-layer.c-is-open { display: flex; }
+
+.c-modal-backdrop {
+  position: absolute; inset: 0; border: none;
+  background: rgba(15, 65, 74, 0.4); backdrop-filter: blur(2px);
+  opacity: 0; transition: opacity 180ms ease;
+}
+.c-modal-layer.c-is-open .c-modal-backdrop { opacity: 1; }
+
+.c-modal {
+  position: relative; z-index: 10; width: 100%; max-width: 28rem;
+  display: flex; flex-direction: column; overflow: hidden;
+  border-radius: var(--radius-2xl); background: var(--color-surface);
+  box-shadow: var(--shadow-xl);
+  opacity: 0; transform: scale(0.95) translateY(10px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.c-modal-layer.c-is-open .c-modal { opacity: 1; transform: scale(1) translateY(0); }
+
+.c-reject-modal__intro { padding: 1.5rem; border-bottom: 1px solid var(--color-border); }
+.c-modal__icon-badge {
+  display: flex; height: 3rem; width: 3rem; align-items: center; justify-content: center;
+  border-radius: var(--radius-full); margin-bottom: 1rem;
+}
+.c-modal__icon-badge--maroon { background: rgba(127, 3, 3, 0.1); color: var(--maroon); }
+
+.c-reject-modal__title { margin: 0 0 0.25rem; font-size: 1.25rem; font-weight: 700; color: var(--midnight); }
+.c-reject-modal__description { margin: 0; font-size: 0.875rem; line-height: 1.5; color: rgba(15, 65, 74, 0.7); }
+.c-reject-modal__item-name { font-weight: 600; color: var(--midnight); }
+
+.c-reject-modal__body { padding: 1.5rem; background: rgba(239, 232, 223, 0.1); }
+.c-field-label { display: block; margin-bottom: 0.5rem; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(15, 65, 74, 0.7); }
+.c-field-input {
+  width: 100%; border-radius: var(--radius-lg); border: 1px solid var(--color-border);
+  background: #fff; padding: 0.625rem 0.75rem; font-size: 0.875rem; color: var(--midnight);
+  outline: none; transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.c-field-input::placeholder { color: rgba(15, 65, 74, 0.35); }
+.c-field-input:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(127, 3, 3, 0.15); }
+.c-field-input--textarea { resize: none; }
+
+.c-reject-modal__footer { display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--color-border); background: rgba(239, 232, 223, 0.3); padding: 1.25rem; }
+
+/* ---------------------------------------------------------------------
+   13. VISUALLY-HIDDEN HELPER (kept for future use / accessibility)
+   --------------------------------------------------------------------- */
+.c-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

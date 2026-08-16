@@ -1,0 +1,37 @@
+# =========================================================================
+# L'ÉCOLE PROJECT — GITIGNORE
+# =========================================================================
+
+# Secrets & Environment Files
+.env
+.env.*
+*.pem
+*.key
+
+# System & OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Package Dependencies & Runtime Logs
+node_modules/
+vendor/
+*.log
+*.zip
+patch_student_script.py
+scratch/
+tmp/
+temp/
+
+# Note: Subdirectories L-Ecole/docker, L-Ecole/app, Admin, Management Panel,
+# Student, Teacher, Parent, Antigravity-Skills, and PROJECT_HISTORY.md
+# are explicitly tracked.

@@ -1,0 +1,70 @@
+/* =========================================================================
+   L'ÉCOLE — SHARED DESIGN TOKENS
+   Loaded by every page (landing + sign-in). Colors/fonts/resets only —
+   page-specific layout lives in landing.css / auth-shared.css.
+   ========================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* -- palette (matches the original Tailwind config 1:1) -- */
+  --alabaster: #EFE8DF;
+  --cream: #F7F3EC;
+  --sand: #E4CBA9;
+  --tan: #D8BA98;
+  --deepsea: #092F33;
+  --midnight: #0F414A;
+  --lightblue: #96C0CE;
+  --skyblue: #7FC7CC;
+  --terracotta: #AF5031;
+  --redwine: #980204;
+  --maroon: #7F0303;
+  --sunshine: #EA8913;
+  --brightorange: #F5821F;
+  --flameorange: #F47A20;
+  --moss: #4B5B34;
+  --cherry: #FDABA5;
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.75rem;
+  --shadow-sm: 0 1px 2px rgba(15, 65, 74, 0.06);
+  --shadow-lg: 0 10px 30px rgba(9, 47, 51, 0.15);
+  --shadow-xl: 0 20px 45px rgba(9, 47, 51, 0.2);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, sans-serif;
+  background-color: var(--cream);
+  color: var(--midnight);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; }
+.font-display { font-family: 'Poppins', system-ui, sans-serif; letter-spacing: -0.01em; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(9, 47, 51, 0.2); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(9, 47, 51, 0.35); }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* -- shared scroll-reveal (replaces framer-motion's whileInView) --
+   Elements start hidden via [data-reveal], JS adds .is-visible on
+   intersection. If JS fails to load, this base state keeps content visible
+   after a short delay as a fallback (see reveal.js). */
+[data-reveal] { opacity: 0; transform: translateY(20px); transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out); }
+[data-reveal].is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+}

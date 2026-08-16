@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L'École Admin Dashboard Interface — Extracurricular</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- lucide icon set: static SVG icons are inlined below (c-icon), no runtime
+       icon library is loaded, keeping JS usage minimal — same approach as
+       the Dashboard page, so both pages stay visually/structurally in sync. -->
+  <link rel="stylesheet" href="../shared/sidebar.css" />
+  <link rel="stylesheet" href="../shared/theme.css" />
+</head>
+<body>
+  <div id="j-app-root" class="c-app-shell">
+
+    <!-- =================================================================
+         SIDEBAR — identical markup/classes to the Dashboard page's sidebar.
+         Only the selected nav item differs (Extracurricular here instead
+         of Dashboard). Keep this block byte-for-byte in sync with the
+         Dashboard page's copy when either one changes.
+         ================================================================= -->
+    <aside class="c-sidebar" id="j-sidebar" aria-label="Primary"></aside>
+
+    <!-- =================================================================
+         MAIN CONTENT — id="j-view-root" is swapped by the router in
+         script.js between the overview / detail / achievement views.
+         ================================================================= -->
+    <main class="c-main" id="j-main">
+      <div class="c-main-inner">
+        <div class="c-main-container">
+          <div class="c-page-stack" id="j-view-root">
+            <!-- filled by renderOverviewView() / renderDetailView() /
+                 renderAchievementView() in script.js based on the current
+                 location.hash route -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- =====================================================================
+       MODAL LAYER — one reusable shell (matches the Dashboard page's
+       c-modal-layer / c-modal-backdrop / c-modal pattern) whose inner
+       content is written by script.js just before it opens, since the
+       extracurricular modals' field counts vary per club/team/event.
+       ===================================================================== -->
+  <div class="c-modal-layer" id="j-modal-layer" role="presentation">
+    <button type="button" class="c-modal-backdrop j-modal-backdrop" aria-label="Close dialog"></button>
+    <section class="c-modal" id="j-modal" role="dialog" aria-modal="true" tabindex="-1"></section>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+  <script src="../shared/sidebar.js"></script>
+</body>
+</html>
