@@ -9,6 +9,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../app/Core/WebRouter.php';
 require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 require_once __DIR__ . '/../app/Controllers/ManagementDashboardController.php';
+require_once __DIR__ . '/../app/Controllers/PeopleController.php';
 
 // 2. Start the router
 $router = new WebRouter();
@@ -21,6 +22,11 @@ $router->add('/', function() {
 
 $router->add('/admin/dashboard', function() {
     $controller = new DashboardController();
+    $controller->index();
+});
+
+$router->add('/admin/people', function() {
+    $controller = new PeopleController();
     $controller->index();
 });
 
