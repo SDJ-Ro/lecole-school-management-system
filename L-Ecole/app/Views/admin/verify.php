@@ -1,0 +1,372 @@
+<?php
+/**
+ * =========================================================================
+ * L'ÉCOLE — ADMIN APPROVALS & VERIFICATIONS VIEW
+ * =========================================================================
+ * Responsibility: Renders the Admin Approvals & Verifications interface.
+ * Role: Admin (`/admin/verify`)
+ * Architectural Precedent: 1:1 structural port from `Admin/verify/index.html`.
+ */
+
+$title = "L'École Admin — Approvals & Verifications";
+$featureCss = "/assets/features/admin_verify/styles.css";
+$currentRole = 'admin';
+$currentRoute = '/admin/verify';
+
+require __DIR__ . '/../components/_head.php';
+?>
+
+<div id="j-app-root" class="c-app-shell">
+
+  <?php require __DIR__ . '/../components/_sidebar.php'; ?>
+
+  <!-- MAIN CONTENT — APPROVALS & VERIFICATIONS -->
+  <main class="c-main" id="j-main">
+    <div class="c-main-inner">
+      <div class="c-main-container">
+        <div class="c-page-stack">
+
+          <header class="c-page-header">
+            <h1 class="c-page-header__title c-font-display">Approvals &amp; Verifications</h1>
+            <p class="c-page-header__subtitle">Review and verify accounts, extracurriculars, and notices before they go live.</p>
+          </header>
+
+          <!-- TAB / METRIC CARDS -->
+          <div class="c-tab-grid j-tab-grid">
+            <button type="button" class="c-tab-card c-tab-card--sky c-is-active j-tab-card" data-tab-name="Teachers" aria-pressed="true">
+              <span class="c-tab-card__icon-wrap" aria-hidden="true">
+                <svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg>
+              </span>
+              <p class="c-tab-card__value j-tab-count" data-count-for="Teachers">2</p>
+              <p class="c-tab-card__label">Teacher Accounts</p>
+            </button>
+
+            <button type="button" class="c-tab-card c-tab-card--sunshine j-tab-card" data-tab-name="Extracurriculars" aria-pressed="false">
+              <span class="c-tab-card__icon-wrap" aria-hidden="true">
+                <svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>
+              </span>
+              <p class="c-tab-card__value j-tab-count" data-count-for="Extracurriculars">2</p>
+              <p class="c-tab-card__label">Extracurricular Cards</p>
+            </button>
+
+            <button type="button" class="c-tab-card c-tab-card--terracotta j-tab-card" data-tab-name="Notices" aria-pressed="false">
+              <span class="c-tab-card__icon-wrap" aria-hidden="true">
+                <svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+              </span>
+              <p class="c-tab-card__value j-tab-count" data-count-for="Notices">2</p>
+              <p class="c-tab-card__label">Notices</p>
+            </button>
+          </div>
+
+          <!-- STATUS FILTER ROW -->
+          <div class="c-filter-row">
+            <p class="c-filter-row__label j-filter-label">Pending submissions</p>
+            <div class="c-filter-dropdown j-filter-dropdown">
+              <button type="button" class="c-filter-btn j-filter-toggle" aria-haspopup="true" aria-expanded="false">
+                <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>
+                <span class="j-filter-current-label">Pending</span>
+                <svg class="c-icon c-filter-btn__chevron j-filter-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="c-filter-menu j-filter-menu" role="menu">
+                <button type="button" class="c-filter-menu__item j-filter-option" data-filter-value="All" role="menuitemradio" aria-checked="false">
+                  <span>All</span>
+                </button>
+                <button type="button" class="c-filter-menu__item c-is-selected j-filter-option" data-filter-value="Pending" role="menuitemradio" aria-checked="true">
+                  <span>Pending</span>
+                  <svg class="c-icon c-filter-menu__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </button>
+                <button type="button" class="c-filter-menu__item j-filter-option" data-filter-value="Approved" role="menuitemradio" aria-checked="false">
+                  <span>Approved</span>
+                </button>
+                <button type="button" class="c-filter-menu__item j-filter-option" data-filter-value="Rejected" role="menuitemradio" aria-checked="false">
+                  <span>Rejected</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB PANEL: TEACHERS -->
+          <section class="c-tab-panel c-is-active j-tab-panel" data-tab-panel="Teachers">
+            <div class="c-approval-grid j-approval-grid">
+
+              <article class="c-approval-card c-approval-card--sky j-approval-card" data-item-type="Teachers" data-item-id="1" data-item-status="Pending" data-item-title="Mr. David Silva" data-item-author="Management Panel">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <span class="c-approval-card__tag c-approval-card__tag--sky">New Teacher</span>
+                    <h3 class="c-approval-card__title c-font-display">Mr. David Silva</h3>
+                    <p class="c-approval-card__meta">Mathematics &bull; david.s@lecole.edu</p>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Created by: <span class="c-approval-card__info-strong">Management Panel</span></p>
+                    <p class="c-approval-card__info-date">Oct 24, 2024</p>
+                  </div>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Management Panel</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+              <article class="c-approval-card c-approval-card--sky j-approval-card" data-item-type="Teachers" data-item-id="2" data-item-status="Pending" data-item-title="Ms. Sarah Fernando" data-item-author="Management Panel">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <span class="c-approval-card__tag c-approval-card__tag--sky">New Teacher</span>
+                    <h3 class="c-approval-card__title c-font-display">Ms. Sarah Fernando</h3>
+                    <p class="c-approval-card__meta">English &bull; sarah.f@lecole.edu</p>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Created by: <span class="c-approval-card__info-strong">Management Panel</span></p>
+                    <p class="c-approval-card__info-date">Oct 23, 2024</p>
+                  </div>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Management Panel</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+            </div>
+            <div class="c-empty-state j-empty-state" data-empty-noun="teacher accounts" hidden>
+              <p class="c-empty-state__text j-empty-state-text">No teacher accounts to show.</p>
+            </div>
+          </section>
+
+          <!-- TAB PANEL: EXTRACURRICULARS -->
+          <section class="c-tab-panel j-tab-panel" data-tab-panel="Extracurriculars" hidden>
+            <div class="c-approval-grid j-approval-grid">
+
+              <article class="c-approval-card c-approval-card--sunshine j-approval-card" data-item-type="Extracurriculars" data-item-id="1" data-item-status="Pending" data-item-title="Photography Club" data-item-author="Management Panel">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <span class="c-approval-card__tag c-approval-card__tag--sunshine">New Club</span>
+                    <h3 class="c-approval-card__title c-font-display">Photography Club</h3>
+                    <p class="c-approval-card__meta">TIC: Mr. Perera</p>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <p class="c-approval-card__description">A club for students interested in digital and film photography. Focuses on both technical skills and creative expression.</p>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Created by: <span class="c-approval-card__info-strong">Management Panel</span></p>
+                    <p class="c-approval-card__info-date">Oct 24, 2024</p>
+                  </div>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Management Panel</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+              <article class="c-approval-card c-approval-card--sunshine j-approval-card" data-item-type="Extracurriculars" data-item-id="2" data-item-status="Pending" data-item-title="Under-15 Basketball" data-item-author="Management Panel">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <span class="c-approval-card__tag c-approval-card__tag--sunshine">New Sport</span>
+                    <h3 class="c-approval-card__title c-font-display">Under-15 Basketball</h3>
+                    <p class="c-approval-card__meta">TIC: Coach Silva</p>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <p class="c-approval-card__description">Junior basketball team for upcoming regional tournaments. Practices will be held three times a week.</p>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Created by: <span class="c-approval-card__info-strong">Management Panel</span></p>
+                    <p class="c-approval-card__info-date">Oct 22, 2024</p>
+                  </div>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Management Panel</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+            </div>
+            <div class="c-empty-state j-empty-state" data-empty-noun="extracurricular cards" hidden>
+              <p class="c-empty-state__text j-empty-state-text">No extracurricular cards to show.</p>
+            </div>
+          </section>
+
+          <!-- TAB PANEL: NOTICES -->
+          <section class="c-tab-panel j-tab-panel" data-tab-panel="Notices" hidden>
+            <div class="c-approval-grid j-approval-grid">
+
+              <article class="c-approval-card c-approval-card--terracotta j-approval-card" data-item-type="Notices" data-item-id="1" data-item-status="Pending" data-item-title="Science Fair Registration" data-item-author="Mr. Weerasinghe (Teacher)">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <div class="c-approval-card__badges">
+                      <span class="c-approval-card__tag c-approval-card__tag--terracotta">New Notice</span>
+                      <span class="c-approval-card__tag c-approval-card__tag--neutral">Academic</span>
+                    </div>
+                    <h3 class="c-approval-card__title c-approval-card__title--tight c-font-display">Science Fair Registration</h3>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <p class="c-approval-card__description c-approval-card__description--clamp-3">Registration for the annual science fair is now open. Please submit your project proposals by next Friday to your respective science teachers.</p>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Author: <span class="c-approval-card__info-strong">Mr. Weerasinghe (Teacher)</span></p>
+                    <p class="c-approval-card__info-date">Oct 24, 2024</p>
+                  </div>
+                  <p class="c-approval-card__audience">Audience: Students</p>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Mr. Weerasinghe (Teacher)</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+              <article class="c-approval-card c-approval-card--terracotta j-approval-card" data-item-type="Notices" data-item-id="2" data-item-status="Pending" data-item-title="Staff Meeting Schedule" data-item-author="Management Panel">
+                <div class="c-approval-card__top">
+                  <div class="c-approval-card__heading">
+                    <div class="c-approval-card__badges">
+                      <span class="c-approval-card__tag c-approval-card__tag--terracotta">New Notice</span>
+                      <span class="c-approval-card__tag c-approval-card__tag--neutral">Administrative</span>
+                    </div>
+                    <h3 class="c-approval-card__title c-approval-card__title--tight c-font-display">Staff Meeting Schedule</h3>
+                  </div>
+                  <span class="c-status-badge c-status-badge--pending j-status-badge">Pending</span>
+                </div>
+                <p class="c-approval-card__description c-approval-card__description--clamp-3">The monthly staff meeting will be held this Thursday at 3:30 PM in the main hall. Attendance is mandatory for all academic staff.</p>
+                <div class="c-approval-card__info">
+                  <div class="c-approval-card__info-row">
+                    <p class="c-approval-card__info-text">Author: <span class="c-approval-card__info-strong">Management Panel</span></p>
+                    <p class="c-approval-card__info-date">Oct 23, 2024</p>
+                  </div>
+                  <p class="c-approval-card__audience">Audience: Teachers</p>
+                </div>
+                <div class="c-feedback-note j-feedback-note" hidden>
+                  <svg class="c-icon c-feedback-note__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <p class="c-feedback-note__author">Feedback sent to <span class="j-feedback-author">Management Panel</span></p>
+                    <p class="c-feedback-note__text j-feedback-text"></p>
+                  </div>
+                </div>
+                <div class="c-approval-card__actions j-approval-actions">
+                  <button type="button" class="c-btn c-btn--reject j-reject-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    Reject
+                  </button>
+                  <button type="button" class="c-btn c-btn--approve j-approve-btn">
+                    <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    Approve
+                  </button>
+                </div>
+              </article>
+
+            </div>
+            <div class="c-empty-state j-empty-state" data-empty-noun="notices" hidden>
+              <p class="c-empty-state__text j-empty-state-text">No notices to show.</p>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: REJECT CONFIRMATION -->
+<div class="c-modal-layer" id="j-modal-reject" role="presentation">
+  <button type="button" class="c-modal-backdrop j-modal-backdrop" aria-label="Cancel rejection"></button>
+  <section class="c-modal c-modal--reject" role="dialog" aria-modal="true" aria-labelledby="j-reject-modal-title">
+    <div class="c-reject-modal__intro">
+      <div class="c-modal__icon-badge c-modal__icon-badge--maroon" aria-hidden="true">
+        <svg class="c-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+      </div>
+      <h3 class="c-reject-modal__title c-font-display" id="j-reject-modal-title">Reject <span class="j-reject-modal-type">Teacher</span></h3>
+      <p class="c-reject-modal__description">
+        You are rejecting <span class="c-reject-modal__item-name j-reject-modal-item-name"></span>. Please provide feedback for the creator.
+      </p>
+    </div>
+
+    <div class="c-reject-modal__body">
+      <label class="c-field-label" for="j-reject-feedback-input">Rejection Feedback</label>
+      <textarea class="c-field-input c-field-input--textarea" id="j-reject-feedback-input" rows="4" placeholder="Explain why this was rejected..."></textarea>
+    </div>
+
+    <footer class="c-reject-modal__footer">
+      <button type="button" class="c-btn c-btn--ghost j-modal-close">Cancel</button>
+      <button type="button" class="c-btn c-btn--solid-maroon j-reject-confirm-btn" id="j-reject-confirm-btn" disabled>
+        <svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Send Feedback &amp; Reject
+      </button>
+    </footer>
+  </section>
+</div>
+
+<script src="/assets/js/utils.js"></script>
+<script src="/assets/js/sidebar.js"></script>
+<script src="/assets/features/admin_verify/data.js"></script>
+<script src="/assets/features/admin_verify/script.js"></script>
+</body>
+</html>
