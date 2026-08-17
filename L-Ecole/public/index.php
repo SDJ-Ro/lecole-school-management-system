@@ -11,6 +11,7 @@ require_once __DIR__ . '/../app/Controllers/DashboardController.php';
 require_once __DIR__ . '/../app/Controllers/ManagementDashboardController.php';
 require_once __DIR__ . '/../app/Controllers/PeopleController.php';
 require_once __DIR__ . '/../app/Controllers/ExtracurricularController.php';
+require_once __DIR__ . '/../app/Controllers/NoticeController.php';
 
 // 2. Start the router
 $router = new WebRouter();
@@ -33,6 +34,11 @@ $router->add('/admin/people', function() {
 
 $router->add('/admin/extracurricular', function() {
     $controller = new ExtracurricularController();
+    $controller->index();
+});
+
+$router->add('/admin/notice', function() {
+    $controller = new NoticeController();
     $controller->index();
 });
 
