@@ -16,6 +16,7 @@ require_once __DIR__ . '/../app/Controllers/VerifyController.php';
 require_once __DIR__ . '/../app/Controllers/AcademicController.php';
 require_once __DIR__ . '/../app/Controllers/AuditController.php';
 require_once __DIR__ . '/../app/Controllers/ProfileController.php';
+require_once __DIR__ . '/../app/Controllers/ManagementPeopleController.php';
 
 // 2. Start the router
 $router = new WebRouter();
@@ -68,6 +69,11 @@ $router->add('/admin/profile', function() {
 
 $router->add('/management/dashboard', function() {
     $controller = new ManagementDashboardController();
+    $controller->index();
+});
+
+$router->add('/management/people', function() {
+    $controller = new ManagementPeopleController();
     $controller->index();
 });
 
