@@ -94,5 +94,28 @@ abstract class Controller
 
     }
 
+    // A list such as field[]=x becomes an empty string
+    protected function postText(string $key, int $max = 255): string
+    {
+        $value = $_POST[$key] ?? '';
+
+        return is_string($value) ? trim(mb_substr($value, 0, $max)) : '';
+    }
+
+    protected function queryText(string $key, int $max = 100): string
+    {
+        $value = $_GET[$key] ?? '';
+
+        return is_string($value) ? trim(mb_substr($value, 0, $max)) : '';
+    }
+
+    // Not trimmed, because spaces are part of a password
+    protected function postPassword(string $key): string
+    {
+        $value = $_POST[$key] ?? '';
+
+        return is_string($value) ? mb_substr($value, 0, 255) : '';
+    }
+
     }
 }
