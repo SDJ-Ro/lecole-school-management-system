@@ -17,8 +17,6 @@ $currentRoute = '/management/complaints';
 require __DIR__ . '/../components/_head.php';
 ?>
 
-<link rel="stylesheet" href="<?= htmlspecialchars($featureCss) ?>" />
-
 <div id="j-app-root" class="c-app-shell">
 
   <?php require __DIR__ . '/../components/_sidebar.php'; ?>

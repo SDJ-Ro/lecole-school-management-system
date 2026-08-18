@@ -1,14 +1,11 @@
-<!doctype html>
-<html lang="en">
+<?php
+$title = "L'École Admin Dashboard Interface";
+$featureCss = "/assets/features/dashboard/styles.css";
+$currentRole = 'admin';
+$currentRoute = '/admin/dashboard';
 
-<head>
-  <?php 
-    $pageTitle = "L'École Admin Dashboard Interface";
-    require __DIR__ . '/../components/_head.php';
-  ?>
-</head>
-
-<body>
+require __DIR__ . '/../components/_head.php';
+?>
   <div id="j-app-root" class="c-app-shell">
 
     <!-- =====================================================================
