@@ -767,3 +767,40 @@ PENDING implementation authorization.
 
 **Commit:** PENDING — awaiting explicit authorization
 **Commit message (intended):** `Migrate Management Character Certificate to MVC`
+
+
+---
+
+### [2026-08-18] — Management Complaints Overview — DISCOVERY & AUDIT
+
+#### Status: DISCOVERY COMPLETE — AWAITING IMPLEMENTATION
+
+- **Feature Name:** Complaints & Inquiries
+- **Reference Location:** `Management Panel/complaints/`
+- **Target MVC Route:** `/management/complaints`
+- **Controller Name:** `ManagementComplaintsController`
+- **View Path:** `L-Ecole/app/Views/management/complaints.php`
+- **Assets Directory:** `L-Ecole/public/assets/features/management_complaints/`
+
+#### Reference File Analysis
+- `index.html` (65 lines, 2881 bytes): Contains page container, search bar, dropdown select wraps, complaints list container, empty state SVG block.
+- `script.js` (205 lines, 8225 bytes): Renders custom dropdown components, filters list items, generates card HTML dynamically, handles resolution flows (text area toggles, cancel/send, keypress handling).
+- `data.js` (56 lines, 1964 bytes): Exports mock complaints and dropdown configurations via `window.COMPLAINTS_MOCK_DATA`.
+- `style.css` (447 lines, 9096 bytes): Feature-specific styles, including category coloring (`cat-Facilities`, `cat-Academic`), card grid layouts, dropdown trigger/options formatting.
+
+#### Admin Comparison
+- **Admin Counterpart:** None. Admin does not have any corresponding complaints directory or route in roles.php. This is a Management-exclusive feature.
+
+#### Contract Inventory
+- **Static IDs in HTML:** `j-app-root`, `j-sidebar`, `j-main`, `searchInput`, `categorySelectWrap`, `categoryTrigger`, `categoryTriggerLabel`, `categoryMenu`, `statusSelectWrap`, `statusTrigger`, `statusTriggerLabel`, `statusMenu`, `complaintsList`, `emptyState`.
+- **Dynamic IDs in JS Templates:** `resolveInput-${complaint.id}`
+- **data-* Attributes:** `data-value`, `data-action`, `data-id`
+- **CSS Class Vocabulary:** Feature specific (`complaints-list`, `empty-state`, `search-wrap`, `select-wrap`, `select-trigger`, `select-menu`, `complaint-card`, `complaint-body`, `complaint-main`, `complaint-meta`, `category-badge`, `complaint-subject`, `complaint-message`, `complaint-parent`, `resolve-btn`, `resolution-footer`, `resolve-bar`, etc. - total ~50 unique classes). No `c-*` component classes used except the shell layouts.
+- **Window Globals:** `window.COMPLAINTS_MOCK_DATA`
+- **Browser Storage (localStorage/sessionStorage):** None.
+
+#### Cross-Layer Naming Decisions (Complaints)
+- **j-* hooks:** Shell only (`j-app-root`, `j-sidebar`, `j-main`).
+- **c-* classes:** Shell only (`c-app-shell`, `c-sidebar`, `c-main`).
+- **PHP-originated naming:** No new conventions are introduced. PHP simply sets `$currentRole = 'management'` and `$currentRoute = '/management/complaints'` to direct sidebar selection. The existing DOM contracts from the reference index.html are preserved exactly.
+- **No new PHP-originated naming convention was necessary.**
