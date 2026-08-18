@@ -1,0 +1,283 @@
+<?php
+/**
+ * =========================================================================
+ * L'ÉCOLE — MANAGEMENT PROFILE & SETTINGS VIEW
+ * =========================================================================
+ * Responsibility: Renders the Management Profile & Settings interface.
+ * Role: Management (`/management/profile`)
+ * Architectural Precedent: 1:1 structural port from
+ *   `Management Panel/profile/index.html`.
+ */
+
+$title       = "My Profile & Settings — L'École Management";
+$featureCss  = '/assets/features/management_profile/styles.css';
+$currentRole  = 'management';
+$currentRoute = '/management/profile';
+
+require __DIR__ . '/../components/_head.php';
+?>
+
+<link rel="stylesheet" href="<?= htmlspecialchars($featureCss) ?>" />
+
+<div id="j-app-root" class="c-app-shell">
+
+  <?php require __DIR__ . '/../components/_sidebar.php'; ?>
+
+  <main class="c-main" id="j-main">
+    <div class="c-main-inner">
+      <div class="c-main-container">
+        <div class="c-page-stack">
+
+          <header>
+            <h1 class="c-page-header__title c-font-display">My Profile &amp; Settings</h1>
+            <p class="c-page-header__subtitle">Manage your personal information, security, and institutional configurations.</p>
+          </header>
+
+          <!-- ---------------------------------------------------------
+               NOTICE / TOAST BANNER
+               --------------------------------------------------------- -->
+          <div class="c-notice-banner" id="j-notice-banner" role="status" aria-live="polite">
+            <svg class="c-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <span id="j-notice-banner-text"></span>
+            <button type="button" class="c-notice-banner__dismiss-btn" id="j-notice-banner-dismiss" aria-label="Dismiss notification">
+              <svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- ---------------------------------------------------------
+               PROFILE IDENTITY CARD
+               --------------------------------------------------------- -->
+          <section class="c-profile-card" aria-labelledby="j-profile-identity-heading">
+            <div class="c-profile-card__cover"></div>
+            <div class="c-profile-card__body">
+              <div class="c-profile-card__identity-row">
+                <div class="c-profile-card__identity-group">
+                  <div class="c-profile-card__avatar-wrap">
+                    <img class="c-profile-card__avatar" id="j-avatar-preview" alt="Alex Thompson" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=240&amp;h=240&amp;fit=crop&amp;crop=faces" />
+                    <button type="button" class="c-profile-card__avatar-btn" id="j-avatar-trigger" aria-label="Change profile photo">
+                      <svg class="c-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    </button>
+                    <input type="file" class="c-visually-hidden" id="j-avatar-input" accept="image/jpeg,image/png,image/webp" />
+                  </div>
+                  <div class="c-profile-card__name-block">
+                    <h2 class="c-profile-card__name c-font-display" id="j-profile-identity-heading">Alex Thompson</h2>
+                    <p class="c-profile-card__role">Enrollment Manager</p>
+                  </div>
+                </div>
+                <button type="button" class="c-btn c-btn--flame" id="j-save-profile-btn">
+                  <svg class="c-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6.598"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>
+                  Save Profile
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------------------------------------------------------
+               PROFILE INFORMATION CARD
+               --------------------------------------------------------- -->
+          <section class="c-info-card" aria-labelledby="j-profile-information-heading">
+            <div class="c-section-header">
+              <span class="c-section-header__icon c-section-header__icon--sky" aria-hidden="true">
+                <svg class="c-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg>
+              </span>
+              <div>
+                <h2 class="c-section-header__title c-font-display" id="j-profile-information-heading">Profile Information</h2>
+                <p class="c-section-header__subtitle">Essential contact and employment details for this account.</p>
+              </div>
+            </div>
+
+            <dl class="c-info-grid">
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0"/><circle cx="10" cy="8" r="5"/><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/></svg></span>
+                  Full name
+                </dt>
+                <dd class="c-info-tile__value">Alex Thompson</dd>
+              </div>
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                  Institutional email
+                </dt>
+                <dd class="c-info-tile__value">alex.thompson@lecole.com</dd>
+              </div>
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg></span>
+                  Phone
+                </dt>
+                <dd class="c-info-tile__value">+94 77 000 0001</dd>
+              </div>
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                  Personal email
+                </dt>
+                <dd class="c-info-tile__value">alex.thompson@gmail.com</dd>
+              </div>
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg></span>
+                  Personal address
+                </dt>
+                <dd class="c-info-tile__value">14 Palm Grove, Colombo 07</dd>
+              </div>
+              <div class="c-info-tile">
+                <dt class="c-info-tile__label">
+                  <span class="c-info-tile__label-icon" aria-hidden="true"><svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 10h2"/><path d="M16 14h2"/><path d="M6.17 15a3 3 0 0 1 5.66 0"/><circle cx="9" cy="11" r="2"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg></span>
+                  Employee ID
+                </dt>
+                <dd class="c-info-tile__value">M-001</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- ---------------------------------------------------------
+               SETTINGS GRID: General Information + Management Panel Security
+               --------------------------------------------------------- -->
+          <div class="c-settings-grid">
+
+            <!-- ============== GENERAL INFORMATION ============== -->
+            <section class="c-info-card" aria-labelledby="j-general-information-heading">
+              <div class="c-section-header">
+                <span class="c-section-header__icon c-section-header__icon--sky" aria-hidden="true">
+                  <svg class="c-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
+                </span>
+                <div>
+                  <h2 class="c-section-header__title c-font-display" id="j-general-information-heading">General Information</h2>
+                  <p class="c-section-header__subtitle">Configure the active school context.</p>
+                </div>
+              </div>
+
+              <form class="c-settings-form" id="j-general-settings-form" novalidate>
+                <div class="c-settings-form__fields">
+                  <label class="c-form-field">
+                    <span class="c-field-label">School Name</span>
+                    <input class="c-field-input" type="text" id="j-field-school-name" value="L'École International" required />
+                  </label>
+
+                  <label class="c-form-field">
+                    <span class="c-field-label">Domain</span>
+                    <input class="c-field-input" type="text" id="j-field-domain" value="lecole.edu" required />
+                  </label>
+
+                  <div class="c-form-row c-form-row--two-col">
+                    <!-- Custom select #1: Academic Year -->
+                    <div class="c-form-field">
+                      <span class="c-field-label" id="j-select-academic-year-label">Academic Year</span>
+                      <div class="c-select j-select" data-select-name="academicYear">
+                        <button type="button" class="c-select__trigger j-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="j-select-academic-year-label">
+                          <span class="c-select__value j-select-value">2023/2024</span>
+                          <svg class="c-icon c-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <ul class="c-select__menu j-select-menu" role="listbox" tabindex="-1">
+                          <li class="c-select__option c-is-selected" role="option" aria-selected="true" data-option-value="2023/2024">
+                            <span>2023/2024</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                          <li class="c-select__option" role="option" aria-selected="false" data-option-value="2024/2025">
+                            <span>2024/2025</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                          <li class="c-select__option" role="option" aria-selected="false" data-option-value="2025/2026">
+                            <span>2025/2026</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Custom select #2: Current Term -->
+                    <div class="c-form-field">
+                      <span class="c-field-label" id="j-select-current-term-label">Current Term</span>
+                      <div class="c-select j-select" data-select-name="currentTerm">
+                        <button type="button" class="c-select__trigger j-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="j-select-current-term-label">
+                          <span class="c-select__value j-select-value">Term 1</span>
+                          <svg class="c-icon c-select__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <ul class="c-select__menu j-select-menu" role="listbox" tabindex="-1">
+                          <li class="c-select__option c-is-selected" role="option" aria-selected="true" data-option-value="Term 1">
+                            <span>Term 1</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                          <li class="c-select__option" role="option" aria-selected="false" data-option-value="Term 2">
+                            <span>Term 2</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                          <li class="c-select__option" role="option" aria-selected="false" data-option-value="Term 3">
+                            <span>Term 3</span>
+                            <svg class="c-icon c-select__check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <footer class="c-settings-form__footer">
+                  <button type="submit" class="c-btn c-btn--midnight">
+                    <svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6.598"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>
+                    Save Settings
+                  </button>
+                </footer>
+              </form>
+            </section>
+
+            <!-- ============== ADMIN SECURITY ============== -->
+            <section class="c-info-card" aria-labelledby="j-admin-security-heading">
+              <div class="c-section-header">
+                <span class="c-section-header__icon c-section-header__icon--maroon" aria-hidden="true">
+                  <svg class="c-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>
+                </span>
+                <div>
+                  <h2 class="c-section-header__title c-font-display" id="j-admin-security-heading">Management Panel Security</h2>
+                  <p class="c-section-header__subtitle">Update your password to keep this account protected.</p>
+                </div>
+              </div>
+
+              <form class="c-settings-form" id="j-password-form" novalidate>
+                <div class="c-settings-form__fields">
+                  <label class="c-form-field">
+                    <span class="c-field-label">Current Password</span>
+                    <input class="c-field-input j-password-input" type="password" id="j-field-current-password" autocomplete="current-password" placeholder="••••••••" required />
+                  </label>
+                  <label class="c-form-field">
+                    <span class="c-field-label">New Password</span>
+                    <input class="c-field-input j-password-input" type="password" id="j-field-new-password" autocomplete="new-password" placeholder="••••••••" required />
+                  </label>
+                  <label class="c-form-field">
+                    <span class="c-field-label">Confirm New Password</span>
+                    <input class="c-field-input j-password-input" type="password" id="j-field-confirm-password" autocomplete="new-password" placeholder="••••••••" required />
+                  </label>
+                </div>
+
+                <button type="button" class="c-password-visibility-btn" id="j-toggle-passwords-btn">
+                  <svg class="c-icon j-password-visibility-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span class="j-password-visibility-label">Show passwords</span>
+                </button>
+
+                <p class="c-form-error-banner" id="j-password-form-error" role="alert"></p>
+
+                <footer class="c-settings-form__footer">
+                  <button type="submit" class="c-btn c-btn--sky">
+                    <svg class="c-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6.598"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>
+                    Update Password
+                  </button>
+                </footer>
+              </form>
+            </section>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="/assets/js/utils.js"></script>
+<script src="/assets/js/sidebar.js"></script>
+<script src="/assets/features/management_profile/script.js"></script>
+</body>
+</html>

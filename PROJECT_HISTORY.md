@@ -804,3 +804,40 @@ PENDING implementation authorization.
 - **c-* classes:** Shell only (`c-app-shell`, `c-sidebar`, `c-main`).
 - **PHP-originated naming:** No new conventions are introduced. PHP simply sets `$currentRole = 'management'` and `$currentRoute = '/management/complaints'` to direct sidebar selection. The existing DOM contracts from the reference index.html are preserved exactly.
 - **No new PHP-originated naming convention was necessary.**
+
+
+---
+
+### [2026-08-18] — Management Profile & Settings — DISCOVERY & AUDIT
+
+#### Status: DISCOVERY COMPLETE — AWAITING IMPLEMENTATION
+
+- **Feature Name:** My Profile & Settings (Management)
+- **Reference Location:** `Management Panel/profile/`
+- **Target MVC Route:** `/management/profile`
+- **Controller Name:** `ManagementProfileController`
+- **View Path:** `L-Ecole/app/Views/management/profile.php`
+- **Assets Directory:** `L-Ecole/public/assets/features/management_profile/`
+
+#### Reference File Analysis
+- `index.html` (288 lines, 21564 bytes): Profile identity card, profile information list, general settings form (school name, domain, academic year/term selectors), password security form.
+- `script.js` (273 lines, 9928 bytes): Notice toast visibility/timers, avatar preview (ObjectURL triggers), save profile alert, custom selects dropdown toggles, password inputs type toggles, client-side validation for pass length and confirmation.
+- `styles.css` (verbatim style.css): Layout grid for settings panels, card layouts, form labels, input styling, custom select overlays.
+
+#### Admin Comparison
+- **Admin Counterpart:** `Admin/profile/` exists at `/admin/profile`.
+- **UI Consistency:** The Management Profile page is visually and structurally consistent with the Admin Profile page but customized for the Management Panel context (specifically "Management Panel Security" instead of "Admin Security"). No Admin-only features exist in the reference Profile.
+
+#### Contract Inventory
+- **Static IDs in HTML:** `j-app-root`, `j-sidebar`, `j-main`, `j-notice-banner`, `j-notice-banner-text`, `j-notice-banner-dismiss`, `j-avatar-preview`, `j-avatar-trigger`, `j-avatar-input`, `j-save-profile-btn`, `j-profile-identity-heading`, `j-profile-information-heading`, `j-general-information-heading`, `j-general-settings-form`, `j-field-school-name`, `j-field-domain`, `j-select-academic-year-label`, `j-select-current-term-label`, `j-admin-security-heading`, `j-password-form`, `j-field-current-password`, `j-field-new-password`, `j-field-confirm-password`, `j-toggle-passwords-btn`, `j-password-form-error`.
+- **Dynamic Classes/Selectors in JS:** `.j-select`, `.j-select-trigger`, `.j-select-value`, `.j-select-menu`, `.j-password-input`, `.j-password-visibility-icon`, `.j-password-visibility-label`.
+- **data-* Attributes:** `data-select-name`, `data-option-value`.
+- **CSS Class Vocabulary:** Feature BEM styles (e.g. `c-notice-banner`, `c-profile-card`, `c-info-card`, `c-settings-form`, `c-select`, etc. - total ~90 unique classes).
+- **Window Globals:** None.
+- **Browser Storage (localStorage/sessionStorage):** None.
+
+#### Cross-Layer Naming Decisions (Profile)
+- **j-* hooks:** Maintained exact original frontend contracts. No new `j-*` hooks created.
+- **c-* classes:** Maintained exact BEM classes from reference.
+- **PHP-originated naming:** No new conventions are introduced. `$currentRole = 'management'` and `$currentRoute = '/management/profile'` are passed to the sidebar.
+- **No new PHP-originated naming convention was necessary.**
