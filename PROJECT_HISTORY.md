@@ -462,8 +462,8 @@
 ---
 
 ### [2026-08-17] — Management Notice Board MVC Migration
-- **Commit:** PENDING — awaiting authorization
-- **Commit message (intended):** `Migrate Management Notice Board to MVC`
+- **Commit:** `9727076` (full: `9727076c0c95fba26415bf3ccde5754a7afdfc9c`)
+- **Commit message:** `Migrate Management Notice Board to MVC`
 - **Reference path:** `Management Panel/Notice/`
 - **MVC route:** `/management/notice`
 - **Navigation position:** 5 of 7 in Management nav (roles.php)
@@ -539,4 +539,4 @@
 - The Management Notice modal panel is empty in the reference HTML; `renderNoticeModal()` in script.js populates it dynamically (view mode only). The Admin MVC view pre-renders all three modal modes as hidden DOM elements. The Management MVC view preserves the reference pattern (empty panel, dynamic rendering) rather than matching the Admin DOM pattern, because matching Admin would require adding Admin-only hooks that violate the Management scope rule.
 
 #### Push result
-PENDING — awaiting explicit commit authorization.
+Pushed to origin/main — `9546d7e..9727076  main -> main`. Branch up to date. Working tree clean.
