@@ -9,11 +9,26 @@
         'view' => ['admin'],
     ],
 
+    'settings' => [
+        'edit' => ['admin'],
+    ],
+
     'academic' => [
         'edit' => ['admin', 'management'],
+    ],
+
+    'people' => [
+        'directory'    => ['admin', 'management'],
+        'management'   => ['admin'],
+        'own_students' => ['teacher'],               // View only
+    ],
+
+    'leaving' => [
+        'see'    => ['admin', 'management', 'teacher'],
+        'change' => ['admin'],                            // Also cancel
+        'start'  => ['admin', 'management'],              // Left Without Notice
     ],
 
     'notifications' => [
         'see' => ['student', 'parent'],
     ],
-
