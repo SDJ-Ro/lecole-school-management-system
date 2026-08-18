@@ -540,3 +540,230 @@
 
 #### Push result
 Pushed to origin/main — `9546d7e..9727076  main -> main`. Branch up to date. Working tree clean.
+
+---
+
+### [2026-08-18] — Management Character Certificate — DISCOVERY & AUDIT
+
+#### Status: DISCOVERY COMPLETE — AWAITING IMPLEMENTATION AUTHORIZATION
+
+- **Feature name:** Character Certificate
+- **Reference path:** `Management Panel/character-certificate/`
+- **MVC route (target):** `/management/certificate`
+- **Navigation position:** 6 of 7 in Management nav (roles.php)
+- **Discovery date:** 2026-08-18
+
+#### Reference Files
+| File | Lines | Bytes |
+|---|---|---|
+| `index.html` | 25 | 852 |
+| `script.js` | 1,148 | 56,449 |
+| `data.js` | 123 | 14,067 |
+| `style.css` | 588 | 28,053 |
+
+#### Admin Comparison
+No corresponding Admin certificate feature exists. This feature is Management-exclusive.
+- **Admin directory:** `Admin/` — no certificate subdirectory found
+- **Admin comparison:** N/A — Management is the sole implementation
+- **Admin-only exclusions:** N/A
+
+#### Architecture Profile — Key Findings
+
+**1. Fully JS-rendered feature (all-innerHTML pattern)**
+Unlike all previously migrated features (which serve static HTML from PHP with JS handling only interactions), the Certificate feature uses a single `<div id="app"></div>` mount point and renders 100% of its DOM via JavaScript (`script.js` calls `render()` which sets `app.innerHTML`). This is the reference's intended design — not a limitation to work around.
+
+**MVC integration approach:** The PHP view will serve the MVC shell (sidebar, head) plus the `<div id="app"></div>` mount point and a `<div id="j-main">` wrapper, then load the JS assets. This is architecturally correct — the MVC layer handles routing and the shell; JS handles the feature UI entirely, as the reference intends.
+
+**2. No c-* classes**
+This feature has zero `c-*` CSS classes. It uses its own 145-class design vocabulary (`cert-card`, `queue-tab`, `modal-panel`, `cert-section-block`, etc.) defined in `style.css`. These are feature-internal, not shared-shell classes. They must all be preserved verbatim.
+
+**3. No j-* hooks in feature HTML**
+The HTML in `index.html` has only three j-* IDs: `j-app-root`, `j-sidebar`, `j-main` — all shell-owned. The feature's own interactive elements are rendered dynamically via JS and use plain IDs (no j-* prefix), which is consistent with the reference's custom design vocabulary. These are preserved as-is.
+
+**4. localStorage / sessionStorage**
+Zero — all data is in-memory (`window.CHARACTER_CERTIFICATE_MOCK_DATA`). No shared storage keys with other features.
+
+**5. CSS filename**
+The reference uses `style.css` (not `styles.css`). The MVC asset will be named `styles.css` for consistency with the established MVC asset convention. The PHP view will reference `/assets/features/management_certificate/styles.css`.
+
+**6. Google Fonts dependency**
+The reference loads `Poppins` from Google Fonts. The MVC `_head.php` partial does not currently include a Fonts preconnect. The Poppins font is already loaded by the shared `theme.css` (which references Poppins). Confirm before adding a duplicate link tag.
+
+**7. `window.__certApp` export**
+`script.js` exports `window.__certApp` for external integration points. This is preserved verbatim — no changes to JS.
+
+**8. `<div id="app">` mount point**
+The feature's JS targets `document.getElementById('app')` as its render root. In the MVC view, this div must be present inside `<main id="j-main">` exactly as in the reference.
+
+#### Contract Inventory
+| Contract | Source | Items |
+|---|---|---|
+| Shell IDs (PHP-owned) | `j-app-root`, `j-sidebar`, `j-main` | 3 |
+| Feature IDs (JS-owned, rendered dynamically) | `app`, `backToListBtn`, `certContentRef`, `certMeasure`, `certPageLabel`, `certPaginationRow`, `certVisiblePage`, `closePreviewBtn`, `closeRequestsModalBtn`, `finalizeBtn`, `nextPageBtn`, `openRequestsPanelBtn`, `prevPageBtn`, `previewModalBackdrop`, `previewModalOverlay`, `printCertBtn`, `queryInput`, `requestsModalBackdrop`, `requestsModalOverlay`, `student-particulars-heading`, `toggleEditBtn` | 21 |
+| j-* hooks in HTML | Shell only (`j-app-root`, `j-sidebar`, `j-main`) | 0 feature-level |
+| data-* attributes (JS templates) | `data-approve-cert`, `data-approve-missing`, `data-open-cert`, `data-particular`, `data-preview-file`, `data-queue`, `data-reason`, `data-reject-cert`, `data-reject-missing`, `data-section`, `data-select`, `data-select-trigger`, `data-select-wrap`, `data-toggle-year`, `data-value` | 15 |
+| CSS classes defined in feature style.css | 145 (zero c-* prefix) | all feature-internal |
+| Global mock data | `window.CHARACTER_CERTIFICATE_MOCK_DATA` | 1 |
+| localStorage keys | None | 0 |
+
+#### Planned MVC Files
+| File | Action |
+|---|---|
+| `L-Ecole/app/Controllers/ManagementCertificateController.php` | Create |
+| `L-Ecole/app/Views/management/certificate.php` | Create |
+| `L-Ecole/public/assets/features/management_certificate/styles.css` | Copy from reference `style.css` |
+| `L-Ecole/public/assets/features/management_certificate/data.js` | Copy from reference `data.js` |
+| `L-Ecole/public/assets/features/management_certificate/script.js` | Copy from reference `script.js` |
+| `L-Ecole/public/index.php` | Add `/management/certificate` route |
+
+#### Cross-Layer Naming Decisions (Discovery Phase)
+- **c-* conventions:** None in this feature — feature uses its own BEM-like vocabulary
+- **j-* hooks:** Shell only (`j-app-root`, `j-sidebar`, `j-main`)
+- **s-* conventions:** None
+- **PHP-originated references:** The PHP view will set `$currentRole = 'management'` and `$currentRoute = '/management/certificate'` for the shared `_sidebar.php` partial. No new PHP-origin DOM markers are needed. The `<div id="app">` mount point is owned by JavaScript, not PHP. No `p-*` convention needed.
+- **New convention introduced:** None planned.
+
+#### Open Architectural Questions (for authorization review)
+1. The reference `index.html` loads Poppins from Google Fonts. Does `theme.css` already load Poppins globally, making this redundant in the MVC view? (Likely yes — to be confirmed before adding a duplicate font link.)
+2. The MVC `_head.php` currently hardcodes a link to `/assets/features/dashboard/styles.css` — this is loaded on every page. The certificate feature's CSS does not conflict, but this is a pre-existing architectural note.
+
+#### Commit (intended, pending authorization)
+- **Commit message:** `Migrate Management Character Certificate to MVC`
+- **Push target:** `origin/main`
+
+#### All verification steps
+PENDING implementation authorization.
+
+---
+
+### [2026-08-18] — REGRESSION DISCOVERY: Management Notice Board — Missing require_once
+
+- **Discovered during:** Phase 1 discovery for `/management/certificate`
+- **Severity:** Critical regression — `/management/notice` returns PHP fatal error in production
+- **Root cause:** `ManagementNoticeController.php` was committed and the route was registered in `index.php`, but the `require_once` statement for the controller was NOT added to the `index.php` require block. The controller file exists on disk but is never loaded, so PHP cannot find the class when the route is dispatched.
+- **Symptom:** `Fatal error: Uncaught Error: Class "ManagementNoticeController" not found` on HTTP request to `/management/notice`
+- **Controllers on disk (5):** ManagementDashboardController, ManagementPeopleController, ManagementExtracurricularController, ManagementAcademicController, ManagementNoticeController
+- **Controllers in index.php require block (4):** ManagementDashboardController, ManagementPeopleController, ManagementExtracurricularController, ManagementAcademicController — **ManagementNoticeController missing**
+- **Resolution:** Will be corrected in the same `index.php` edit that registers `/management/certificate` — adding both the missing `require_once` for ManagementNoticeController AND the new `require_once` for ManagementCertificateController.
+- **History rule compliance:** Recording the failure and correction per Rule 9 (do not rewrite history to hide mistakes).
+#### Correction Applied and Verified (2026-08-18)
+
+- **Fix:** Added `require_once __DIR__ . '/../app/Controllers/ManagementNoticeController.php';` to the loader block in `L-Ecole/public/index.php`, after `ManagementAcademicController.php`.
+- **Diff:** Single line added — no other changes.
+- **Files changed:** `L-Ecole/public/index.php` only.
+- **Files untouched:** `ManagementNoticeController.php`, `notice.php` view, all Notice feature assets, all reference directories.
+
+**Verification results:**
+- `php -l L-Ecole/public/index.php`: No syntax errors detected ✅
+- `GET /management/notice` HTTP 200, no fatal error in body ✅
+- `GET /management/dashboard` HTTP 200 ✅
+- `GET /management/people` HTTP 200 ✅
+- `GET /management/extracurricular` HTTP 200 ✅
+- `GET /management/academic` HTTP 200 ✅
+- Reference directory diff (`Admin/`, `Management Panel/`, `Student/`, `Teacher/`, `Parent/`): zero modifications ✅
+- Working tree after fix: `L-Ecole/public/index.php` (modified), `PROJECT_HISTORY.md` (modified) — no other changes.
+- **Status:** Regression confirmed corrected. Awaiting commit authorization (will be included in the Certificate migration commit or as a standalone fix commit per user instruction).
+
+
+---
+
+### [2026-08-18] — Management Character Certificate — IMPLEMENTATION (Phase 2)
+
+#### Status: IMPLEMENTATION IN PROGRESS
+
+- **Feature:** Character Certificate
+- **Route:** `/management/certificate`
+- **Controller:** `ManagementCertificateController`
+- **View:** `L-Ecole/app/Views/management/certificate.php`
+- **Assets:** `L-Ecole/public/assets/features/management_certificate/`
+- **Admin counterpart:** None — Management-exclusive feature
+- **Notice regression fix:** Present in `index.php` (line 22) — confirmed before any index.php edits
+
+#### Files to create
+- `L-Ecole/app/Controllers/ManagementCertificateController.php` — NEW
+- `L-Ecole/app/Views/management/certificate.php` — NEW
+- `L-Ecole/public/assets/features/management_certificate/styles.css` — NEW (verbatim from style.css)
+- `L-Ecole/public/assets/features/management_certificate/data.js` — NEW (verbatim)
+- `L-Ecole/public/assets/features/management_certificate/script.js` — NEW (verbatim)
+
+#### Files to modify
+- `L-Ecole/public/index.php` — add require_once + route for ManagementCertificateController
+
+#### Architectural decisions
+- PHP view is intentionally minimal (shell + `<div class="page" id="app"></div>` only) — JS owns 100% of feature DOM rendering.
+- No Poppins font link in view — already provided by `theme.css` globally.
+- CSS asset renamed `style.css` → `styles.css` per MVC convention. JS does not import CSS so no script changes needed.
+- No new cross-layer naming convention needed — PHP layer only contributes `$currentRole`, `$currentRoute` (existing convention), and the `<div id="app">` mount point which is a JS contract, not PHP-originated.
+
+#### Verification: COMPLETE
+
+**PHP syntax**
+- `php -l ManagementCertificateController.php`: No syntax errors ✅
+- `php -l certificate.php` (view): No syntax errors ✅
+- `php -l index.php`: No syntax errors ✅
+
+**JavaScript syntax**
+- `node -c data.js`: OK ✅
+- `node -c script.js`: OK ✅
+
+**JS runtime evaluation**
+- `data.js` executed without errors ✅
+- `window.CHARACTER_CERTIFICATE_MOCK_DATA` set: 18 CERTIFICATES, REQUEST_FILTER_OPTIONS confirmed ✅
+- `script.js` executed without errors ✅
+- `window.__certApp` exported with keys: updateCertificate, updateMissingRecordRequest, updateCertificateRequest, finalizeCertificate, printCertificate ✅
+
+**HTTP verification**
+- `GET /management/certificate`: HTTP 200, no PHP fatal error in body ✅
+- `GET /assets/features/management_certificate/styles.css`: HTTP 200 ✅
+- `GET /assets/features/management_certificate/data.js`: HTTP 200 ✅
+- `GET /assets/features/management_certificate/script.js`: HTTP 200 ✅
+
+**Management regression suite**
+- `GET /management/notice`: HTTP 200, no fatal error ✅ (regression corrected)
+- `GET /management/dashboard`: HTTP 200 ✅
+- `GET /management/people`: HTTP 200 ✅
+- `GET /management/extracurricular`: HTTP 200 ✅
+- `GET /management/academic`: HTTP 200 ✅
+
+**Admin regression suite**
+- `GET /admin/dashboard`: HTTP 200 ✅
+- `GET /admin/people`: HTTP 200 ✅
+- `GET /admin/extracurricular`: HTTP 200 ✅
+- `GET /admin/academic`: HTTP 200 ✅
+- `GET /admin/notice`: HTTP 200 ✅
+- `GET /admin/verify`: HTTP 200 ✅
+- `GET /admin/audit`: HTTP 200 ✅
+- `GET /admin/profile`: HTTP 200 ✅
+
+**Contract parity**
+- Shell IDs (static in PHP view): `j-app-root`, `j-main`, `app` — ✅ present; `j-sidebar` emitted by `_sidebar.php` partial (confirmed in rendered HTML) ✅
+- JS-rendered IDs: 21/21 — NONE missing, NONE extra ✅
+- `data-*` attributes: 15/15 — NONE missing, NONE extra ✅
+- CSS classes in `styles.css`: 145 total; 0 c-*, 0 j-*, 0 s-* ✅
+- `window.__certApp` export: confirmed ✅
+- `localStorage`/`sessionStorage`: 0 calls ✅
+- JS mount point `<div class="page" id="app">`: present in view ✅
+
+**Asset fidelity**
+- `styles.css` diff vs `Management Panel/character-certificate/style.css`: IDENTICAL ✅
+- `data.js` diff: IDENTICAL ✅
+- `script.js` diff: IDENTICAL ✅
+
+**Reference directory immutability**
+- `git diff -- Admin/ "Management Panel/" Student/ Teacher/ Parent/`: zero modifications ✅
+
+**Notice regression protection**
+- `ManagementNoticeController` present in `index.php` require block (line 22) ✅
+- `ManagementCertificateController` present in `index.php` require block (line 23) ✅
+- `/management/notice` route: registered and confirmed HTTP 200 no-error ✅
+- `/management/certificate` route: registered and confirmed HTTP 200 no-error ✅
+
+**Working tree**
+- `L-Ecole/public/index.php` (modified — Notice fix + Certificate require + Certificate route)
+- `PROJECT_HISTORY.md` (modified — discovery + implementation + verification entries)
+- `L-Ecole/app/Controllers/ManagementCertificateController.php` (new)
+- `L-Ecole/app/Views/management/certificate.php` (new)
+- `L-Ecole/public/assets/features/management_certificate/` (new directory, 3 files)
+
+**Commit:** PENDING — awaiting explicit authorization
+**Commit message (intended):** `Migrate Management Character Certificate to MVC`

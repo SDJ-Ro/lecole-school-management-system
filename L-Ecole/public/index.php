@@ -19,6 +19,8 @@ require_once __DIR__ . '/../app/Controllers/ProfileController.php';
 require_once __DIR__ . '/../app/Controllers/ManagementPeopleController.php';
 require_once __DIR__ . '/../app/Controllers/ManagementExtracurricularController.php';
 require_once __DIR__ . '/../app/Controllers/ManagementAcademicController.php';
+require_once __DIR__ . '/../app/Controllers/ManagementNoticeController.php';
+require_once __DIR__ . '/../app/Controllers/ManagementCertificateController.php';
 
 // 2. Start the router
 $router = new WebRouter();
@@ -91,6 +93,11 @@ $router->add('/management/academic', function() {
 
 $router->add('/management/notice', function() {
     $controller = new ManagementNoticeController();
+    $controller->index();
+});
+
+$router->add('/management/certificate', function() {
+    $controller = new ManagementCertificateController();
     $controller->index();
 });
 
