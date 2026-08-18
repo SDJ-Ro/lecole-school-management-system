@@ -15,6 +15,11 @@ abstract class Controller
 {
     private ?array $children = null;
 
+    protected function log(array $user, string $action, string $details): void
+    {
+        (new AuditLog())->record($action, $user['id'], $user['identifier'], $details);
+    }
+    
     protected function getUser(): ?array
     {
         return $_SESSION['user'] ?? null;
