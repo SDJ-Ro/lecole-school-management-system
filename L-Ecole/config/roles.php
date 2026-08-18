@@ -6,7 +6,7 @@ return [
     'admin' => [
         'title' => "L'École",
         'subtitle' => 'Administrator',
-        'homeHref' => '/landing_page/landing/index.html',
+        'homeHref' => '/admin/dashboard',
         'logoSrc' => '/assets/images/logo.jpg',
         'nav' => [
             [
