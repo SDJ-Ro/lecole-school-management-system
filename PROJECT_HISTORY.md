@@ -228,3 +228,315 @@
 
 
 
+
+---
+
+### [2026-08-17] — Admin Users Directory MVC Migration
+- **Commit:** `33d50ed` (full: `33d50edb0d856ca263e6920eea0e97c18733c15e`)
+- **Commit message:** `Migrate Admin Users Directory to MVC`
+- **Reference path:** `Admin/people/`
+- **MVC route:** `/admin/people`
+- **Files created:**
+  - `L-Ecole/app/Controllers/PeopleController.php`
+  - `L-Ecole/app/Views/admin/people.php`
+  - `L-Ecole/public/assets/features/admin_people/styles.css`
+  - `L-Ecole/public/assets/features/admin_people/data.js`
+  - `L-Ecole/public/assets/features/admin_people/validation.js`
+  - `L-Ecole/public/assets/features/admin_people/app.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **Shared shell reused:** `_head.php`, `_sidebar.php`, `theme.css`, `sidebar.css`, `sidebar.js`, `utils.js`
+- **Contract parity:** IDs, c-* classes, j-* hooks, data-* attributes — 1:1 match against `Admin/people/`
+- **localStorage:** `lecole_people` (preserved)
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Extracurricular MVC Migration
+- **Commit:** `6ac13da` (full: `6ac13dae900253811d29abde2a9a68c2a815b0ce`)
+- **Commit message:** `Migrate Admin Extracurricular to MVC`
+- **Reference path:** `Admin/extracurricular/`
+- **MVC route:** `/admin/extracurricular`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ExtracurricularController.php`
+  - `L-Ecole/app/Views/admin/extracurricular.php`
+  - `L-Ecole/public/assets/features/admin_extracurricular/styles.css`
+  - `L-Ecole/public/assets/features/admin_extracurricular/data.js`
+  - `L-Ecole/public/assets/features/admin_extracurricular/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **localStorage:** `lecole_shared_extracurriculars` (preserved — shared key with Management)
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Notice Board MVC Migration
+- **Commit:** `64b4e4f` (full: `64b4e4f657c2d8a476408723156ac7fb7871af7d`)
+- **Commit message:** `Migrate Admin Notice Board to MVC`
+- **Reference path:** `Admin/Notice/`
+- **MVC route:** `/admin/notice`
+- **Files created:**
+  - `L-Ecole/app/Controllers/NoticeController.php`
+  - `L-Ecole/app/Views/admin/notice.php`
+  - `L-Ecole/public/assets/features/admin_notice/styles.css`
+  - `L-Ecole/public/assets/features/admin_notice/data.js`
+  - `L-Ecole/public/assets/features/admin_notice/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **Admin capabilities (full):** View notices, filter/search, pin/unpin per card, edit notice (in-modal edit form), delete notice (modal delete confirmation), post new notice
+- **localStorage:** None — data is in-memory only (`window.NOTICE_MOCK_DATA`)
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Approvals & Verifications MVC Migration
+- **Commit:** `26e7f3f` (full: `26e7f3fa1be86983c8da93ba7698f7205d7c004c`)
+- **Commit message:** `Migrate Admin Approvals and Verifications to MVC`
+- **Reference path:** `Admin/verify/`
+- **MVC route:** `/admin/verify`
+- **Files created:**
+  - `L-Ecole/app/Controllers/VerifyController.php`
+  - `L-Ecole/app/Views/admin/verify.php`
+  - `L-Ecole/public/assets/features/admin_verify/styles.css`
+  - `L-Ecole/public/assets/features/admin_verify/data.js`
+  - `L-Ecole/public/assets/features/admin_verify/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Academic Overview MVC Migration
+- **Commit:** `db30006` (full: `db30006ea96d7f4c0e3ff7b143f8ee6cbbab9858`)
+- **Commit message:** `Migrate Admin Academic Overview to MVC`
+- **Reference path:** `Admin/academic/`
+- **MVC route:** `/admin/academic`
+- **Files created:**
+  - `L-Ecole/app/Controllers/AcademicController.php`
+  - `L-Ecole/app/Views/admin/academic.php`
+  - `L-Ecole/public/assets/features/admin_academic/styles.css`
+  - `L-Ecole/public/assets/features/admin_academic/data.js`
+  - `L-Ecole/public/assets/features/admin_academic/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **localStorage:** `lecole_shared_events` (preserved — shared key with Management Academic and Dashboard)
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Audit Logs MVC Migration
+- **Commit:** `a843c16` (full: `a843c16c8b413fcc38aca4117ea77c94ca991d16`)
+- **Commit message:** `Migrate Admin Audit Logs to MVC`
+- **Reference path:** `Admin/audit/`
+- **MVC route:** `/admin/audit`
+- **Files created:**
+  - `L-Ecole/app/Controllers/AuditController.php`
+  - `L-Ecole/app/Views/admin/audit.php`
+  - `L-Ecole/public/assets/features/admin_audit/styles.css`
+  - `L-Ecole/public/assets/features/admin_audit/data.js`
+  - `L-Ecole/public/assets/features/admin_audit/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Admin Profile & Settings MVC Migration
+- **Commit:** `03f61d9` (full: `03f61d90922d525bb8b0b03532529d52ab3d7c19`)
+- **Commit message:** `Migrate Admin Profile & Settings to MVC`
+- **Reference path:** `Admin/profile/`
+- **MVC route:** `/admin/profile`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ProfileController.php`
+  - `L-Ecole/app/Views/admin/profile.php`
+  - `L-Ecole/public/assets/features/admin_profile/styles.css`
+  - `L-Ecole/public/assets/features/admin_profile/data.js`
+  - `L-Ecole/public/assets/features/admin_profile/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+## Management Panel MVC Migrations
+
+> Permanent rule (established 2026-08-17): The Management Panel reference implementation is the source of truth for feature scope, capabilities, and interactions. The corresponding Admin feature is a comparison and consistency reference only. Admin-only functionality must NOT be added to Management. Shared UI patterns must remain visually consistent where Management already has the equivalent component.
+
+---
+
+### [2026-08-16] — Management Dashboard MVC Migration
+- **Commit:** `650f841` (full: `650f841845de5fb14820ff72b8629939e502b228`)
+- **Commit message:** `Migrate Management Dashboard to MVC`
+- **Reference path:** `Management Panel/dashboard/`
+- **MVC route:** `/management/dashboard`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ManagementDashboardController.php`
+  - `L-Ecole/app/Views/management/dashboard.php`
+  - `L-Ecole/public/assets/features/management_dashboard/styles.css`
+  - `L-Ecole/public/assets/features/management_dashboard/data.js`
+  - `L-Ecole/public/assets/features/management_dashboard/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **Shared shell reused:** `_head.php`, `_sidebar.php`, `theme.css`, `sidebar.css`, `sidebar.js`, `utils.js`
+- **localStorage:** `lecole_shared_events` (preserved — shared with Admin Dashboard and Admin Academic)
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Management Users Directory MVC Migration
+- **Commit:** `fc2d9a8` (full: `fc2d9a8becc9e13e98aafc042341fd78d3e93b41`)
+- **Commit message:** `Migrate Management Users Directory to MVC`
+- **Reference path:** `Management Panel/people/`
+- **MVC route:** `/management/people`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ManagementPeopleController.php`
+  - `L-Ecole/app/Views/management/people.php`
+  - `L-Ecole/public/assets/features/management_people/styles.css`
+  - `L-Ecole/public/assets/features/management_people/data.js`
+  - `L-Ecole/public/assets/features/management_people/validation.js`
+  - `L-Ecole/public/assets/features/management_people/app.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **localStorage:** `lecole_people` (preserved)
+- **Admin comparison:**
+  - Shared: user table, search, filters, add/edit modals, pagination, role badges
+  - Admin-only: advanced audit trail, bulk actions, admin-specific permission flags (intentionally excluded from Management)
+  - Management: preserved its own role-specific user scope
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Management Extracurricular MVC Migration
+- **Commit:** `951e159` (full: `951e159985817b62689daaab9e10740310afdaba`)
+- **Commit message:** `Migrate Management Extracurricular to MVC`
+- **Reference path:** `Management Panel/extracurricular/`
+- **MVC route:** `/management/extracurricular`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ManagementExtracurricularController.php`
+  - `L-Ecole/app/Views/management/extracurricular.php`
+  - `L-Ecole/public/assets/features/management_extracurricular/styles.css`
+  - `L-Ecole/public/assets/features/management_extracurricular/data.js`
+  - `L-Ecole/public/assets/features/management_extracurricular/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **localStorage:** `lecole_shared_extracurriculars` (preserved — shared key with Admin Extracurricular)
+- **Admin comparison:**
+  - Shared: activity cards, enrolment modal, filter bar, participant counts, shared storage key
+  - Admin-only: admin-exclusive CRUD controls beyond Management scope (intentionally excluded)
+  - Management: preserved its own interaction scope exactly
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Management Academic Overview MVC Migration
+- **Commit:** `9546d7e` (full: `9546d7eef7f7a27da67e29afb969d5223b7d647d`)
+- **Commit message:** `Migrate Management Academic to MVC`
+- **Reference path:** `Management Panel/academic/`
+- **MVC route:** `/management/academic`
+- **Files created:**
+  - `L-Ecole/app/Controllers/ManagementAcademicController.php`
+  - `L-Ecole/app/Views/management/academic.php`
+  - `L-Ecole/public/assets/features/management_academic/styles.css`
+  - `L-Ecole/public/assets/features/management_academic/data.js`
+  - `L-Ecole/public/assets/features/management_academic/script.js`
+- **Files modified:** `L-Ecole/public/index.php` (route registered)
+- **Reference directories untouched:** All reference portals
+- **localStorage:** `lecole_shared_events` (preserved — shared key with Admin Academic and Dashboard)
+- **Admin comparison:**
+  - Shared: event calendar, month navigation, event indicators, event detail modal, event filtering
+  - Admin-only: add event form, edit event controls, delete event controls (intentionally excluded)
+  - Management: view-only calendar — no add/edit/delete capability added
+- **HTTP 200:** Confirmed
+- **Push result:** Pushed to origin/main
+
+---
+
+### [2026-08-17] — Management Notice Board MVC Migration
+- **Commit:** PENDING — awaiting authorization
+- **Commit message (intended):** `Migrate Management Notice Board to MVC`
+- **Reference path:** `Management Panel/Notice/`
+- **MVC route:** `/management/notice`
+- **Navigation position:** 5 of 7 in Management nav (roles.php)
+
+#### Files Created
+- `L-Ecole/app/Controllers/ManagementNoticeController.php`
+- `L-Ecole/app/Views/management/notice.php`
+- `L-Ecole/public/assets/features/management_notice/styles.css`
+- `L-Ecole/public/assets/features/management_notice/data.js`
+- `L-Ecole/public/assets/features/management_notice/script.js`
+
+#### Files Modified
+- `L-Ecole/public/index.php` — added `/management/notice` route
+
+#### Files Intentionally Untouched
+- `Admin/`, `Management Panel/`, `Student/`, `Teacher/`, `Parent/`
+- `L-Ecole/config/roles.php`
+- `L-Ecole/app/Views/components/_sidebar.php`
+- All previously migrated MVC features
+
+#### Shared Shell Reused
+`_head.php`, `_sidebar.php`, `theme.css`, `sidebar.css`, `sidebar.js`, `utils.js`
+
+#### Admin vs Management Comparison
+| Capability | Admin | Management | Outcome |
+|---|---|---|---|
+| Notice card grid | Yes | Yes | Preserved |
+| Search + filter | Yes | Yes | Preserved |
+| Empty state + clear filters | Yes | Yes | Preserved |
+| Pin / unpin per card | Yes | Yes | Preserved |
+| Post new notice form | Yes | Yes | Preserved |
+| Audience tag-chip field | Yes | Yes | Preserved |
+| File attachment picker | Yes | Yes | Preserved |
+| Notice detail modal (view) | Yes | Yes | Preserved |
+| Per-card Edit button | Yes | No | Intentionally excluded |
+| Per-card Delete button | Yes | No | Intentionally excluded |
+| Modal edit mode | Yes | No | Intentionally excluded |
+| Modal delete confirmation | Yes | No | Intentionally excluded |
+| Edit notice button in modal footer | Yes | No | Intentionally excluded |
+
+#### localStorage / Storage Audit
+- localStorage: None — data is in-memory only (`window.NOTICE_MOCK_DATA`)
+- sessionStorage: None
+- Cross-portal storage dependency: None
+
+#### Contract Parity (vs Management Reference)
+| Contract | Ref | MVC | Result |
+|---|---|---|---|
+| IDs | 19 | 19 | PASS |
+| j-* hooks | 30 | 30 | PASS |
+| data-* attrs | data-view | data-view | PASS |
+| c-* classes | 57 | 57 | PASS |
+
+#### Verification Results
+- php -l ManagementNoticeController.php: PASS
+- php -l notice.php (view): PASS
+- php -l index.php: PASS
+- node -c data.js: PASS
+- node -c script.js: PASS
+- HTTP 200 /management/notice: PASS
+- HTTP 200 all 3 feature assets: PASS
+- All 10 active MVC routes return 200: PASS (no regressions)
+
+#### Cross-Layer Naming Decisions
+- Existing c-* conventions preserved: Yes — all 57 feature c-* classes verbatim
+- Existing j-* conventions preserved: Yes — all 30 feature j-* hooks verbatim
+- Existing s-* conventions preserved: N/A (no s-* in this feature)
+- PHP-originated references introduced: None
+- New convention introduced: None
+- No new PHP-originated naming convention was necessary. The PHP layer only uses the established `$currentRole` and `$currentRoute` variables passed to shared partials. The Management Notice feature has no server-generated DOM markers that would require a distinct PHP-origin namespace.
+
+#### Architectural Decision Record
+- The Management Notice modal panel is empty in the reference HTML; `renderNoticeModal()` in script.js populates it dynamically (view mode only). The Admin MVC view pre-renders all three modal modes as hidden DOM elements. The Management MVC view preserves the reference pattern (empty panel, dynamic rendering) rather than matching the Admin DOM pattern, because matching Admin would require adding Admin-only hooks that violate the Management scope rule.
+
+#### Push result
+PENDING — awaiting explicit commit authorization.

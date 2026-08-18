@@ -89,6 +89,11 @@ $router->add('/management/academic', function() {
     $controller->index();
 });
 
+$router->add('/management/notice', function() {
+    $controller = new ManagementNoticeController();
+    $controller->index();
+});
+
 $router->add('/login', function() {
     echo "<h1>Login Screen</h1>";
 });
