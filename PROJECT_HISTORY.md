@@ -841,3 +841,20 @@ PENDING implementation authorization.
 - **c-* classes:** Maintained exact BEM classes from reference.
 - **PHP-originated naming:** No new conventions are introduced. `$currentRole = 'management'` and `$currentRoute = '/management/profile'` are passed to the sidebar.
 - **No new PHP-originated naming convention was necessary.**
+
+---
+
+### [2026-08-19] — MVC Architecture Audit & Shared Components Cleanups
+- **Commit:** `a0d22fd` (full: `a0d22fd5db8e79c2980fa2a94a2b972e2cfc23e8`)
+- **Commit message:** `Refactor dashboard view components and clean up unused JS stubs`
+- **Actions executed:**
+  - Extracted shared component templates `_metric_card.php` and `_calendar.php` into `L-Ecole/app/Views/components/`.
+  - Refactored `admin/dashboard.php` and `management/dashboard.php` to use the shared view partials.
+  - Removed dead `renderSidebar_disabled()` from `management_people/app.js`.
+  - Cleaned up unused `initSidebar()` stubs and `sidebarCollapsed` properties from `admin_audit/script.js`, `management_extracurricular/script.js`, `management_notice/script.js`, `management_profile/script.js`, `management_dashboard/script.js`, `management_academic/script.js`, and `admin_extracurricular/script.js`.
+- **Verification Performed:**
+  - Verified 38 PHP and 34 JS files with syntax checks (`final_audit_checks.py`).
+  - Confirmed status 200 OK across all 16 active MVC endpoints.
+  - Verified layout, responsiveness, metrics rendering, and calendar date selection parity in the browser.
+- **Git Push Result:** Pushed successfully to `main` branch.
+
