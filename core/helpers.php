@@ -291,3 +291,102 @@ if (!function_exists('class_name'))
 // What class_name() puts before the section
 if (!function_exists('class_prefix'))
 {
+    function class_prefix(int $gradeNumber): string
+    {
+        return explode('{section}', strtr(config('white_label.academic.class_name'), ['{grade}' => grade_short($gradeNumber)]), 2)[0];
+    }
+}
+
+// Gets the section back from a class name, so "6-A" gives "A"
+if (!function_exists('class_section'))
+{
+    function class_section(int $gradeNumber, string $name): string
+    {
+        $before = mb_strlen(class_prefix($gradeNumber));
+        $after  = mb_strlen(class_name($gradeNumber, '')) - $before;   // Any text after the section
+
+        return mb_substr($name, $before, mb_strlen($name) - $before - $after);
+    }
+}
+
+// Turns 2 into "2nd". The 11th, 12th and 13th don't follow the last digit.
+if (!function_exists('ordinal'))
+{
+    function ordinal(int $number): string
+    {
+        $suffix = in_array($number % 100, [11, 12, 13], true) ? 'th' : (['th', 'st', 'nd', 'rd'][$number % 10] ?? 'th');
+
+        return $number . $suffix;
+    }
+}
+
+// First letters of the first two words
+if (!function_exists('initials'))
+{
+    function initials(string $name): string
+    {
+        return implode('', array_map(fn (string $word): string => mb_substr($word, 0, 1), array_slice(explode(' ', trim($name)), 0, 2)));
+    }
+}
+
+// Gives the same person the same card colour on every page
+if (!function_exists('card_tone'))
+{
+    function card_tone(string $code): string
+    {
+        $tones = config('people.card_tones');
+
+        return $tones[crc32($code) % count($tones)];
+    }
+}
+
+// Joins a list as "PDF, PNG or JPG"
+if (!function_exists('word_list'))
+{
+    function word_list(array $words): string
+    {
+        $words = array_values($words);
+        $last  = array_pop($words);
+
+        return $words === [] ? (string) $last : implode(', ', $words) . " or {$last}";
+    }
+}
+
+// The file types for a file input's accept. The server checks the same list.
+if (!function_exists('accept_types'))
+{
+    function accept_types(string $kind): string
+    {
+        return implode(',', array_keys(config("uploads.{$kind}.types")));
+    }
+}
+
+if (!function_exists('icon'))
+{
+    function icon(string $name, int $size = 16, string $class = ''): string
+    {
+        return '<svg class="' . e(trim("c-icon {$class}")) . '" width="' . $size . '" height="' . $size . '" aria-hidden="true">'
+            . '<use href="#icon-' . e($name) . '"/></svg>';
+    }
+}
+
+if (!function_exists('icon_image'))
+{
+    // An icon as an image for PDFs, because Dompdf can't use the icon sheet or CSS colours
+    function icon_image(string $name, int $size, string $colourToken): string
+    {
+        static $icons = null, $tokens = null;
+        $icons  ??= file_get_contents(dirname(__DIR__) . '/app/Views/components/icons.php');
+        $tokens ??= file_get_contents(dirname(__DIR__) . '/public/assets/css/global.css');
+
+        preg_match('/<symbol id="icon-' . preg_quote($name, '/') . '" viewBox="([^"]+)">(.*?)<\/symbol>/s', $icons, $drawing);
+        preg_match('/--' . preg_quote($colourToken, '/') . ':\s*(#[0-9A-Fa-f]{3,8})/', $tokens, $colour);
+
+        // Dompdf reads px as pt, so the SVG is drawn at 4/3 size
+        $drawn = round($size * 4 / 3, 2);
+        $svg   = '<svg xmlns="http://www.w3.org/2000/svg" width="' . $drawn . '" height="' . $drawn . '" viewBox="' . $drawing[1] . '" fill="none"'
+            . ' stroke="' . $colour[1] . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' . $drawing[2] . '</svg>';
+
+        return '<img src="data:image/svg+xml;base64,' . base64_encode($svg) . '" width="' . $size . '" height="' . $size . '" alt="">';
+    }
+}
