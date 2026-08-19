@@ -60,6 +60,25 @@ return [
         'own_students' => ['teacher'],               // View only
     ],
 
+    'extracurricular' => [
+        'page'    => ['student', 'teacher', 'management', 'admin'],   // A parent sees it through Child Profile
+        'join'    => ['student'],
+        'manage'  => ['admin', 'management'],
+        'approve' => ['admin'],                 // Also archive and restore
+        'watch'   => ['admin', 'management'],  // Lift Academic Watch
+    ],
+
+    'achievements' => [
+        'record'     => ['teacher'],
+        'answer'     => ['teacher', 'management'],   // Missing Record Requests
+        'answer_any' => ['management'],              // Every waiting request, not only their own
+        'honours'    => ['management'],              // The public honours board
+    ],
+
+    'certificates' => [
+        'manage' => ['management'],
+    ],
+
     'leaving' => [
         'see'    => ['admin', 'management', 'teacher'],
         'change' => ['admin'],                            // Also cancel
@@ -72,5 +91,10 @@ return [
 
     'profile' => [
         'password' => ['admin', 'management', 'teacher', 'parent'],
+    ],
+
+    'feedback' => [
+        'write' => ['teacher'],             // Only a class teacher, for their own class
+        'read'  => ['student', 'parent'],
     ],
 ];
