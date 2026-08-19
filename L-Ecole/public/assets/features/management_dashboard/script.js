@@ -49,9 +49,7 @@
   const state = {
     viewDate: new Date(2026, 5, 1),
     selectedDate: new Date(2026, 5, 17),
-    calendarEvents: [],
-    sidebarCollapsed: false,
-    selectedNav: 'Dashboard'
+    calendarEvents: []
   };
 
   // seed calendar events from the examination details map
@@ -158,11 +156,7 @@
     return Number(value).toLocaleString();
   }
 
-  /* =======================================================================
-     3. SIDEBAR BEHAVIOUR
-     ======================================================================= */
 
-  function initSidebar() {}
 
   /* =======================================================================
      10. SHARED CHART TOOLTIP HELPER

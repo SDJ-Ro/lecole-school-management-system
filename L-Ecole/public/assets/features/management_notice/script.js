@@ -96,7 +96,6 @@
      ======================================================================= */
 
   const state = {
-    sidebarCollapsed: false,
     activeView: 'notices',           // 'notices' | 'post-notice'
     notices: initialNotices.map((n) => ({ ...n, audience: [...n.audience] })),
     filters: { search: '', audience: 'All', category: 'All' },
@@ -114,11 +113,7 @@
     }
   };
 
-  /* =======================================================================
-     5. SIDEBAR + VIEW SWITCHING
-     ======================================================================= */
 
-  function initSidebar() { }
 
   function switchView(viewName) {
     state.activeView = viewName;

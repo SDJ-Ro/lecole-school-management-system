@@ -889,60 +889,7 @@
 
   window.addEventListener('hashchange', applyRoute);
 
-  /* =====================================================================
-     12. SIDEBAR
-     Mirrors Layout.tsx + Sidebar.tsx.
-     ===================================================================== */
-  const SIDEBAR_ITEMS = [
-    { icon: 'layoutGrid', name: 'Dashboard' },
-    { icon: 'users', name: 'Users' },
-    { icon: 'dumbbell', name: 'Extracurricular' },
-    { icon: 'bookOpen', name: 'Academic' },
-    { icon: 'bell', name: 'Notice Board' },
-    { icon: 'fileText', name: 'Character Certificate' },
-    { icon: 'messageSquare', name: 'Complaints' }
-  ];
 
-  function renderSidebar_disabled() {
-    const sidebarEl = document.getElementById('j-sidebar');
-    const mainEl = document.getElementById('j-main');
-    const titleWrap = document.getElementById('j-sidebar-title-wrap');
-    const navLabel = document.getElementById('j-sidebar-nav-label');
-    const toggleIcon = document.getElementById('j-sidebar-toggle-icon');
-    const accountText = document.getElementById('j-sidebar-account-text');
-    const accountDot = document.getElementById('j-sidebar-account-dot');
-    const accountBtn = document.getElementById('j-sidebar-account');
-    const collapsed = State.sidebarCollapsed;
-
-    sidebarEl.classList.toggle('is-collapsed', collapsed);
-    mainEl.classList.toggle('is-shifted', collapsed);
-    titleWrap.style.display = collapsed ? 'none' : '';
-    navLabel.style.display = collapsed ? 'none' : '';
-    accountText.style.display = collapsed ? 'none' : '';
-    accountDot.style.display = collapsed ? 'none' : '';
-    toggleIcon.innerHTML = collapsed ? ICONS.chevronRight : ICONS.chevronLeft;
-    document.getElementById('j-sidebar-toggle').setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
-    accountBtn.classList.toggle('is-active', State.sidebarSelection === 'Alex Thompson');
-
-    const list = document.getElementById('j-sidebar-list');
-    list.innerHTML = SIDEBAR_ITEMS.map(function (item) {
-      const isActive = State.sidebarSelection === item.name;
-      const pill = isActive ? '<span class="c-sidebar-item-pill" aria-hidden="true"></span>' : '';
-      const inner = pill + icon(item.icon, 16, 'c-sidebar-item-icon') +
-        (collapsed ? '' : '<span class="c-sidebar-item-label">' + esc(item.name) + '</span>');
-      if (item.name === 'Users') {
-        return '<li><a href="#/people" class="c-sidebar-item j-sidebar-link ' + (isActive ? 'is-active' : '') + '" data-name="Users" title="' + (collapsed ? esc(item.name) : '') + '">' + inner + '</a></li>';
-      }
-      return '<li><button type="button" class="c-sidebar-item j-sidebar-item ' + (isActive ? 'is-active' : '') + '" data-name="' + esc(item.name) + '" title="' + (collapsed ? esc(item.name) : '') + '">' + inner + '</button></li>';
-    }).join('');
-
-    qsa('.j-sidebar-link', list).forEach(function (linkEl) {
-      linkEl.addEventListener('click', function () { State.sidebarSelection = 'Users'; renderSidebar(); });
-    });
-    qsa('.j-sidebar-item', list).forEach(function (btn) {
-      btn.addEventListener('click', function () { State.sidebarSelection = btn.getAttribute('data-name'); renderSidebar(); });
-    });
-  }
 
 
   /* =====================================================================

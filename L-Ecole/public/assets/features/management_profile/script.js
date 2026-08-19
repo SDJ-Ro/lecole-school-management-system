@@ -31,7 +31,6 @@
 
   /** In-memory application state — resets on page reload (no backend here). */
   const state = {
-    sidebarCollapsed: false,
     selectedNav: 'Alex Thompson'
   };
 
@@ -39,11 +38,7 @@
     return document.getElementById(id);
   }
 
-  /* =======================================================================
-     2. SIDEBAR BEHAVIOUR
-     ======================================================================= */
 
-  function initSidebar() {}
 
   /* =======================================================================
      3. NOTICE / TOAST BANNER

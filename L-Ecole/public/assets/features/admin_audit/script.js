@@ -23,15 +23,7 @@
 (function () {
   'use strict';
 
-  /* =======================================================================
-     1. SIDEBAR BEHAVIOUR
-     ======================================================================= */
 
-  const state = {
-    sidebarCollapsed: false
-  };
-
-  function initSidebar() { }
 
   /* =======================================================================
      2. CUSTOM SELECT DROPDOWN BEHAVIOUR (activity / actor filters)

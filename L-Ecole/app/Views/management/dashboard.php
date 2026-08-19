@@ -13,6 +13,34 @@ $featureCss = "/assets/features/management_dashboard/styles.css";
 $currentRole = 'management';
 $currentRoute = '/management/dashboard';
 
+$metricCards = [
+    [
+        'color' => 'sand',
+        'icon' => '<svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /><path d="M22 10v6" /><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></svg>',
+        'value' => '0',
+        'label' => 'Total Students',
+        'valueId' => 'j-metric-students'
+    ],
+    [
+        'color' => 'maroon',
+        'icon' => '<svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>',
+        'value' => '145',
+        'label' => 'Total Teachers'
+    ],
+    [
+        'color' => 'sunshine',
+        'icon' => '<svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a8 8 0 0 0-16 0" /><circle cx="10" cy="8" r="5" /><path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></svg>',
+        'value' => '2,102',
+        'label' => 'Total Parents'
+    ],
+    [
+        'color' => 'moss',
+        'icon' => '<svg class="c-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6" /><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.767a2 2 0 1 1-2.829-2.828l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.829 2.828z" /><path d="m21.5 21.5-1.4-1.4" /><path d="M3.9 3.9 2.5 2.5" /><path d="M6.404 12.768a2 2 0 1 1-2.829-2.828l1.768-1.768a2 2 0 1 1-2.828-2.828l2.828-2.828a2 2 0 1 1 2.828 2.828l1.768-1.768a2 2 0 1 1 2.828 2.828" /></svg>',
+        'value' => '6',
+        'label' => 'Extracurriculars'
+    ]
+];
+
 require __DIR__ . '/../components/_head.php';
 ?>
 
@@ -37,62 +65,17 @@ require __DIR__ . '/../components/_head.php';
                METRIC CARDS (4 Cards for Management Role)
                --------------------------------------------------------- -->
           <div class="c-metrics-grid">
-            <div class="c-metric-card c-metric-card--sand" style="animation-delay:0ms">
-              <div class="c-metric-card__top">
-                <span class="c-metric-card__icon" aria-hidden="true"><svg class="c-icon" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path
-                      d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
-                    <path d="M22 10v6" />
-                    <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" />
-                  </svg></span>
-              </div>
-              <p class="c-metric-card__value c-font-display" id="j-metric-students">0</p>
-              <p class="c-metric-card__label">Total Students</p>
-            </div>
-            <div class="c-metric-card c-metric-card--maroon" style="animation-delay:50ms">
-              <div class="c-metric-card__top">
-                <span class="c-metric-card__icon" aria-hidden="true"><svg class="c-icon" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                  </svg></span>
-              </div>
-              <p class="c-metric-card__value c-font-display">145</p>
-              <p class="c-metric-card__label">Total Teachers</p>
-            </div>
-            <div class="c-metric-card c-metric-card--sunshine" style="animation-delay:100ms">
-              <div class="c-metric-card__top">
-                <span class="c-metric-card__icon" aria-hidden="true"><svg class="c-icon" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M18 21a8 8 0 0 0-16 0" />
-                    <circle cx="10" cy="8" r="5" />
-                    <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
-                  </svg></span>
-              </div>
-              <p class="c-metric-card__value c-font-display">2,102</p>
-              <p class="c-metric-card__label">Total Parents</p>
-            </div>
-            <div class="c-metric-card c-metric-card--moss" style="animation-delay:200ms">
-              <div class="c-metric-card__top">
-                <span class="c-metric-card__icon" aria-hidden="true"><svg class="c-icon" width="20" height="20"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M14.4 14.4 9.6 9.6" />
-                    <path
-                      d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.767a2 2 0 1 1-2.829-2.828l6.364-6.364a2 2 0 1 1 2.829 2.828l-1.768 1.768a2 2 0 1 1 2.829 2.828z" />
-                    <path d="m21.5 21.5-1.4-1.4" />
-                    <path d="M3.9 3.9 2.5 2.5" />
-                    <path
-                      d="M6.404 12.768a2 2 0 1 1-2.829-2.828l1.768-1.768a2 2 0 1 1-2.828-2.828l2.828-2.828a2 2 0 1 1 2.828 2.828l1.768-1.768a2 2 0 1 1 2.828 2.828" />
-                  </svg></span>
-              </div>
-              <p class="c-metric-card__value c-font-display">6</p>
-              <p class="c-metric-card__label">Extracurriculars</p>
-            </div>
+            <?php foreach ($metricCards as $idx => $card): ?>
+              <?php 
+                $color = $card['color'];
+                $icon = $card['icon'];
+                $value = $card['value'];
+                $label = $card['label'];
+                $valueId = $card['valueId'] ?? null;
+                $delay = $idx * 50;
+                require __DIR__ . '/../components/_metric_card.php';
+              ?>
+            <?php endforeach; ?>
           </div>
 
           <!-- ---------------------------------------------------------
@@ -197,67 +180,7 @@ require __DIR__ . '/../components/_head.php';
             </section>
 
             <!-- Dark Month Calendar -->
-            <section class="c-calendar" id="j-calendar" aria-label="Term 2 examination calendar">
-              <header class="c-calendar__header">
-                <div class="c-calendar__header-row">
-                  <div class="c-calendar__nav">
-                    <button type="button" class="c-calendar__nav-btn" id="j-calendar-prev"
-                      aria-label="Previous month">
-                      <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m15 18-6-6 6-6" />
-                      </svg>
-                    </button>
-                    <button type="button" class="c-calendar__nav-btn" id="j-calendar-next" aria-label="Next month">
-                      <svg class="c-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m9 18 6-6-6-6" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div class="c-calendar__month-year">
-                    <!-- month select -->
-                    <div class="c-select c-select--month" id="j-select-month">
-                      <button type="button" class="c-select__trigger" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="j-select-value">June</span>
-                        <svg class="c-icon c-select__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-                      <div class="c-select__menu" role="listbox" aria-label="Choose calendar month"></div>
-                    </div>
-                    <!-- year select -->
-                    <div class="c-select c-select--year" id="j-select-year">
-                      <button type="button" class="c-select__trigger" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="j-select-value">2026</span>
-                        <svg class="c-icon c-select__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-                      <div class="c-select__menu" role="listbox" aria-label="Choose calendar year"></div>
-                    </div>
-                  </div>
-
-                </div>
-              </header>
-
-              <div class="c-calendar__weekdays" id="j-calendar-weekdays"></div>
-              <div class="c-calendar__days" id="j-calendar-days"></div>
-
-              <div class="c-calendar__footer">
-                <div class="c-calendar__footer-row">
-                  <p class="c-calendar__event-count" id="j-calendar-event-count" aria-live="polite">0 events scheduled
-                  </p>
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <button type="button" class="c-calendar__view-all-btn" id="j-open-day-schedule">View all</button>
-                  </div>
-                </div>
-                <div class="c-calendar__day-detail" id="j-calendar-day-detail"></div>
-              </div>
-            </section>
+            <?php require __DIR__ . '/../components/_calendar.php'; ?>
           </div>
 
           <!-- ---------------------------------------------------------

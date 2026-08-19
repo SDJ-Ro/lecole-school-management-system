@@ -187,7 +187,6 @@
      ======================================================================= */
 
   const state = {
-    sidebarCollapsed: false,
     clubs: EXTRACURRICULARS,
     notices: NOTICES,
     typeFilter: 'All',
@@ -202,18 +201,7 @@
     return state.clubs.find((club) => club.id === numId);
   }
 
-  /* =======================================================================
-     5. SIDEBAR BEHAVIOUR
-     -------------------------------------------------------------------------
-     Same approach as the Dashboard page's initSidebar(): the sidebar is
-     static markup in index.html, this just wires up collapse + selection.
-     The only difference is the default selected item (Extracurricular
-     instead of Dashboard, since that's the page we're on) and that
-     clicking the "Extracurricular" item re-navigates to the overview
-     route instead of only toggling a visual state.
-     ======================================================================= */
 
-  function initSidebar() { }
 
   /** Restores the sidebar's selected item back to "Extracurricular" —
    *  mirrors the Dashboard page always keeping one nav item authoritative
