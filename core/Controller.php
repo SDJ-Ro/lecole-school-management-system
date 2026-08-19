@@ -20,6 +20,59 @@ abstract class Controller
         (new AuditLog())->record($action, $user['id'], $user['identifier'], $details);
     }
     
+    protected function view(string $viewName, array $data = []): void
+    {
+        $viewPath = dirname(__DIR__) . '/app/Views/' . $viewName . '.php';
+
+        
+        extract($data, EXTR_SKIP);
+        require $viewPath;
+    }
+
+    // Shows a signed-in page with what its sidebar and top bar need
+    protected function page(string $viewName, array $user, array $data = []): void
+    {
+        // Stops the Back button showing the page again after sign out
+        header('Cache-Control: no-store');
+
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+
+        $this->view($viewName, $data + [
+            'currentRole' => $user['role'],
+            'currentPath' => $path === "/{$user['role']}" ? "/{$user['role']}/dashboard" : $path,   // The role's home page is its dashboard
+            'userName'    => $user['first_name'] ?? '',
+            'userPhoto'   => $user['photo'] ?? null,
+            'csrfField'   => $this->csrfField(),
+            'sessionTimeout' => $this->sessionTimeout($user['role']),
+            'children'    => $user['role'] === 'parent' ? $this->children($user) : [],
+            'chosenChild' => $user['child'] ?? null,
+            'closingBanner' => AccountClosing::banner($user),
+            // Read from a cookie, so a collapsed sidebar doesn't jump open while the page loads
+            'sidebarCollapsed' => ($_COOKIE["sidebar_{$user['role']}"] ?? '') === 'collapsed',
+            // Forms that show their own errors read the error first, so it never shows twice
+            'flashNotice' => $this->getFlash('notice'),
+            'flashError'  => $this->getFlash('error'),
+        ]);
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function setFlash(string $key, mixed $message): void
+    {
+        $_SESSION['flash'][$key] = $message;
+    }
+
+    protected function getFlash(string $key): mixed
+    {
+        $message = $_SESSION['flash'][$key] ?? null;
+        unset($_SESSION['flash'][$key]);
+        return $message;
+    }
+
     protected function getUser(): ?array
     {
         return $_SESSION['user'] ?? null;
@@ -94,6 +147,34 @@ abstract class Controller
 
     }
 
+    // A background request gets JSON. A normal one goes back with a flash message.
+    protected function refuse(string $message, string $url, int $statusCode, string $flash = 'error'): never
+    {
+        
+        $this->setFlash($flash, $message);
+        $this->redirect($url);
+    }
+
+    protected function wantsJson(): bool
+    {
+        return str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+    }
+
+    // Only the path and query, so it never sends the user to another site
+    protected function previousPage(): string
+    {
+        $from = parse_url($_SERVER['HTTP_REFERER'] ?? '/');
+        $path = $from['path'] ?? '/';
+
+        // Browsers read "//x" and "/\x" as another site
+        if (!str_starts_with($path, '/') || in_array($path[1] ?? '', ['/', '\\'], true))
+        {
+            return '/';
+        }
+
+        return $path . (isset($from['query']) ? "?{$from['query']}" : '');
+    }
+
     // A list such as field[]=x becomes an empty string
     protected function postText(string $key, int $max = 255): string
     {
@@ -116,6 +197,13 @@ abstract class Controller
 
         return is_string($value) ? mb_substr($value, 0, 255) : '';
     }
+
+    protected function sendJson(array $data, int $statusCode = 200): never
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data);
+        exit;
 
     }
 }
