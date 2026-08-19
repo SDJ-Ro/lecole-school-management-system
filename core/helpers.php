@@ -95,3 +95,103 @@ if (!function_exists('country'))
         return config("white_label.country.{$key}", $default);
     }
 }
+
+
+if (!function_exists('feature'))
+{
+    function feature(string $name): bool
+    {
+        return (bool) config("white_label.features.{$name}", false);
+    }
+}
+
+// Turns a php.ini size such as "8M" into bytes
+if (!function_exists('ini_bytes'))
+{
+    function ini_bytes(string $setting): int
+    {
+        $size   = trim((string) ini_get($setting));
+        $number = (int) $size;
+
+        return match (strtoupper(substr($size, -1)))
+        {
+            'G'     => $number * 1024 ** 3,
+            'M'     => $number * 1024 ** 2,
+            'K'     => $number * 1024,
+            default => $number,
+        };
+    }
+}
+
+// An admin's change for that year wins over rules.php. Without a $year it uses this year.
+if (!function_exists('rule'))
+{
+    function rule(string $key, ?int $year = null): mixed
+    {
+        $saved = class_exists(App\Models\SchoolRules::class) ? App\Models\SchoolRules::inForce($key, $year) : null;
+
+        return $saved ?? config("white_label.rules.{$key}");
+    }
+}
+
+if (!function_exists('word'))
+{
+    function word(string $key): string
+    {
+        return saved_setting("wording.{$key}") ?? default_word($key);
+    }
+}
+
+// The word before any admin change. It looks in the organisation type first, then the school words.
+if (!function_exists('default_word'))
+{
+    function default_word(string $key): string
+    {
+        $type = school('type', 'school');
+
+        return config("white_label.wording.{$type}.{$key}")
+            ?? config("white_label.wording.school.{$key}")
+            ?? ucfirst($key);
+    }
+}
+// Adds the file's change time to the link, so browsers fetch it again after an edit
+if (!function_exists('asset'))
+{
+    function asset(string $path): string
+    {
+        $file = dirname(__DIR__) . '/public/assets/' . $path;
+
+        return '/assets/' . $path . '?v=' . (is_file($file) ? filemtime($file) : 0);
+    }
+}
+
+// Builds a link with its query. Empty values are left out.
+if (!function_exists('url_with'))
+{
+    function url_with(string $path, array $params): string
+    {
+        $query = http_build_query(array_filter($params, fn ($value): bool => $value !== '' && $value !== null));
+
+        return $query === '' ? $path : "{$path}?{$query}";
+    }
+}
+
+// Turns 'class' into "Classes"
+if (!function_exists('plural'))
+{
+    function plural(string $word): string
+    {
+        return word(match ($word) { 'class' => 'classes', 'management' => 'management', default => "{$word}s" });
+    }
+}
+
+// Fills in the school's words. {Class} gives a capital letter and {class} gives lowercase.
+if (!function_exists('words'))
+{
+    function words(string $text): string
+    {
+        return preg_replace_callback('/\{(\w+)\}/', fn (array $match): string => ctype_upper($match[1][0])
+            ? word(strtolower($match[1]))
+            : strtolower(word($match[1])), $text);
+    }
+}
