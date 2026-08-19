@@ -125,22 +125,9 @@ input, textarea, select { font-family: inherit; }
 .c-main-container { max-width: 88rem; margin: 0 auto; }
 .c-page-stack { display: flex; flex-direction: column; gap: 1.5rem; }
 
-/* ---------------------------------------------------------------------
-   SIDEBAR — deferred to shared/sidebar.css (loaded after this file).
-   Only page-specific overrides belong here.
-   --------------------------------------------------------------------- */
 
-/* Nav item pill uses the brand flame-orange on academic page (matches other tabs) */
-.c-nav-item__pill {
-  background: var(--flame-orange, #F47A20);
-}
 
-/* Profile button subtle style override for academic page */
-.c-profile-btn {
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(255, 255, 255, 0.1);
-}
-.c-profile-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
 
 /* ---------------------------------------------------------------------
    3. PAGE HEADER
