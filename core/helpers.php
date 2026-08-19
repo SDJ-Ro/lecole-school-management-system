@@ -96,7 +96,6 @@ if (!function_exists('country'))
     }
 }
 
-
 if (!function_exists('feature'))
 {
     function feature(string $name): bool
@@ -195,3 +194,100 @@ if (!function_exists('words'))
             : strtolower(word($match[1])), $text);
     }
 }
+
+// Checks the signed-in role against config/permissions.php
+if (!function_exists('can'))
+{
+    function can(string $ability): bool
+    {
+        $role = $_SESSION['user']['role'] ?? null;
+
+        return $role !== null && in_array($role, config("permissions.{$ability}", []), true);
+    }
+}
+
+// Tabs not listed in teacher_tabs are open to every teacher
+if (!function_exists('teacher_has_tab'))
+{
+    function teacher_has_tab(string $tab): bool
+    {
+        $needs = config("permissions.teacher_tabs.{$tab}");
+        $id    = (int) ($_SESSION['user']['id'] ?? 0);
+
+        return $needs === null || array_intersect($needs, App\Services\TeacherDuties::of($id)) !== [];
+    }
+}
+
+// Anyone may manage their own posts. Who may manage other people's is set in posts.manage_others.
+// The post needs author_id and author_role.
+if (!function_exists('can_manage'))
+{
+    function can_manage(array $post): bool
+    {
+        $user = $_SESSION['user'] ?? null;
+
+        return $user !== null && ((int) $post['author_id'] === (int) $user['id']
+            || in_array($post['author_role'], config("permissions.posts.manage_others.{$user['role']}") ?? [], true));
+    }
+}
+
+// Shows "09:00 - 10:30", just "15:00" when there is no end, or "All Day" when there is no start
+if (!function_exists('event_time'))
+{
+    function event_time(array $event): string
+    {
+        if ($event['start_time'] === null)
+        {
+            return 'All Day';
+        }
+
+        return substr($event['start_time'], 0, 5) . ($event['end_time'] ? ' – ' . substr($event['end_time'], 0, 5) : '');
+    }
+}
+
+// Grades store only a number, so the school's own words always show
+if (!function_exists('grade_name'))
+{
+    function grade_name(int $number): string
+    {
+        return config("white_label.academic.grade_names.{$number}") ?? word('grade') . " {$number}";
+    }
+}
+
+// Turns 6 and 9 into "Grades 6-9"
+if (!function_exists('grade_range'))
+{
+    function grade_range(int $first, int $last): string
+    {
+        $named = config('white_label.academic.grade_names');
+
+        return match (true)
+        {
+            $first === $last                                    => grade_name($first),
+            isset($named[$first]) || isset($named[$last])       => grade_name($first) . ' – ' . grade_name($last),
+            default                                             => plural('grade') . " {$first}–{$last}",
+        };
+    }
+}
+
+// The grade as used inside a class name
+if (!function_exists('grade_short'))
+{
+    function grade_short(int $gradeNumber): string
+    {
+        return config("white_label.academic.grade_names.{$gradeNumber}") ?? (string) $gradeNumber;
+    }
+}
+
+// Turns 6 and 'A' into "6-A"
+if (!function_exists('class_name'))
+{
+    function class_name(int $gradeNumber, string $section): string
+    {
+        return strtr(config('white_label.academic.class_name'), ['{grade}' => grade_short($gradeNumber), '{section}' => $section]);
+    }
+}
+
+// What class_name() puts before the section
+if (!function_exists('class_prefix'))
+{
