@@ -1,0 +1,79 @@
+.c-datepicker {
+  position: relative;
+  width: 100%;
+}
+.c-datepicker__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.625rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--midnight);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--speed) ease, background-color var(--speed) ease;
+}
+
+.c-datepicker__label--empty {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+/* The browser's popover box styled as a card. The script places it. */
+.c-datepicker__calendar {
+  inset: auto;
+  margin: 0;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--alabaster);
+  background: var(--white);
+  color: var(--midnight);
+  padding: 0.75rem;
+  box-shadow: var(--shadow-lg);
+  width: 20rem;
+  max-width: min(20rem, calc(100vw - 1.5rem));
+  overflow-x: hidden;
+}
+
+.c-datepicker__calendar:popover-open {
+  animation: c-fade-down 160ms ease-out;
+}
+
+.c-datepicker__head {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.c-datepicker__nav {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: transparent;
+  padding: 0.5rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background-color var(--speed) ease;
+}
+
+.c-datepicker__nav--next {
+  justify-self: end;
+}
+
+.c-datepicker__month-year {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+}
