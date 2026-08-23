@@ -1,0 +1,169 @@
+.c-dropdown {
+  position: relative;
+}
+
+.c-dropdown.c-is-open {
+  z-index: var(--z-menu);
+}
+.c-dropdown__text {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+}
+
+.c-dropdown__prefix {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.c-dropdown__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.c-dropdown__placeholder {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.c-dropdown__chevron {
+  flex-shrink: 0;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  color: var(--text-faint);
+  transition: transform var(--speed) ease;
+}
+
+.c-dropdown.c-is-open .c-dropdown__chevron {
+  transform: rotate(180deg);
+}
+
+.c-dropdown__menu {
+  display: none;
+}
+
+.c-dropdown.c-is-open > .c-dropdown__menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-dropdown__menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.c-dropdown__menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.c-dropdown__menu::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--radius-full);
+}
+.c-dropdown__tick {
+  display: none;
+}
+.c-dropdown--default > .c-dropdown__trigger,
+.c-dropdown--time > .c-dropdown__trigger,
+.c-dropdown--tinted > .c-dropdown__trigger,
+.c-dropdown--status > .c-dropdown__trigger,
+.c-dropdown--toolbar > .c-dropdown__trigger,
+.c-dropdown--tick > .c-dropdown__trigger {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  height: 2.625rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--line);
+  background: var(--white);
+  padding: 0 1.125rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--midnight);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--speed) ease, background-color var(--speed) ease;
+}
+
+.c-dropdown--default > .c-dropdown__trigger:hover,
+.c-dropdown--time > .c-dropdown__trigger:hover,
+.c-dropdown--tinted > .c-dropdown__trigger:hover,
+.c-dropdown--status > .c-dropdown__trigger:hover,
+.c-dropdown--toolbar > .c-dropdown__trigger:hover,
+.c-dropdown--tick > .c-dropdown__trigger:hover,
+.c-dropdown--teacher > .c-dropdown__trigger:hover,
+.c-dropdown--small > .c-dropdown__trigger:hover {
+  border-color: color-mix(in srgb, var(--skyblue) 70%, transparent);
+}
+
+.c-dropdown--default.c-is-open > .c-dropdown__trigger,
+.c-dropdown--time.c-is-open > .c-dropdown__trigger,
+.c-dropdown--tinted.c-is-open > .c-dropdown__trigger,
+.c-dropdown--status.c-is-open > .c-dropdown__trigger,
+.c-dropdown--toolbar.c-is-open > .c-dropdown__trigger,
+.c-dropdown--tick.c-is-open > .c-dropdown__trigger,
+.c-dropdown--teacher.c-is-open > .c-dropdown__trigger,
+.c-dropdown--small.c-is-open > .c-dropdown__trigger {
+  border-color: var(--skyblue);
+}
+
+.c-dropdown--default > .c-dropdown__menu,
+.c-dropdown--time > .c-dropdown__menu,
+.c-dropdown--tinted > .c-dropdown__menu,
+.c-dropdown--status > .c-dropdown__menu,
+.c-dropdown--toolbar > .c-dropdown__menu,
+.c-dropdown--tick > .c-dropdown__menu,
+.c-dropdown--teacher > .c-dropdown__menu,
+.c-dropdown--small > .c-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  min-width: 100%;
+  box-sizing: border-box;
+  max-width: calc(100vw - 2rem);
+  max-height: 18rem;
+  z-index: var(--z-menu);
+  overflow-y: auto;
+  gap: 0.25rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--skyblue) 40%, transparent);
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  padding: 0.375rem;
+  white-space: nowrap;
+}
+
+.c-dropdown--default .c-dropdown__option,
+.c-dropdown--time .c-dropdown__option,
+.c-dropdown--tinted .c-dropdown__option,
+.c-dropdown--status .c-dropdown__option,
+.c-dropdown--toolbar .c-dropdown__option,
+.c-dropdown--tick .c-dropdown__option,
+.c-dropdown--teacher .c-dropdown__option,
+.c-dropdown--small .c-dropdown__option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  margin: 0;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--midnight);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color var(--speed) ease;
+}
