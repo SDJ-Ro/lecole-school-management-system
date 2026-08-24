@@ -123,3 +123,130 @@
     chipEl.append(text, remove);
     return chipEl;
   }
+
+ function showMultiValues(root, values)
+  {
+    optionsOf(root).forEach(opt =>
+    {
+      const chosen = values.includes(opt.dataset.value);
+      opt.classList.toggle('c-is-selected', chosen);
+      opt.setAttribute('aria-selected', chosen ? 'true' : 'false');
+    });
+
+    root.querySelector('.j-dropdown-chips').replaceChildren(...values.map(value => chip(root, value)));
+    root.querySelector('.j-dropdown-placeholder').hidden = values.length > 0;
+    root.querySelector('.j-dropdown-hidden-inputs').replaceChildren(...values.map(value =>
+    {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = root.dataset.name;
+      input.value = value;
+      return input;
+    }));
+
+    root.dispatchEvent(new CustomEvent('dropdown:change', { detail: { value: values.join(','), values }, bubbles: true }));
+  }
+
+  // "All" can't be mixed with other choices, and choosing nothing means "All"
+  function allValueOf(root)
+  {
+    return root.querySelector('[data-value="all"], [data-value="All"]')?.dataset.value;
+  }
+
+  function toggleMultiValue(root, value, choose)
+  {
+    const allValue = allValueOf(root);
+    let values = optionsOf(root).filter(opt => opt.classList.contains('c-is-selected')).map(opt => opt.dataset.value);
+    choose = typeof choose === 'boolean' ? choose : !values.includes(value);
+
+    if (value === allValue)
+    {
+      values = choose ? [allValue] : values;
+    }
+    else
+    {
+      values = values.filter(v => v !== allValue && v !== value);
+      if (choose) values.push(value);
+      if (allValue && values.length === 0) values = [allValue];
+    }
+
+    showMultiValues(root, values);
+  }
+
+  document.addEventListener('click', function (e)
+  {
+    const remove = e.target.closest('.j-chip-remove');
+    const trigger = e.target.closest('.c-dropdown__trigger');
+    const option = e.target.closest('.c-dropdown__option');
+
+    // A chip's remove button sits inside the trigger, so it is checked first
+    if (remove)
+    {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleMultiValue(remove.closest('.c-dropdown'), remove.dataset.val, false);
+      return;
+    }
+
+    if (trigger)
+    {
+      e.preventDefault();
+      e.stopPropagation();
+      const root = trigger.closest('.c-dropdown');
+
+      if (root.classList.contains('c-is-open'))
+      {
+        closeAllDropdowns();
+      }
+      else
+      {
+        openDropdown(root);
+      }
+      return;
+    }
+
+    if (option)
+    {
+      e.preventDefault();
+      e.stopPropagation();
+      const root = option.closest('.c-dropdown');
+
+      if (isMulti(root))
+      {
+        toggleMultiValue(root, option.dataset.value);   // The menu stays open so more can be picked
+        return;
+      }
+
+      showSingleValue(root, option);
+      closeAllDropdowns();
+      root.querySelector('.c-dropdown__trigger').focus();
+      root.dispatchEvent(new CustomEvent('dropdown:change', { detail: { value: option.dataset.value, label: labelOf(option), id: root.id }, bubbles: true }));
+
+      root.closest('form[data-submit-on-change]')?.submit();
+      return;
+    }
+
+    closeAllDropdowns();
+  });
+
+  // On a closed menu the arrow keys open it on the chosen option
+  function moveThroughOptions(root, step)
+  {
+    const options = optionsOf(root);
+
+    if (!root.classList.contains('c-is-open'))
+    {
+      openDropdown(root);
+      (options.find(opt => opt.classList.contains('c-is-selected')) || options[0])?.focus();
+      return;
+    }
+
+    const current = options.indexOf(document.activeElement);
+    const next = current === -1 ? 0 : Math.min(options.length - 1, Math.max(0, current + step));
+    options[next]?.focus();
+  }
+
+  document.addEventListener('keydown', function (e)
+  {
+    const root = e.target.closest('.c-dropdown');
+ 
