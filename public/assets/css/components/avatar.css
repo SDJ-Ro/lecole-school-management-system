@@ -1,0 +1,58 @@
+.c-avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--midnight);
+  object-fit: cover;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.c-avatar--light {
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  color: var(--midnight);
+}
+
+.c-avatar--medium {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1rem;
+}
+
+.c-avatar--large {
+  width: 4.5rem;
+  height: 4.5rem;
+  font-size: 1.25rem;
+}
+.c-avatar--row {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+.c-avatar--alabaster {
+  background: var(--alabaster);
+  color: var(--midnight);
+}
+
+.c-avatar--sky {
+  background: var(--skyblue);
+  color: var(--midnight);
+}
+
+.c-avatar--sunshine {
+  background: var(--sunshine);
+}
+
+.c-avatar--terracotta {
+  background: var(--terracotta);
+}
+
+.c-avatar--maroon {
+  background: var(--maroon);
+}
