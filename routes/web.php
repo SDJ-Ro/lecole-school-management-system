@@ -9,10 +9,29 @@ use App\Controllers\LandingController;
 use App\Controllers\AuthController;
 use App\Controllers\CalendarController;
 use App\Controllers\CertificateController;
+use App\Controllers\ChildProfileController;
+use App\Controllers\ComplaintController;
 use App\Controllers\ExtracurricularController;
 use App\Controllers\FeedbackController;
+use App\Controllers\ProfileController;
+use App\Controllers\TermMarkController;
 
 
+    if (feature('calendar'))
+    {
+        foreach (config('permissions.calendar.create') as $role)
+        {
+        }
+    }
+
+
+    // The "Viewing" switch picks which child the whole parent portal shows
+    $router->get('/parent/child-profile', [ChildProfileController::class, 'show']);
+
+    // Leaving needs the parent's approval, so these pages only exist when parent consent is on
+    if (feature('parent_consent'))
+    {
+        $router->get('/parent/approvals', [ApprovalController::class, 'index']);
 
         foreach (config('permissions.leaving.change') as $role)
         {        }
@@ -24,7 +43,7 @@ use App\Controllers\FeedbackController;
     if (feature('feedback'))
     {
         $router->get('/teacher/feedback', [FeedbackController::class, 'teacher']);
-$router->get('/parent/feedback', [FeedbackController::class, 'parent']);
+        $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
         $router->get('/student/feedback', [FeedbackController::class, 'student']);
 
         foreach (config('permissions.feedback.read') as $role)
@@ -32,6 +51,13 @@ $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
         }
     }
 
+    
+    if (feature('complaints'))
+    {
+        $router->get('/parent/complaints', [ComplaintController::class, 'parent']);
+        $router->get('/management/complaints', [ComplaintController::class, 'management']);
+    }
+    
     if (feature('certificates'))
     {
         $router->get('/student/certificates', [CertificateController::class, 'student']);
@@ -58,6 +84,12 @@ $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
             {
             }
         }
+        
+    // Lift or lock a student's Academic Watch
+    foreach (config('permissions.extracurricular.watch') as $role)
+    {
+    }
+}
 
     foreach (config('permissions.settings.edit') as $role)
     {
@@ -80,6 +112,11 @@ $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
         {
             $router->get("/{$role}/achievements", [AchievementController::class, 'staff', $role]);
 
+            $router->get('/teacher/marks', [TermMarkController::class, 'index']);
+        }
+     
+        }
+    }
 
     if (feature('people'))
     {
@@ -95,5 +132,22 @@ $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
         {
             $router->get("/{$role}/students", [PeopleController::class, 'students', $role]);
             $router->get("/{$role}/students/profile", [PeopleController::class, 'studentProfile', $role]);
+        }
+    }
+
+    
+    if (feature('profile'))
+    {
+        foreach (config('app.roles') as $role)
+        {
+            $router->get("/{$role}/profile", [ProfileController::class, 'show', $role]);
+
+            if (config("profile.editable.{$role}") !== [])
+            {
+            }
+
+            if (in_array($role, config('permissions.profile.password'), true))
+            {
+            }
         }
     }
