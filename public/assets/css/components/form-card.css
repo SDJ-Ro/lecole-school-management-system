@@ -1,0 +1,33 @@
+.c-form-card {
+  display: grid;
+  justify-items: start;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.c-form-card__box {
+  justify-self: stretch;
+  overflow: hidden;
+  border: 1px solid var(--line-faint);
+  border-radius: var(--radius-xl);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.c-form-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;   /* with the subtitle's own margin this makes 8px between the lines */
+  padding: 1.5rem 1.75rem;
+  color: var(--midnight);
+}
+
+.c-form-card__header--sky {
+  background: var(--skyblue);
+}
+.c-form-card__header--sunshine {
+  background: var(--sunshine);
+  color: var(--white);
+}
