@@ -1,0 +1,38 @@
+.c-image-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.c-image-picker__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.c-image-picker__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.c-image-picker__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.c-image-picker--box .c-image-picker__preview {
+  width: 100%;
+  height: 7.5rem;
+  border: 2px dashed var(--line-strong);
+  background: color-mix(in srgb, var(--sand) 12%, transparent);
+  transition: border-color var(--speed) ease;
+}
+
+.c-image-picker--box:hover .c-image-picker__preview {
+  border-color: var(--sand);
+}
