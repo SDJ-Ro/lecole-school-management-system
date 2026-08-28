@@ -1,0 +1,29 @@
+.c-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.c-section-header__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--skyblue) 20%, transparent);
+  color: var(--midnight);
+}
+
+.c-section-header__icon--maroon {
+  background: color-mix(in srgb, var(--maroon) 10%, transparent);
+  color: var(--maroon);
+}
+
+.c-section-header__subtitle {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
