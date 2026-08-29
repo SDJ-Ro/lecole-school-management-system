@@ -1,0 +1,62 @@
+/* Keeps the round corners over the footer */
+.c-pop-up--event-editor {
+  overflow: hidden;
+}
+
+.c-event-form {
+  background: var(--white);
+}
+
+.c-event-form__body {
+  gap: 1.25rem;
+}
+
+.c-event-form__footer {
+  justify-content: space-between;
+}
+
+.c-event-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.c-event-form__parallel-box {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.c-event-form__parallel-label {
+  font-size: 0.8125rem;
+  color: var(--midnight);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.c-event-editor__delete-btn {
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-weight: 600;
+  cursor: pointer;
+}
+.c-time-range-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.c-time-range-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.c-time-range-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
