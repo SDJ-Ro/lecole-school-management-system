@@ -8,6 +8,41 @@ use Core\Model;
 
 class UserModel extends Model
 {
+    // Also returns the minutes left on a lock and the minutes since the last wrong password
+    public function findByIdentifier(string $identifier): ?array
+    {
+        $statement = $this->db->prepare(
+            'SELECT *, COALESCE(CEIL(TIMESTAMPDIFF(SECOND, NOW(), lock_expires_at) / 60), 0) AS minutes_locked,
+                    TIMESTAMPDIFF(MINUTE, last_failed_at, NOW()) AS minutes_since_failed
+             FROM user_accounts
+             WHERE identifier = :identifier
+             LIMIT 1'
+        );
+        $statement->execute(['identifier' => $this->normalise($identifier)]);
+
+        return $statement->fetch() ?: null;
+    }
+
+    public function recordSuccessfulLogin(int $accountId): void
+    {
+        $statement = $this->db->prepare(
+            'UPDATE user_accounts
+             SET failed_login_count = 0, lock_expires_at = NULL, last_login_at = NOW()
+             WHERE id = :id'
+        );
+        $statement->execute(['id' => $accountId]);
+    }
+
+    public function findProfile(int $accountId): ?array
+    {
+        $statement = $this->db->prepare(
+            'SELECT first_name, last_name, full_name, personal_email, photo_url FROM profiles WHERE account_id = :id'
+        );
+        $statement->execute(['id' => $accountId]);
+
+        return $statement->fetch() ?: null;
+    }
+
     // A student's mail goes to their primary parent
     // Anyone else's goes to their personal email, or else their sign-in email
     public function emailFor(array $account): ?string
