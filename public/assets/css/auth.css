@@ -1,0 +1,253 @@
+.auth-shell {
+  min-height: 100vh;
+}
+
+.auth-visual {
+  display: none;   /* No photo on phones */
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--deepsea);
+}
+
+/* The photos sit on top of each other and only the active one shows */
+.auth-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.auth-visual img.is-active {
+  opacity: 1;
+}
+
+.auth-visual-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, color-mix(in srgb, var(--deepsea) 85%, transparent), color-mix(in srgb, var(--deepsea) 10%, transparent) 60%, transparent);
+}
+
+.auth-visual-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 2.5rem;
+  color: var(--white);
+}
+
+.auth-visual-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-xl);
+  background: var(--white);
+  color: var(--midnight);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-visual-eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--skyblue);
+}
+
+.auth-visual-headline {
+  max-width: 26rem;
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--deepsea) 40%, transparent));
+}
+
+.auth-visual-copyright {
+  margin: 2rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+}
+
+.auth-form-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 5rem 1.25rem 2.5rem;   /* Extra top space for the back button */
+}
+
+.auth-form-col {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.auth-back-btn {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: var(--z-raised);
+}
+
+@media (min-width: 640px) {
+  .auth-form-section {
+    padding: 3.5rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 0.88fr);
+  }
+
+  .auth-visual {
+    display: block;
+  }
+
+  .auth-back-btn {
+    top: 2rem;
+    left: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .auth-visual-inner {
+    padding: 3.5rem 4rem;
+  }
+
+  .auth-visual-headline {
+    font-size: 2.25rem;
+  }
+}
+
+.auth-eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--flameorange);
+}
+
+.auth-title {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.auth-desc {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  color: var(--text-soft);
+}
+
+@media (min-width: 640px) {
+  .auth-title {
+    font-size: 2.25rem;
+  }
+}
+
+.auth-role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 2rem;
+}
+
+.auth-role {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--alabaster);
+  border-radius: var(--radius-xl);
+  background: var(--white);
+  transition: border-color var(--speed) ease, box-shadow var(--speed) ease;
+}
+
+.auth-role:hover {
+  border-color: var(--deepsea);
+  box-shadow: var(--shadow-md);
+}
+
+.auth-role-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-lg);
+}
+
+.auth-role-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-role-name {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.auth-role-tagline {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  color: var(--text-faint);
+}
+
+.auth-role > .c-icon {
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+  color: var(--text-faint);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.75rem;
+}
+
+.auth-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--skyblue) 30%, transparent);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--skyblue) 10%, transparent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.auth-notice p {
+  margin: 0;
+}
+
+/* It sits outside the form, so it needs its own space above */
+.auth-notice--top {
+  margin-top: 1.5rem;
+}
+
+.auth-notice-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-lg);
+  background: var(--midnight);
+  color: var(--white);
+}
+
