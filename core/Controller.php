@@ -198,6 +198,27 @@ abstract class Controller
         return is_string($value) ? mb_substr($value, 0, 255) : '';
     }
 
+    protected function postList(string $key): array
+    {
+        $values = $_POST[$key] ?? [];
+
+        return is_array($values) ? array_values(array_filter($values, 'is_string')) : [];
+    }
+
+    // Deletes the new uploads if the save fails, then rethrows
+    protected function keepingUploads(callable $save, array $newUploads): mixed
+    {
+        try
+        {
+            return $save();
+        }
+        catch (\Throwable $error)
+        {
+            array_map([Upload::class, 'forget'], $newUploads);
+            throw $error;
+        }
+    }
+
     protected function sendJson(array $data, int $statusCode = 200): never
     {
         http_response_code($statusCode);
