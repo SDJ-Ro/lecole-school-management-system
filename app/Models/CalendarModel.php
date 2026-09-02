@@ -51,6 +51,40 @@ class CalendarModel extends Model
                 . ' ORDER BY type, name', $ownOnly ? $user['id'] : null),
         ];
     }
+    
+    public function save(?int $id, array $event, array $scopes): int
+    {
+        return $this->transaction(function () use ($id, $event, $scopes): int
+        {
+            if ($id === null)
+            {
+                $columns = implode(', ', array_keys($event));
+                $holders = ':' . implode(', :', array_keys($event));
+                $this->db->prepare("INSERT INTO events ({$columns}) VALUES ({$holders})")->execute($event);
+                $id = (int) $this->db->lastInsertId();
+            }
+            else
+            {
+                $sets = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($event)));
+                $this->db->prepare("UPDATE events SET {$sets} WHERE id = :id")->execute($event + ['id' => $id]);
+                $this->db->prepare('DELETE FROM event_scopes WHERE event_id = :id')->execute(['id' => $id]);
+            }
+
+            $insert = $this->db->prepare('INSERT INTO event_scopes (event_id, scope_type, scope_id) VALUES (:event, :type, :scope)');
+
+            foreach ($scopes as [$type, $scopeId])
+            {
+                $insert->execute(['event' => $id, 'type' => $type, 'scope' => $scopeId]);
+            }
+
+            return $id;
+        });
+    }
+
+    public function delete(int $id): void
+    {
+        $this->db->prepare('DELETE FROM events WHERE id = :id')->execute(['id' => $id]);   // The database deletes its groups too
+    }
 
     // Everyone sees events for their role that are for the whole school or one of their groups
     // Teachers also see every event for their own groups, and the events they made
