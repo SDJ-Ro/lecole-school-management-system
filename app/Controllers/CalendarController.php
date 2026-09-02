@@ -95,3 +95,74 @@ class CalendarController extends Controller
 
         $this->done('Event deleted.', $user, $event['event_date']);
     }
+
+       private function guard(string $role): array
+    {
+        $user = $this->requireRole($role);
+
+        return $user;
+    }
+
+    // An event they can't see gets 404, and one they can see but not change gets 403
+    private function manageable(array $user, int $id): array
+    {
+        $event = (new CalendarModel())->findFor($user, $id);
+
+
+        return $event;
+    }
+
+    private function checkedForm(): array
+    {
+        $data = [];
+
+        foreach (array_keys(self::RULES) as $field)
+        {
+            $data[$field] = $this->postText($field, 1000);
+        }
+
+        $data['start_time'] = $this->joinedTime('start');
+        $data['end_time']   = $this->joinedTime('end');
+
+
+        
+        return $data;
+    }
+
+    // Joins the hour and minute boxes into a time like "09:30"
+    // Returns an empty string when no hour was chosen
+    private function joinedTime(string $which): string
+    {
+        $hour = $this->postText("{$which}_hour", 2);
+
+        return $hour === '' ? '' : $hour . ':' . $this->postText("{$which}_minute", 2);
+    }
+
+    // Only the groups this user was offered, each as a type and an id
+    private function picked(string $field, string $type, array $offered): array
+    {
+        $ids = array_unique(array_map('intval', $this->postList($field)));
+
+        return array_values(array_map(fn (int $id): array => [$type, $id], array_filter($ids, fn (int $id): bool => isset($offered[$id]))));
+    }
+
+    // Choosing "all", or nothing, means every role this role may write to
+    private function audience(string $role): array
+    {
+        $offered = config("calendar.audience.{$role}");
+        $picked  = array_intersect($this->postList('audience'), $offered);
+
+        return in_array('all', $picked, true) || $picked === [] ? array_values(array_diff($offered, ['all'])) : array_values($picked);
+    }
+
+    // The 'only' field limits the events to one club or sport page
+    private function done(string $message, array $user, string $date): never
+    {
+        $only = preg_match('/^extracurricular:\d+$/', $this->postText('only', 30)) ? $this->postText('only', 30) : '';
+
+        $this->sendJson(['ok' => true, 'message' => $message, 'events' => CalendarFeed::around($user, $only), 'date' => $date]);
+    }
+
+    private function fail(string $message, array $errors = [], array $extra = [], int $status = 422): never
+    {
+        $this->sendJson(['ok' => false, 'message' => $message, 'errors' => $errors] + $extra, $status);        
