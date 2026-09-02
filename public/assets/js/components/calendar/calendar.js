@@ -113,3 +113,82 @@
         daysEl.appendChild(blankCell());
       }
     }
+    
+    function blankCell()
+    {
+      const blank = document.createElement('span');
+      blank.className = 'c-calendar__day-blank';
+      blank.setAttribute('aria-hidden', 'true');
+      return blank;
+    }
+
+    // Empty when this role's page doesn't have that template
+    function fromTemplate(id)
+    {
+      const template = document.getElementById(id);
+      return template ? template.content.cloneNode(true) : null;
+    }
+
+    function dayEvents()
+    {
+      return eventsOn(state.selectedDate);   // The server already sorts them, all-day events first, then by start time
+    }
+
+    function countText(count)
+    {
+      return `${count} event${count === 1 ? '' : 's'} scheduled`;
+    }
+
+    function fill(el, text)
+    {
+      el.textContent = text;
+      el.hidden = !text;
+    }
+
+    function renderDay()
+    {
+      const detailEl = document.getElementById('j-calendar-day-detail');
+      const events = dayEvents();
+
+      document.getElementById('j-calendar-event-count').textContent = countText(events.length);
+      document.getElementById('j-open-day-schedule').hidden = events.length === 0;
+
+      const list = document.createElement('div');
+      list.className = 'c-calendar__day-events';
+
+      // Events can only be added from today on. Only staff pages have the "Add event" template.
+      const isPast = formatIsoDate(state.selectedDate) < window.schoolToday;
+      const addButton = isPast ? null : fromTemplate('tmpl-calendar-add-btn');
+
+      if (events.length === 0)
+      {
+        const empty = fromTemplate(addButton ? 'tmpl-calendar-empty-short' : 'tmpl-calendar-empty');
+        empty.querySelector('.j-calendar-empty-date').textContent = formatDate(state.selectedDate);
+        list.appendChild(empty);
+      }
+
+      events.forEach(ev =>
+      {
+        const card = fromTemplate('tmpl-calendar-card');
+        card.querySelector('article').dataset.eventId = ev.id;
+        card.querySelector('article').classList.toggle('c-day-event-card--modifiable', ev.canDelete);   // Makes room for the edit and delete buttons
+        card.querySelector('.j-card-eyebrow').textContent = `${formatDate(state.selectedDate)} · ${ev.time}`;
+        card.querySelector('.j-card-title').textContent = ev.title;
+        fill(card.querySelector('.j-card-details'), ev.details);
+        fill(card.querySelector('.j-card-badge'), ev.audienceLabel);
+        card.querySelector('.j-card-actions').hidden = !ev.canDelete;
+        card.querySelector('.j-card-edit').hidden = !ev.canEdit;   // Past events can only be deleted, not edited
+        list.appendChild(card);
+      });
+
+      if (addButton)
+      {
+        list.appendChild(addButton);
+      }
+      else if (events.length > 0)
+      {
+        list.appendChild(fromTemplate('tmpl-calendar-no-more'));
+      }
+
+      detailEl.replaceChildren(list);
+    }
