@@ -191,6 +191,56 @@ class PeopleAddController extends PeopleController
 
         $this->sendJson(['ok' => true, 'html' => $html, 'message' => $message]);
     }
+    //203-250
+       // Each field's label, and whether it is required
+    private function fields(string $tab): array
+    {
+        $boxes = $tab === 'guardian' ? config('people.guardian') : array_merge(...array_map(
+            fn (array $section): array => is_array($section[1]) ? $section[1] : [],
+            config("people.add.{$tab}")
+        ));
+        $fields = [];
+
+        foreach ($boxes as $box)
+        {
+            $fields[$box[0]] = [words($box[1]), str_contains($box[2] ?? '', 'required')];
+        }
+
+        return $fields;
+    }
+
+    // Returns the values and a list of problems
+    // $instead replaces some typed values, and $typed keeps what was typed
+    private function check(array $fields, string $prefix, string $role, PeopleModel $people, array &$typed, array $instead = []): array
+    {
+        $values = [];
+
+        foreach (array_keys($fields) as $field)
+        {
+            if (config('people.fields')[$field][0] !== 'photo')
+            {
+                $typed['values'][$prefix . $field] = $this->postText($prefix . $field, 1000);
+                $values[$field]                    = $instead[$field] ?? $typed['values'][$prefix . $field];
+            }
+        }
+
+        $labels   = array_map(fn (array $field): string => $field[0], $fields);
+        $required = array_keys(array_filter($fields, fn (array $field): bool => $field[1]));
+        $problems = Validator::check($values, PersonFields::rules(array_keys($values), $required), $labels)
+            ?: PersonFields::problems($role, 0, $values, $people, $this->postText("{$prefix}age_unlocked", 1) === '1');
+
+        return [$values, array_values($problems)];
+    }
+
+    // Splits the values into profile columns and role details
+    // Empty boxes are saved as null
+    private function split(array $values): array
+    {
+        $columns = array_map(fn (string $value): ?string => $value === '' ? null : $value, $values);
+        $profile = array_intersect_key($columns, array_flip(PeopleModel::PROFILE_COLUMNS));
+
+        return [$profile, array_diff_key($columns, $profile)];
+    }
 
     // 253–289
      private function sections(string $tab, array $values): array
@@ -229,7 +279,35 @@ class PeopleAddController extends PeopleController
 
         return $boxes;
     }
+ // Sends one email for each person added
+    // Staff get it at their personal email
+    // A student's goes to their parent, and also covers the parent's own account when the parent is new
+    // It holds no password, because they choose one on the sign-up page
+    private function welcome(array $person, bool $newParent = false): bool
+    {
+        $school  = school('name') . ' ' . word('institution');
+        $account = fn (array $who, string $title): array => ['title' => $title, 'fullName' => $who['full_name'], 'identifier' => $who['identifier'],
+            'url' => config('app.url') . "/auth/{$who['role']}/signup"];
 
+        if ($person['role'] !== 'student')
+        {
+            return Mailer::send((string) $person['personal_email'], "{$school} — Your account is ready", 'welcome', [
+                'name'     => $person['first_name'],
+                'intro'    => 'Your ' . strtolower(word($person['role'])) . " account at {$school} is ready to be set up.",
+                'accounts' => [$account($person, 'Your account')],
+            ]);
+        }
+
+        $parent = (new PeopleModel())->find((int) $person['parents'][0]['id']);
+        $child  = $account($person, "{$person['first_name']}'s " . strtolower(word('student')) . ' account');
+
+        return Mailer::send($parent['identifier'], "{$school} — {$person['full_name']} enrolled", 'welcome', [
+            'name'     => $parent['first_name'],
+            'intro'    => $newParent
+                ? "{$person['full_name']} has been enrolled at {$school}. Your " . strtolower(word('parent')) . " account and {$person['first_name']}'s account are ready to be set up."
+                : "{$person['full_name']} has been enrolled at {$school} and linked to your account. Your own sign-in stays the same; only {$person['first_name']}'s account needs setting up.",
+            'accounts' => $newParent ? [$account($parent, 'Your ' . strtolower(word('parent')) . ' account'), $child] : [$child],
+        ]);
     //319–320
     }
 }
