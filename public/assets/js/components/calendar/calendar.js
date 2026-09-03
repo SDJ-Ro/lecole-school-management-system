@@ -113,7 +113,7 @@
         daysEl.appendChild(blankCell());
       }
     }
-    
+
     function blankCell()
     {
       const blank = document.createElement('span');
@@ -192,3 +192,155 @@
 
       detailEl.replaceChildren(list);
     }
+    
+    function openDaySchedule()
+    {
+      const events = dayEvents();
+      const longDate = formatDate(state.selectedDate, true, true);
+      const listEl = document.getElementById('j-day-schedule-list');
+
+      document.getElementById('j-day-schedule-title').textContent = longDate;
+      document.getElementById('j-day-schedule-description').textContent = `${countText(events.length)} for this day.`;
+      document.getElementById('j-day-schedule-empty').hidden = events.length > 0;
+      document.getElementById('j-day-schedule-empty-text').textContent = `${longDate} is clear.`;
+
+      listEl.replaceChildren(...events.map(ev =>
+      {
+        const item = fromTemplate('tmpl-day-schedule-item');
+        item.querySelector('li').dataset.eventId = ev.id;
+        item.querySelector('.j-schedule-item-time').textContent = ev.time;
+        item.querySelector('.j-schedule-item-title').textContent = ev.title;
+        fill(item.querySelector('.j-schedule-item-category'), ev.category);
+        item.querySelector('.j-schedule-edit').hidden = !ev.canEdit;
+        item.querySelector('.j-schedule-delete').hidden = !ev.canDelete;
+        item.querySelector('.j-schedule-item-details-text').textContent = ev.details;
+        item.querySelector('.j-schedule-item-details').hidden = !ev.details;
+        item.querySelector('.j-schedule-item-meta').hidden = false;
+        fill(item.querySelector('.j-schedule-item-badge'), ev.audienceLabel);
+        fill(item.querySelector('.j-schedule-item-author'), ev.authorLabel);
+        return item;
+      }));
+
+      window.openPopUp('j-day-schedule');
+    }
+
+    function renderHeader()
+    {
+      const month = state.viewDate.getMonth();
+      const year = state.viewDate.getFullYear();
+
+      window.setDropdownValue('j-select-month', String(month));
+      window.setDropdownValue('j-select-year', String(year));
+      document.getElementById('j-calendar-prev').disabled = year === firstYear && month === 0;
+      document.getElementById('j-calendar-next').disabled = year === lastYear && month === 11;
+    }
+
+    function showMonth(year, month)
+    {
+      state.viewDate = new Date(year, month, 1);
+      state.selectedDate = state.viewDate;
+      chooseDayWithEvents();
+      refresh();
+    }
+
+    function refresh()
+    {
+      renderHeader();
+      renderGrid();
+      renderDay();
+    }
+
+    document.getElementById('j-calendar-prev').addEventListener('click', () =>
+    {
+      showMonth(state.viewDate.getFullYear(), state.viewDate.getMonth() - 1);
+    });
+
+    document.getElementById('j-calendar-next').addEventListener('click', () =>
+    {
+      showMonth(state.viewDate.getFullYear(), state.viewDate.getMonth() + 1);
+    });
+
+    document.getElementById('j-select-month').addEventListener('dropdown:change', (e) =>
+    {
+      showMonth(state.viewDate.getFullYear(), Number(e.detail.value));
+    });
+
+    document.getElementById('j-select-year').addEventListener('dropdown:change', (e) =>
+    {
+      showMonth(Number(e.detail.value), state.viewDate.getMonth());
+    });
+
+    document.getElementById('j-calendar-days').addEventListener('click', (e) =>
+    {
+      const day = e.target.closest('.c-calendar__day');
+      if (!day) return;
+      state.selectedDate = new Date(state.viewDate.getFullYear(), state.viewDate.getMonth(), Number(day.dataset.day));
+      renderGrid();
+      renderDay();
+    });
+
+    document.getElementById('j-open-day-schedule').addEventListener('click', openDaySchedule);
+
+    // A click elsewhere on a card opens "View all"
+    document.getElementById('j-calendar-day-detail').addEventListener('click', (e) =>
+    {
+      const card = e.target.closest('[data-event-id]');
+      const ev = card ? state.events.find(item => String(item.id) === card.dataset.eventId) : null;
+
+      if (e.target.closest('.j-card-edit'))
+      {
+        window.calendarEditor.open(ev);
+      }
+      else if (e.target.closest('.j-card-delete'))
+      {
+        window.calendarEditor.remove(ev);
+      }
+      else if (e.target.closest('.j-open-event-editor-btn'))
+      {
+        window.calendarEditor.open(null);
+      }
+      else if (card)
+      {
+        openDaySchedule();
+      }
+    });
+
+    // Close "View all" first, then the editor takes over
+    document.getElementById('j-day-schedule-list').addEventListener('click', (e) =>
+    {
+      const item = e.target.closest('[data-event-id]');
+      const ev = item ? state.events.find(entry => String(entry.id) === item.dataset.eventId) : null;
+      const edit = e.target.closest('.j-schedule-edit');
+      if (!ev || !(edit || e.target.closest('.j-schedule-delete'))) return;
+
+      window.closePopUp('j-day-schedule');
+      if (edit)
+      {
+        window.calendarEditor.open(ev);
+      }
+      else
+      {
+        window.calendarEditor.remove(ev);
+      }
+    });
+
+    window.calendarApi = {
+      selectedDate: () => state.selectedDate,
+      formatIsoDate: formatIsoDate,
+      formatDate: formatDate,
+
+      // After a save or delete, show the event's day
+      setEvents: function (list, dateText)
+      {
+        setEvents(list);
+        state.selectedDate = parseDate(dateText);
+        state.viewDate = new Date(state.selectedDate.getFullYear(), state.selectedDate.getMonth(), 1);
+        refresh();
+      }
+    };
+
+    setEvents(JSON.parse(calendarEl.dataset.events));
+    chooseDayWithEvents();
+    refresh();
+  });
+})();
