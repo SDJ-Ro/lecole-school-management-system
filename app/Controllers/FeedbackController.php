@@ -63,6 +63,95 @@ class FeedbackController extends Controller
         $this->page('student/feedback', $user, $this->board($cards, true));
     }
 
+    // POST /teacher/feedback/save
+    public function save(): never
+    {
+        $user    = $this->requireRole('teacher');
+        $back    = '/teacher/feedback';
+        $lengths = config('feedback.lengths');
+
+        
+        // Text longer than allowed is read in full, so it is refused with a message instead of being cut off
+        $sent = [
+            'student'  => $this->postText('student', 11),
+            'audience' => $this->postText('audience', 10),
+            'type'     => $this->postText('type', 20),
+            'subject'  => $this->postText('subject', $lengths['subject']),
+            'title'    => $this->postText('title', $lengths['title'] + 1),
+            'content'  => $this->postText('content', $lengths['message'] + 1),
+        ];
+
+        $errors = Validator::check($sent, [
+            'student'  => 'required',
+            'audience' => 'required|in:' . implode(',', array_keys(config('feedback.audiences'))),
+            'type'     => 'required|in:' . implode(',', array_keys(config('feedback.types'))),
+            'subject'  => 'required',
+            'title'    => "required|max:{$lengths['title']}",
+            'content'  => "required|max:{$lengths['message']}",
+        ], ['student' => word('student'), 'type' => 'Feedback category', 'title' => 'Feedback title / topic', 'content' => 'Feedback content']);
+
+        
+        // Only students in their own class this year
+        // An unknown id and someone else's student get the same answer
+        $model    = new FeedbackModel();
+        $students = array_column($model->students($user['id']), 'name', 'id');
+        $student  = (int) $sent['student'];
+
+        
+        $model->add([
+            'student_id'  => $student,
+            'school_year' => (new SchoolYear())->current(),
+            'teacher_id'  => $user['id'],
+            'kind'        => $sent['type'],
+            'audience'    => $sent['audience'],
+            'subject'     => $sent['subject'],
+            'title'       => $sent['title'],
+            'message'     => $sent['content'],
+        ]);
+
+        $this->log($user, 'FEEDBACK_SENT', "{$sent['title']} ({$students[$student]}, {$sent['type']}, for: {$sent['audience']})");
+        // Notify exactly who can read it
+        match ($sent['audience'])
+        {
+            'student' => Notify::studentsOnly([$student], "New feedback: {$sent['title']}.", 'feedback'),
+            'parent'  => Notify::parents([$student], "New feedback: {$sent['title']}.", 'feedback'),
+            default   => Notify::students([$student], "New feedback: {$sent['title']}.", 'feedback'),
+        };
+        $this->setFlash('notice', "Feedback sent to {$students[$student]}.");
+        $this->redirect($back);
+    }
+
+    // POST /teacher/feedback/delete. Teachers can only delete their own
+    // Someone else's and an unknown id get the same answer
+    // The Audit Log keeps a copy of what it was
+    public function delete(): never
+    {
+        $user     = $this->requireRole('teacher');
+        $back     = '/teacher/feedback';
+        $model    = new FeedbackModel();
+        $feedback = can('feedback.write') ? $model->writtenBy((int) $this->postText('id', 11), $user['id']) : null;
+
+        
+        $model->delete($feedback['id']);
+
+        $this->log($user, 'FEEDBACK_DELETED', "{$feedback['title']} ({$feedback['student_name']}): {$feedback['message']}");
+        $this->setFlash('notice', 'Feedback deleted.');
+        $this->redirect($back);
+    }
+
+    // POST /{role}/feedback/read, answers with JSON
+    // Feedback this person may not read and an unknown id get the same answer
+    public function read(string $role): never
+    {
+        $user       = $this->requireRole($role);
+        $model      = new FeedbackModel();
+        $studentIds = $role === 'parent' ? array_keys($this->children($user)) : [$user['id']];
+        $feedback   = can('feedback.read') ? $model->find((int) $this->postText('id', 11), $role, $studentIds) : null;
+
+        $model->markRead($feedback['id'], $role);
+        $this->sendJson(['ok' => true, 'message' => '']);
+    }
+
     // Each page adds its own 'to', 'readUrl' and 'mine' values
     private function card(array $row): array
     {
