@@ -17,6 +17,15 @@ class FeedbackModel extends Model
 
     private const READ_COLUMN = ['student' => 'student_read_at', 'parent' => 'parent_read_at'];
 
+    public function add(array $values): int
+    {
+        $statement = $this->db->prepare('INSERT INTO feedback (' . implode(', ', self::COLUMNS) . ')
+            VALUES (:' . implode(', :', self::COLUMNS) . ')');
+        $statement->execute(array_intersect_key($values, array_flip(self::COLUMNS)));
+
+        return (int) $this->db->lastInsertId();
+    }
+
     public function sentBy(int $teacherId): array
     {
         return $this->rows('f.teacher_id = :id', $teacherId);
@@ -47,6 +56,20 @@ class FeedbackModel extends Model
     public function writtenBy(int $id, int $teacherId): ?array
     {
         return $this->rows('f.id = :id AND f.teacher_id = :teacher', $id, $teacherId)[0] ?? null;
+    }
+
+    // Keeps the first time it was opened
+    public function markRead(int $id, string $reader): void
+    {
+        $column = self::READ_COLUMN[$reader];   // The column name never comes from a form
+
+        $this->db->prepare("UPDATE feedback SET {$column} = NOW() WHERE id = :id AND {$column} IS NULL")->execute(['id' => $id]);
+    }
+
+    // The caller first checks with writtenBy() that it is the teacher's own
+    public function delete(int $id): void
+    {
+        $this->db->prepare('DELETE FROM feedback WHERE id = :id')->execute(['id' => $id]);
     }
 
     // The only students a class teacher may write to
