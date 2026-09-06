@@ -111,3 +111,136 @@
     ['j-end-hour', 'j-end-minute'].forEach(id => byId(id).addEventListener('dropdown:change', timesAreValid));
 
     // ev is empty for a new event
+    function open(ev)
+    {
+      editing = ev;
+      const category = ev ? ev.category : firstCategory;
+      const date = ev ? ev.date : window.calendarApi.selectedDate();
+      const scopes = ev ? ev.scopes : [];
+      const ids = (type) => scopes.filter(s => s.type === type).map(s => String(s.id));
+
+      byId('j-event-editor-title').textContent = ev ? 'Edit Event' : 'Add Event';
+      byId('j-event-form-submit-label').textContent = ev ? 'Save Changes' : 'Save Event';
+      byId('j-event-editor-eyebrow').textContent = window.calendarApi.formatDate(date, true);
+      byId('j-event-editor-delete-btn').hidden = !ev;
+
+      byId('j-field-id').value = ev ? ev.id : '';
+      byId('j-field-date').value = window.calendarApi.formatIsoDate(date);
+      byId('j-field-title').value = ev ? ev.title : '';
+      byId('j-field-details').value = ev ? ev.details : '';
+
+      window.setDropdownValue('j-field-category', category);
+      showScopeFor(category);
+      showAcademicLevel(ids('class').length > 0 ? 'class' : 'grade');      window.setDropdownMultiValues('j-select-academic-grades', ids('grade'));
+      window.setDropdownMultiValues('j-select-academic-classes', ids('class'));
+      window.setDropdownMultiValues('j-select-extracurriculars', ids('extracurricular'));
+      window.setDropdownMultiValues('j-field-audience', ev ? ev.audience : (category === 'General' ? ['all'] : ['student', 'parent']));
+
+      setTime('start', ev ? ev.start : '');      if (ev && ev.end)
+      {
+        setTime('end', ev.end);
+      }
+      else
+      {
+        endOneHourLater();
+      }
+      showTimes();
+
+      clearMessages();
+      resetParallel();
+      window.openPopUp(popUp);
+    }
+
+    // An answer that is not JSON usually means the user was signed out, so reload to show the sign-in page
+    function send(url, data)
+    {
+      const only = document.getElementById('j-calendar').dataset.only;   // A programme's page only gets its own events back
+
+      if (only) data.append('only', only);
+
+      return fetch(url, { method: 'POST', body: data, headers: { Accept: 'application/json' } })
+        .then(res => res.json())
+        .catch(() =>
+        {
+          window.location.reload();
+          return null;
+        });
+    }
+
+    function done(answer)
+    {
+      window.closePopUp(popUp);
+      window.calendarApi.setEvents(answer.events, answer.date);
+      window.showFeedbackBanner(answer.message);
+    }
+
+    form.addEventListener('submit', (e) =>
+    {
+      e.preventDefault();
+      clearMessages();
+
+      const titleMissing = byId('j-field-title').value.trim() === '';
+      byId('j-field-title-error').hidden = !titleMissing;
+      if (!timesAreValid() || titleMissing) return;
+
+      const submitBtn = form.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+
+      send(form.action, new FormData(form)).then(answer =>
+      {
+        submitBtn.disabled = false;
+        if (!answer) return;
+
+        if (answer.ok)
+        {
+          done(answer);
+        }
+        else if (answer.clash)
+        {
+          // A clash is only a warning. Ticking "Allow parallel schedule" and saving again lets it through.
+          const warning = byId('j-event-form-warning-banner');
+          warning.textContent = answer.message;
+          warning.hidden = false;
+          byId('j-parallel-container').hidden = false;
+          warning.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        else
+        {
+          showError(answer.message);
+          byId('j-field-title-error').hidden = !answer.errors.title;
+        }
+      });
+    });
+
+    function remove(ev)
+    {
+      window.askQuestion({
+        title: `Delete '${ev.title}'?`,
+        text: 'This event will be permanently removed from the school calendar schedule.',
+        button: 'Delete Event',
+        icon: 'trash',
+        tone: 'danger',
+        onConfirm: () =>
+        {
+          const data = new FormData();
+          data.append('_csrf_token', form.querySelector('[name="_csrf_token"]').value);
+          data.append('id', ev.id);
+
+          // A refused delete changes nothing. The buttons only show for events this user may delete.
+          send(form.dataset.deleteUrl, data).then(answer =>
+          {
+            if (answer?.ok) done(answer);
+          });
+        }
+      });
+    }
+
+    byId('j-event-editor-delete-btn').addEventListener('click', () =>
+    {
+      window.closePopUp(popUp);
+      remove(editing);
+    });
+
+    window.calendarEditor = { open: open, remove: remove };
+  });
+})();
