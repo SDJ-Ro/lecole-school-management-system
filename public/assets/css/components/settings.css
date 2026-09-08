@@ -1,0 +1,35 @@
+.c-settings__logo-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+}
+.c-settings__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.c-settings__logo-image {
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+}
+
+.c-settings__logo-change {
+  display: none;
+}
+.c-settings__actions {
+  display: none;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+[data-editing="true"] .c-settings__logo-change {
+  display: inline-flex;
+}
+
+[data-editing="true"] .c-settings__actions {
+  display: flex;
+}
