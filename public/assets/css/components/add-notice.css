@@ -1,0 +1,36 @@
+.c-add-notice__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.75rem;
+}
+
+.c-add-notice__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1.5rem;
+}
+
+.c-add-notice__wide {
+  grid-column: 1 / -1;
+}
+.c-add-notice__trip {
+  display: none;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.c-add-notice__permission:has(input[name="permission"]:checked) .c-add-notice__trip {
+  display: grid;
+}
+.c-add-notice__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--skyblue) 30%, transparent);
+  padding-top: 1.25rem;
+}
