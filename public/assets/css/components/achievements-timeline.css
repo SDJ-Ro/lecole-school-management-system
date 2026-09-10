@@ -1,0 +1,53 @@
+.c-timeline--panel {
+  padding: 1.25rem 1.5rem;
+}
+.c-timeline__heading {
+  margin-bottom: 1.75rem;
+}
+
+.c-timeline--panel .c-timeline__heading {
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--frost);
+  padding-bottom: 0.875rem;
+}
+.c-timeline__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.c-timeline__filter {
+  border: 1px solid var(--pewter);
+  border-radius: var(--radius-full);
+  padding: 0.4rem 1rem;
+  background: var(--white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--iron);
+  transition: border-color var(--speed) ease, background-color var(--speed) ease, color var(--speed) ease;
+}
+
+.c-timeline__filter:hover {
+  border-color: var(--midnight);
+  color: var(--midnight);
+}
+
+.c-timeline__filter[aria-pressed="true"] {
+  border-color: var(--midnight);
+  background: var(--midnight);
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+}
+.c-timeline__year {
+  margin-bottom: 1.75rem;
+}
+
+.c-timeline__year:last-of-type {
+  margin-bottom: 0;
+}
+
+.c-timeline__year:not(:has(.c-timeline__item:not([hidden]))) {
+  display: none;
+}
