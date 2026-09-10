@@ -1,0 +1,28 @@
+.c-evidence__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.75rem;
+}
+.c-evidence__title {
+  margin: 0;
+}
+
+.c-evidence__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1.75rem;
+}
+
+.c-evidence__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--sand) 40%, transparent);
+  color: var(--umber);
+}
