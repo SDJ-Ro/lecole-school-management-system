@@ -1,0 +1,32 @@
+.c-pop-up--record-achievement,
+.c-pop-up--review-issue {
+  max-width: 38rem;
+  max-height: calc(100vh - 1rem);
+}
+
+.c-pop-up--record-achievement .c-pop-up__header,
+.c-pop-up--review-issue .c-pop-up__header {
+  border-bottom: 0;
+  background: transparent;
+}
+
+.c-pop-up--record-achievement .c-pop-up__icon-badge {
+  border: 0;
+  background: color-mix(in srgb, var(--white) 65%, transparent);
+}
+
+.c-pop-up--review-issue .c-pop-up__icon-badge {
+  border: 0;
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.c-record-form {
+  gap: 1.125rem;   /* a white strip between the fields and the footer */
+}
+
+.c-record-form__issue {
+  gap: 0.625rem;
+  margin-bottom: 0.25rem;
+  padding: 0.875rem 1rem;
+  line-height: 1.45;
+}
