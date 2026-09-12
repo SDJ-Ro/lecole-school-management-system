@@ -153,3 +153,121 @@ class PeopleModel extends Model
 
         return [$rows->fetchAll(), (int) $count->fetchColumn()];
     }
+    
+// The extra lists shown on one page of the directory, such as a student's programmes or a parent's children
+    public function rowLists(string $role, array $ids): array
+    {
+        $lists = array_fill_keys($ids, []);
+        $in    = self::idList($ids);   // Whole numbers only
+
+        if ($role === 'student')
+        {
+            $rows = $this->db->query(
+                "SELECT em.student_id AS id, x.name, x.type FROM extracurricular_members em JOIN extracurriculars x ON x.id = em.extracurricular_id
+                 WHERE em.status = 'member' AND em.student_id IN ({$in}) ORDER BY x.name"
+            );
+
+            foreach ($rows->fetchAll() as $row)
+            {
+                $lists[$row['id']]['extracurriculars'][] = $row;
+            }
+        }
+
+        if ($role === 'teacher')
+        {
+            $rows = $this->db->query(
+                "SELECT cst.teacher_id AS id, ss.name AS subject, c.name AS class_name FROM current_subject_teachers cst
+                 JOIN stage_subjects ss ON ss.id = cst.subject_id JOIN classes c ON c.id = cst.class_id
+                 WHERE cst.teacher_id IN ({$in}) ORDER BY ss.name, LENGTH(c.name), c.name"
+            );
+
+            foreach ($rows->fetchAll() as $row)
+            {
+                $lists[$row['id']]['subjects'][$row['subject']][] = $row['class_name'];
+            }
+
+            $homerooms = $this->db->query(
+                "SELECT ct.teacher_id AS id, c.name FROM current_class_teachers ct JOIN classes c ON c.id = ct.class_id WHERE ct.teacher_id IN ({$in})"
+            );
+
+            foreach ($homerooms->fetchAll() as $row)
+            {
+                $lists[$row['id']]['homeroom'] = $row['name'];
+            }
+        }
+
+        if ($role === 'parent')
+        {
+            $rows = $this->db->query(
+                "SELECT sp.parent_account_id AS id, p.full_name AS name, c.name AS class_name FROM student_parents sp
+                 JOIN profiles p ON p.account_id = sp.student_account_id
+                 LEFT JOIN current_class_students cs ON cs.student_id = p.account_id LEFT JOIN classes c ON c.id = cs.class_id
+                 WHERE sp.parent_account_id IN ({$in}) ORDER BY p.first_name"
+            );
+
+            foreach ($rows->fetchAll() as $row)
+            {
+                $lists[$row['id']]['children'][] = $row;
+            }
+        }
+
+        return $lists;
+    }
+
+    // Includes the ids the handover needs
+    // If all three lists are empty, there is nothing to hand over
+    public function duties(int $teacherId): array
+    {
+        $find = function (string $sql) use ($teacherId): array
+        {
+            $statement = $this->db->prepare($sql);
+            $statement->execute(['me' => $teacherId]);
+
+            return $statement->fetchAll();
+        };
+
+        return [
+            'homeroom'         => $find('SELECT c.id, c.name FROM current_class_teachers ct JOIN classes c ON c.id = ct.class_id WHERE ct.teacher_id = :me')[0] ?? null,
+            'subjects'         => $find(
+                'SELECT cst.class_id, cst.subject_id, c.name AS class_name, ss.name AS subject
+                 FROM current_subject_teachers cst
+                 JOIN classes c ON c.id = cst.class_id
+                 JOIN stage_subjects ss ON ss.id = cst.subject_id
+                 WHERE cst.teacher_id = :me
+                 ORDER BY ss.name, LENGTH(c.name), c.name'
+            ),
+            'extracurriculars' => $find(
+                'SELECT x.id, x.name, x.type FROM current_teachers_in_charge tic JOIN extracurriculars x ON x.id = tic.extracurricular_id
+                 WHERE tic.teacher_id = :me ORDER BY x.name'
+            ),
+        ];
+    }
+
+    public function extracurricularChoices(): array
+    {
+        return $this->pairs('SELECT id, name FROM extracurriculars ORDER BY name');
+    }
+
+    public function subjectChoices(): array
+    {
+        return $this->db->query('SELECT DISTINCT name FROM stage_subjects ORDER BY name')->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    // Also matches a child's name
+    public function searchParents(string $search): array
+    {
+        $like = self::like($search);
+
+        return $this->parentRows(
+            '(p.full_name LIKE :a OR p.code LIKE :b OR u.identifier LIKE :c OR p.phone LIKE :d OR p.national_id LIKE :e
+              OR EXISTS (SELECT 1 FROM student_parents sp2 JOIN profiles cp2 ON cp2.account_id = sp2.student_account_id
+                         WHERE sp2.parent_account_id = u.id AND cp2.full_name LIKE :f))',
+            ['a' => $like, 'b' => $like, 'c' => $like, 'd' => $like, 'e' => $like, 'f' => $like]
+        );
+    }
+
+    // Null for an unknown or inactive parent
+    public function parentRow(int $id): ?array
+    {
+        return $this->parentRows('u.id = :id', ['id' => $id])[0] ?? null;
+    }
