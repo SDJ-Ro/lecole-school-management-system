@@ -128,5 +128,127 @@ class NoticeController extends Controller
 
     // POST {board}/review
     // Rejecting needs a reason, which the author sees on their card
+    public function review(string $role): never
+    {
+        $user  = $this->requireRole($role);
+        $board = config("notices.board.{$role}.url");
+
+        $notice  = (new NoticeModel())->findFor($user, (int) $this->postText('id'));
+        $decision = $this->postText('decision', 10);
+        $note     = $this->postText('note', 255);
+
+
+
+
+        $approve = $decision === 'approve';
+
+
+        $this->log($user, $approve ? 'NOTICE_APPROVED' : 'NOTICE_REJECTED', "#{$notice['id']} {$notice['title']}" . ($approve ? '' : ": {$note}"));
+
+        $this->done($role, $approve ? 'Notice approved.' : 'Notice rejected.');
+    }
+
+    private function waits(): bool
+    {
+        return feature('approvals') && can('notices.wait_for_approval');
+    }
+
+    private function approves(): bool
+    {
+        return feature('approvals') && can('notices.approve');
+    }
+
+    // A notice they can't see gets 404, and one they can see but not change gets 403
+    private function manageable(array $user, int $id): array
+    {
+        $board  = config("notices.board.{$user['role']}.url");
+        $notice = (new NoticeModel())->findFor($user, $id);
+
+
+
+        return $notice;
+    }
+
+    private function card(array $notice, array $user): array
+    {
+        $isMine = (int) $notice['author_id'] === (int) $user['id'];
+
+        return $notice + [
+            'canManage' => can_manage($notice),
+            'canReview' => $notice['review'] === 'pending' && $this->approves(),
+            'isMine'    => $isMine,
+            'isForMe'   => in_array($user['role'], explode(',', $notice['audience']), true),
+            'trip'      => $notice['trip_on'] === null ? null : $this->permissionView($notice, $user, $isMine),
+        ];
+    }
+
+    // Only the author and those who see everything get the list of answers
+    // A student gets 'mine', which is their parent's answer
+    private function permissionView(array $notice, array $user, bool $isMine): array
+    {
+        $day   = fn (string $date): string => date(country('date_format'), strtotime($date));
+        $open  = $notice['reply_by'] >= date('Y-m-d');
+        $words = ['yes' => 'Going', 'no' => 'Not going'];
+        $view  = [
+            'line' => implode(' · ', array_filter([$day($notice['trip_on']), $notice['place'], $notice['cost'], 'Reply by ' . $day($notice['reply_by'])])),
+        ];
+
+        if ($isMine || in_array($user['role'], config('permissions.notices.see_all'), true))
+        {
+            $view['answers'] = ['Going' => [], 'Not going' => [], 'No answer' => []];
+
+            foreach ((new PermissionModel())->invited((int) $notice['id']) as $student)
+            {
+                $view['answers'][$words[$student['answer']] ?? 'No answer'][] = $student['name'] . ($student['class_name'] !== null ? " ({$student['class_name']})" : '');
+            }
+        }
+
+        if ($user['role'] === 'student')
+        {
+            $mine         = array_values(array_filter((new PermissionModel())->forStudent((int) $user['id']), fn (array $row): bool => (int) $row['notice_id'] === (int) $notice['id']))[0] ?? null;
+            $view['mine'] = match (true)
+            {
+                $mine === null           => null,   // Not invited
+                $mine['answer'] !== null => 'Your ' . strtolower(word('parent')) . ': ' . $words[$mine['answer']],
+                $open                    => 'Waiting for your ' . strtolower(word('parent')) . "'s answer: ask them to answer on Approvals.",
+                default                  => 'No answer was given, so it counts as Not going.',
+            };
+        }
+
+        if ($user['role'] === 'parent')
+        {
+            $view['approvals'] = '/parent/approvals';
+        }
+
+        return $view;
+    }
+
+    // Fills the form with what was typed before a refusal, or the notice being edited, or the defaults
+    private function form(array $user, string $role, ?array $editing): array
+    {
+        $typed    = $this->getFlash('notice_form');
+        $anyGroup = can('posts.any_group');   // Otherwise only their own classes and clubs, with nothing ticked
+
+        return [
+            'id'        => $editing['id'] ?? null,
+            'values'    => $typed ?? ($editing !== null ? $this->savedValues($editing, $role) : [
+                'title' => '', 'body' => '', 'category' => config("notices.categories.{$role}")[0], 'audience' => ['all'],
+                'target' => $anyGroup ? 'all' : '', 'extracurricular' => $anyGroup ? 'all' : '',
+                'publish_at' => '', 'expires_at' => '', 'pinned' => false,
+                'permission' => false, 'trip_on' => '', 'place' => '', 'cost' => '', 'reply_by' => '',
+            ]),
+            'choices'   => [
+                'categories' => config("notices.categories.{$role}"),
+                'audience'   => config("notices.audience.{$role}"),
+                'schoolWide' => $anyGroup,
+            ] + (new CalendarModel())->choicesFor($user),   // The groups this person may post to
+            'banner'    => $this->waits()
+                ? 'Your notice appears on the central board once an administrator approves it.'
+                : 'Notices appear immediately on the central board for the selected audience.',
+            'canPin'    => !$this->waits() && ($editing['review'] ?? 'approved') === 'approved',
+            'error'     => $typed !== null ? $this->getFlash('error') : null,
+        ];
+    }
+
     }
 }
