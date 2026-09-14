@@ -1,0 +1,6 @@
+/* Padding, because a margin would merge with the page header's margin */
+.l-profile-grid {
+  display: grid;
+  gap: 1.5rem;
+  padding-top: 1.5rem;
+}
