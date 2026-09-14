@@ -1,0 +1,44 @@
+.c-profile-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 8.5rem;
+  border-radius: var(--radius-xl);
+  padding: 2rem 2.25rem;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--hero-glow) 30%, transparent);   /* a glow in the role's colour */
+}
+.c-profile-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top right, var(--hero-light) 0%, transparent 62%);
+  pointer-events: none;
+}
+
+.c-profile-hero--admin {
+  --hero-light: color-mix(in srgb, var(--skyblue) 32%, transparent);
+  --hero-glow: var(--midnight);
+  background: linear-gradient(135deg, var(--midnight) 0%, var(--pine) 100%);
+}
+
+.c-profile-hero--student {
+  --hero-light: color-mix(in srgb, var(--white) 20%, transparent);
+  --hero-glow: var(--lagoon);
+  background: linear-gradient(135deg, var(--lagoon) 0%, var(--harbour) 100%);
+}
+
+.c-profile-hero--parent {
+  --hero-light: color-mix(in srgb, var(--white) 22%, transparent);
+  --hero-glow: var(--terracotta);
+  background: linear-gradient(135deg, var(--terracotta) 0%, var(--rust) 100%);
+}
+
+.c-profile-hero--management {
+  --hero-light: color-mix(in srgb, var(--white) 22%, transparent);
+  --hero-glow: var(--maroon);
+  background: linear-gradient(135deg, var(--maroon) 0%, var(--oxblood) 100%);
+}
+
