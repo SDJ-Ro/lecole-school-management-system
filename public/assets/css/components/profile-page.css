@@ -1,0 +1,23 @@
+.c-profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+}
+.c-profile-section {
+  padding: 1.25rem 1.5rem;
+}
+.c-profile-tinted {
+  border: 1px solid;
+  border-radius: var(--radius-lg);
+  padding: 1.125rem 1.25rem;
+}
+
+.c-profile-tinted--sky {
+  border-color: color-mix(in srgb, var(--skyblue) 38%, transparent);
+  background: color-mix(in srgb, var(--skyblue) 11%, transparent);
+}
+
+.c-profile-tinted--sunshine {
+  border-color: color-mix(in srgb, var(--sunshine) 35%, transparent);
+  background: color-mix(in srgb, var(--sunshine) 9%, transparent);
+}
