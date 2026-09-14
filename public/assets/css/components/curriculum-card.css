@@ -1,0 +1,54 @@
+.c-curriculum-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--alabaster);
+  background: var(--white);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--speed) ease;
+}
+
+.c-curriculum-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.c-curriculum-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.c-curriculum-card__range {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-curriculum-card__desc {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.c-curriculum-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.c-curriculum-card__count {
+  background: var(--maroon);
+  color: var(--white);
+}
+.c-curriculum-card__icon {
+  color: color-mix(in srgb, var(--maroon) 65%, transparent);
+}
+
+.c-curriculum-card__icon:hover {
+  background: color-mix(in srgb, var(--cherry) 25%, transparent);
+  color: var(--maroon);
+}
