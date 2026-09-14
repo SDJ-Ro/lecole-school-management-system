@@ -1,0 +1,44 @@
+.c-complaint-card {
+  --tint: color-mix(in srgb, var(--tone) 8%, transparent);
+  --tint-line: color-mix(in srgb, var(--tone) 25%, transparent);
+  overflow: hidden;
+  border-left: 6px solid var(--tone);
+  transition: box-shadow var(--speed) ease;
+  animation: c-fade-up 220ms ease;
+}
+
+.c-complaint-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-complaint-card {
+    animation: none;
+  }
+}
+
+/* Each category sets one colour for its edge, answer and resolve form */
+.c-complaint-card--sky {
+  --tone: var(--skyblue);
+  --tint: color-mix(in srgb, var(--skyblue) 10%, transparent);
+  --tint-line: color-mix(in srgb, var(--skyblue) 30%, transparent);
+}
+
+.c-complaint-card--flame {
+  --tone: var(--flameorange);
+}
+
+.c-complaint-card--terracotta {
+  --tone: var(--terracotta);
+}
+
+.c-complaint-card--sunshine {
+  --tone: var(--sunshine);
+}
+
+/* A maroon edge, but a calm cream answer */
+.c-complaint-card--maroon {
+  --tone: var(--maroon);
+  --tint: color-mix(in srgb, var(--cream) 70%, transparent);
+  --tint-line: color-mix(in srgb, var(--sand) 30%, transparent);
+}
