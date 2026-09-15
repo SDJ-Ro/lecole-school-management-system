@@ -271,3 +271,145 @@ class PeopleModel extends Model
     {
         return $this->parentRows('u.id = :id', ['id' => $id])[0] ?? null;
     }
+
+    // No account closes before its certificate is issued
+    // The caller then checks each leaving or graduating day
+    public function closingDue(string $issuedBy): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT u.id FROM user_accounts u JOIN certificates c ON c.student_id = u.id AND c.status = 'issued'
+             WHERE u.role = 'student' AND u.closed_on IS NULL AND u.activation_status <> 'INACTIVE' AND DATE(c.issued_at) <= :issued"
+        );
+        $statement->execute(['issued' => $issuedBy]);
+
+        return array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
+    }
+//309-333
+// A parent with active children cannot be switched off, so every student keeps an active parent
+    public function activeChildren(int $parentId): int
+    {
+        $statement = $this->db->prepare(
+            "SELECT COUNT(*) FROM student_parents sp JOIN user_accounts u ON u.id = sp.student_account_id
+             WHERE sp.parent_account_id = :parent AND u.activation_status <> 'INACTIVE'"
+        );
+        $statement->execute(['parent' => $parentId]);
+
+        return (int) $statement->fetchColumn();
+    }
+
+    // The number of active accounts for each role
+    public function activeCounts(): array
+    {
+        return $this->db->query("SELECT role, COUNT(*) FROM user_accounts WHERE activation_status = 'ACTIVE' GROUP BY role")->fetchAll(PDO::FETCH_KEY_PAIR);
+    }
+
+    // The first name of each account
+    public function childrenOf(int $parentId): array
+    {
+        return $this->pairs('SELECT p.account_id, p.first_name FROM student_parents sp
+            JOIN profiles p ON p.account_id = sp.student_account_id WHERE sp.parent_account_id = :me ORDER BY p.first_name', $parentId);
+    }
+//355-457
+public function teaching(int $teacherId): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT c.name, ct.class_id IS NOT NULL AS is_mine
+             FROM current_teaching t
+             JOIN classes c ON c.id = t.class_id
+             LEFT JOIN current_class_teachers ct ON ct.class_id = t.class_id AND ct.teacher_id = t.teacher_id
+             WHERE t.teacher_id = :me
+             ORDER BY c.name'
+        );
+        $statement->execute(['me' => $teacherId]);
+        $classes = $statement->fetchAll();
+
+        return [
+            'homeroom' => array_column(array_filter($classes, fn (array $class): bool => (bool) $class['is_mine']), 'name')[0] ?? null,
+            'classes'  => array_values(array_unique(array_column($classes, 'name'))),
+        ];
+    }
+
+    // The programmes a teacher runs, or the ones a student is a member of
+    public function extracurriculars(array $person): array
+    {
+        $sql = $person['role'] === 'teacher'
+            ? 'SELECT x.type, x.name FROM current_teachers_in_charge tic JOIN extracurriculars x ON x.id = tic.extracurricular_id WHERE tic.teacher_id = :me ORDER BY x.name'
+            : "SELECT x.type, x.name FROM extracurriculars x JOIN extracurricular_members em ON em.extracurricular_id = x.id
+               WHERE em.student_id = :me AND em.status = 'member' ORDER BY x.name";
+        $statement = $this->db->prepare($sql);
+        $statement->execute(['me' => $person['id']]);
+        $names = ['sport' => [], 'club' => []];
+
+        foreach ($statement->fetchAll() as $extracurricular)
+        {
+            $names[$extracurricular['type']][] = $extracurricular['name'];
+        }
+
+        return $names;
+    }
+
+    // The position field lists their teams and positions, if they have any
+    public function memberships(int $studentId): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT x.name, x.type, em.status, em.joined_on,
+                    (SELECT GROUP_CONCAT(CONCAT(t.name, IFNULL(CONCAT(' · ', tm.position), '')) ORDER BY t.name SEPARATOR ', ')
+                     FROM team_members tm JOIN teams t ON t.id = tm.team_id
+                     WHERE t.extracurricular_id = x.id AND tm.student_id = em.student_id) AS position
+             FROM extracurricular_members em JOIN extracurriculars x ON x.id = em.extracurricular_id
+             WHERE em.student_id = :id ORDER BY x.name"
+        );
+        $statement->execute(['id' => $studentId]);
+
+        return $statement->fetchAll();
+    }
+
+    // Ended programme memberships and team positions, kept for the character certificate
+    public function pastMemberships(int $studentId): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT x.name, h.joined_on AS from_on, h.left_on AS to_on FROM extracurricular_member_history h
+             JOIN extracurriculars x ON x.id = h.extracurricular_id WHERE h.student_id = :id
+             UNION ALL
+             SELECT CONCAT(h.position, ', ', h.team_name, ' — ', x.name), h.from_on, h.to_on FROM team_member_history h
+             JOIN extracurriculars x ON x.id = h.extracurricular_id WHERE h.student_id = :id2 AND h.position IS NOT NULL
+             ORDER BY from_on"
+        );
+        $statement->execute(['id' => $studentId, 'id2' => $studentId]);
+
+        return $statement->fetchAll();
+    }
+
+    // As class teacher or for a subject in their class
+    public function teaches(int $teacherId, int $studentId): bool
+    {
+        $statement = $this->db->prepare(
+            'SELECT 1 FROM current_class_students cs JOIN current_teaching t ON t.class_id = cs.class_id
+             WHERE cs.student_id = :student AND t.teacher_id = :teacher'
+        );
+        $statement->execute(['student' => $studentId, 'teacher' => $teacherId]);
+
+        return $statement->fetchColumn() !== false;
+    }
+
+    public function isClassTeacherOf(int $teacherId, int $studentId): bool
+    {
+        $statement = $this->db->prepare(
+            'SELECT 1 FROM current_class_students cs JOIN current_class_teachers ct ON ct.class_id = cs.class_id
+             WHERE cs.student_id = :student AND ct.teacher_id = :teacher'
+        );
+        $statement->execute(['student' => $studentId, 'teacher' => $teacherId]);
+
+        return $statement->fetchColumn() !== false;
+    }
+
+    public function qualifications(int $teacherId): array
+    {
+        $statement = $this->db->prepare('SELECT degree, institution, year_obtained FROM staff_qualifications WHERE account_id = :id ORDER BY sort_order, id');
+        $statement->execute(['id' => $teacherId]);
+
+        return $statement->fetchAll();
+    }
+
+    // Adds a PENDING account with no password, which they activate on the sign-up page
+    // A student added after this year's last term is placed for next year
