@@ -296,5 +296,121 @@ class NoticeController extends Controller
     }
 
     // Returns the row to save, or goes back to the form with the reason and what was typed
+    private function checked(array $user, string $role, array $values, ?array $existing): array
+    {
+        $choices = (new CalendarModel())->choicesFor($user);
+        $offered = config("notices.audience.{$role}");
+        $today   = date('Y-m-d');
+        $wasDay  = $existing !== null ? substr($existing['publish_at'], 0, 10) : null;
+
+        $errors   = array_values(Validator::check($values, self::RULES, [
+            'title' => 'Notice title', 'body' => 'Notice body', 'publish_at' => 'Publish date', 'expires_at' => 'Expiration date',
+        ]));
+        $category = $values['category'];
+
+        if (!in_array($category, config("notices.categories.{$role}"), true))
+        {
+            $errors[] = 'Please choose a category from the list.';
+        }
+
+        // Choosing "all" means every role this poster may write to
+        // A permission request is always for students and parents
+        $picked   = array_values(array_intersect($values['audience'], $offered));
+        $audience = $values['permission'] ? ['student', 'parent']
+            : (in_array('all', $picked, true) ? array_values(array_diff($offered, ['all'])) : $picked);
+
+        if ($values['permission'])
+        {
+            $errors = [...$errors, ...$this->permissionProblems($values, $existing)];
+        }
+        elseif (in_array('management', $values['audience'], true) && !in_array('management', $offered, true))
+        {
+            $errors[] = $role === 'management'
+                ? words('{Management} cannot post notices to {Management}. Please select {Teachers}, {Parents}, or {Students}.')
+                : 'Please choose the audience from the list.';
+        }
+        elseif ($audience === [])
+        {
+            $errors[] = 'Please choose who the notice is for.';
+        }
+
+        // An Academic notice goes to everyone, a grade or a class
+        // An Extracurricular notice goes to every club or just one
+        // Any other category goes to everyone
+        // Only groups the form offered are allowed, so a teacher can only pick their own classes and clubs
+        [$type, $groupId] = array_pad(explode(':', $category === 'Academic' ? $values['target'] : ($category === 'Extracurricular' ? "extracurricular:{$values['extracurricular']}" : 'all')), 2, null);
+        $groupId  = $groupId === 'all' ? null : $groupId;
+        $offeredGroups = ['grade' => $choices['grades'], 'class' => $choices['classes'], 'extracurricular' => $choices['extracurriculars']];
+        $schoolWide    = $type === 'all' || ($type === 'extracurricular' && $groupId === null);
+
+        if ($schoolWide ? !can('posts.any_group') : !isset($offeredGroups[$type][(int) $groupId]))
+        {
+            $errors[] = !can('posts.any_group')
+                ? 'Please choose one of your ' . strtolower(plural('class')) . ' or clubs.'
+                : 'Please choose who the notice is for from the list.';
+        }
+
+        // The publish day must be today or later, but an edited notice may keep its old day
+        // The expiry day must be on or after the publish day
+        $publishDay = $values['publish_at'] !== '' ? $values['publish_at'] : ($wasDay ?? $today);
+
+        if ($publishDay < $today && $publishDay !== $wasDay)
+        {
+            $errors[] = 'The publish date can\'t be in the past.';
+        }
+
+        if ($values['expires_at'] !== '' && $values['expires_at'] < max($publishDay, $today))
+        {
+            $errors[] = 'Notice expiration date must be later than the publish date.';
+        }
+
+        if ($values['pinned'] && !($existing['pinned'] ?? false)
+            && (new NoticeModel())->countPinned($existing['id'] ?? null) >= config('notices.max_pinned'))
+        {
+            $errors[] = 'Maximum of ' . config('notices.max_pinned') . ' notices can be pinned at a time. Please unpin an older notice first.';
+        }
+
+
+        return [
+            'title'              => $values['title'],
+            'body'               => $values['body'],
+            'category'           => $category,
+            'audience'           => implode(',', $audience),
+            'class_id'           => $type === 'class' ? (int) $groupId : null,
+            'grade_id'           => $type === 'grade' ? (int) $groupId : null,
+            'extracurricular_id' => $type === 'extracurricular' && $groupId !== null ? (int) $groupId : null,
+            'publish_at'         => $publishDay === $wasDay ? $existing['publish_at'] : ($publishDay === $today ? date('Y-m-d H:i:s') : "{$publishDay} 00:00:00"),
+            'expires_at'         => $values['expires_at'] !== '' ? "{$values['expires_at']} 23:59:59" : null,
+            'pinned'             => (int) $values['pinned'],
+        ];
+    }
+
+    // The trip must be after today
+    // The reply-by date must be from today and before the trip
+    // An edit may keep a date that has already passed
+    private function permissionProblems(array $values, ?array $existing): array
+    {
+        $today    = date('Y-m-d');
+        $problems = array_values(Validator::check($values,
+            ['trip_on' => 'required|date', 'place' => 'required|max:150', 'cost' => 'max:50', 'reply_by' => 'required|date'],
+            ['trip_on' => 'Trip date', 'place' => 'Place', 'cost' => 'Cost', 'reply_by' => 'Reply-by date']));
+        $moved    = fn (string $key): bool => $values[$key] !== ($existing[$key] ?? null);
+
+        if ($problems !== [])
+        {
+            return $problems;
+        }
+
+        return array_values(array_filter([
+            $moved('trip_on') && $values['trip_on'] <= $today ? 'The trip date must be after today.' : null,
+            $moved('reply_by') && $values['reply_by'] < $today ? 'The reply-by date can\'t be in the past.' : null,
+            $values['reply_by'] >= $values['trip_on'] ? words('{Parents} must reply before the trip: the reply-by date comes before the trip date.') : null,
+        ]));
+    }
+
+    private function done(string $role, string $message): never
+    {
+        $this->setFlash('notice', $message);
+        $this->redirect(config("notices.board.{$role}.url"));
     }
 }
