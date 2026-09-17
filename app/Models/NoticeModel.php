@@ -51,6 +51,62 @@ class NoticeModel extends Model
         return (int) $statement->fetchColumn();
     }
 
+    // Opening the board counts as reading, and only the first time is kept
+    public function markRead(array $noticeIds, int $accountId): void
+    {
+        $insert = $this->db->prepare('INSERT IGNORE INTO notice_reads (notice_id, account_id) VALUES (:notice, :account)');
+
+        foreach ($noticeIds as $noticeId)
+        {
+            $insert->execute(['notice' => $noticeId, 'account' => $accountId]);
+        }
+    }
+
+    // The notice's keys come from a fixed list in the controller, never from the form
+    // With no permission details, the notice is not a permission request
+    public function save(?int $id, array $notice, ?array $permission): int
+    {
+        return $this->transaction(function () use ($id, $notice, $permission): int
+        {
+            if ($id === null)
+            {
+                $columns = implode(', ', array_keys($notice));
+                $holders = ':' . implode(', :', array_keys($notice));
+                $this->db->prepare("INSERT INTO notices ({$columns}) VALUES ({$holders})")->execute($notice);
+                $id = (int) $this->db->lastInsertId();
+            }
+            else
+            {
+                $sets = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($notice)));
+                $this->db->prepare("UPDATE notices SET {$sets} WHERE id = :id")->execute($notice + ['id' => $id]);
+            }
+
+            (new PermissionModel())->save($id, $permission);
+
+            return $id;
+        });
+    }
+
+    public function setPinned(int $id, bool $pinned): void
+    {
+        $this->db->prepare('UPDATE notices SET pinned = :pinned WHERE id = :id')->execute(['pinned' => (int) $pinned, 'id' => $id]);
+    }
+
+    // Returns false when someone else decided first
+    public function review(int $id, bool $approve, ?string $note, int $reviewerId): bool
+    {
+        $statement = $this->db->prepare("UPDATE notices SET review = :review, review_note = :note, reviewed_by = :by, reviewed_at = NOW()
+            WHERE id = :id AND review = 'pending'");
+        $statement->execute(['review' => $approve ? 'approved' : 'rejected', 'note' => $note, 'by' => $reviewerId, 'id' => $id]);
+
+        return $statement->rowCount() === 1;
+    }
+
+    public function delete(int $id): void
+    {
+        $this->db->prepare('DELETE FROM notices WHERE id = :id')->execute(['id' => $id]);   // The audit log still keeps its history
+    }
+
     // Pinned live notices first, then the newest
     private function find(array $user, string $where, array $values): array
     {
