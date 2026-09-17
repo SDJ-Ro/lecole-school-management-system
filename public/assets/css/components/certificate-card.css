@@ -1,0 +1,29 @@
+.c-certificate-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  width: 144px;
+  min-height: 248px;
+  border-radius: var(--radius-full);
+  padding: 16px 12px 20px;
+  background: var(--card-tone);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  text-decoration: none;
+  color: var(--white);
+  transition: transform var(--speed) ease, box-shadow var(--speed) ease;
+}
+
+.c-certificate-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.c-certificate-card--slate {
+  --card-tone: var(--card-slate);
+}
+
+.c-certificate-card--steel {
+  --card-tone: var(--card-steel);
+}
