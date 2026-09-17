@@ -250,5 +250,51 @@ class NoticeController extends Controller
         ];
     }
 
+    // The audience shows as "all" when it covers every role this poster may write to
+    private function savedValues(array $notice, string $role): array
+    {
+        $everyone = array_values(array_diff(config("notices.audience.{$role}"), ['all']));
+        $audience = explode(',', $notice['audience']);
+
+        return [
+            'title'           => $notice['title'],
+            'body'            => $notice['body'],
+            'category'        => $notice['category'],
+            'audience'        => array_diff($everyone, $audience) === [] ? ['all'] : $audience,
+            'target'          => $notice['class_id'] !== null ? "class:{$notice['class_id']}" : ($notice['grade_id'] !== null ? "grade:{$notice['grade_id']}" : 'all'),
+            'extracurricular' => $notice['extracurricular_id'] !== null ? (string) $notice['extracurricular_id'] : 'all',
+            'publish_at'      => substr($notice['publish_at'], 0, 10),
+            'expires_at'      => $notice['expires_at'] !== null ? substr($notice['expires_at'], 0, 10) : '',
+            'pinned'          => (bool) $notice['pinned'],
+            'permission'      => $notice['trip_on'] !== null,
+            'trip_on'         => $notice['trip_on'] ?? '',
+            'place'           => $notice['place'] ?? '',
+            'cost'            => $notice['cost'] ?? '',
+            'reply_by'        => $notice['reply_by'] ?? '',
+        ];
+    }
+
+    private function typedValues(): array
+    {
+        return [
+            'title'           => $this->postText('title', 200),
+            'body'            => $this->postText('body', 5000),
+            'category'        => $this->postText('category', 30),
+            'audience'        => $this->postList('audience'),
+            'target'          => $this->postText('target', 20),
+            'extracurricular' => $this->postText('extracurricular', 20),
+            'publish_at'      => $this->postText('publish_at', 10),
+            'expires_at'      => $this->postText('expires_at', 10),
+            'pinned'          => $this->postText('pinned') === '1',
+            // The "Ask Parents for Permission" trip fields
+            'permission'      => $this->postText('permission') === '1',
+            'trip_on'         => $this->postText('trip_on', 10),
+            'place'           => $this->postText('place', 150),
+            'cost'            => $this->postText('cost', 50),
+            'reply_by'        => $this->postText('reply_by', 10),
+        ];
+    }
+
+    // Returns the row to save, or goes back to the form with the reason and what was typed
     }
 }
