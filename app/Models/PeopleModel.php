@@ -309,7 +309,7 @@ class PeopleModel extends Model
         return $this->pairs('SELECT p.account_id, p.first_name FROM student_parents sp
             JOIN profiles p ON p.account_id = sp.student_account_id WHERE sp.parent_account_id = :me ORDER BY p.first_name', $parentId);
     }
-//355-457
+//355-466
 public function teaching(int $teacherId): array
     {
         $statement = $this->db->prepare(
@@ -413,3 +413,177 @@ public function teaching(int $teacherId): array
 
     // Adds a PENDING account with no password, which they activate on the sign-up page
     // A student added after this year's last term is placed for next year
+    public function add(string $role, array $profile, array $details, ?int $parentId = null, array $qualifications = []): int
+    {
+        return $this->transaction(function () use ($role, $profile, $details, $parentId, $qualifications): int
+        {
+            $assignments = new Assignments();
+            $classId     = $role === 'student' ? (int) $details['class_id'] : null;
+            $year        = (new SchoolYear())->placementYear();
+            unset($details['class_id']);   // The class is a place, not a detail
+
+        //471-517
+        
+            // Students sign in with their code, staff with a school email and parents with their own email
+            $identifier = match ($role)
+            {
+                'student' => 'new-' . bin2hex(random_bytes(6)),   // Replaced by the real code below, once the id is known
+                'parent'  => strtolower($profile['personal_email']),
+                default   => $this->schoolEmail($profile['first_name'], $profile['last_name']),
+            };
+
+            $this->db->prepare("INSERT INTO user_accounts (identifier, role, activation_status) VALUES (:identifier, :role, 'PENDING')")
+                ->execute(['identifier' => $identifier, 'role' => $role]);
+
+            $id   = (int) $this->db->lastInsertId();
+            $code = $this->code($role, $id);
+
+            if ($role === 'student')
+            {
+                $this->db->prepare('UPDATE user_accounts SET identifier = :code WHERE id = :id')->execute(['code' => $code, 'id' => $id]);
+            }
+
+            $this->insert('profiles', ['account_id' => $id, 'code' => $code] + $profile);
+            $this->insert(self::DETAILS_TABLE[$role], ['account_id' => $id] + $details);
+            $this->saveQualifications($id, $qualifications);
+
+            if ($classId !== null)
+            {
+                $assignments->placeStudent($id, $classId, $year);
+                $this->db->prepare('INSERT INTO student_parents (student_account_id, parent_account_id, is_primary) VALUES (:student, :parent, 1)')
+                    ->execute(['student' => $id, 'parent' => $parentId]);
+            }
+
+            return $id;
+        });
+    }
+
+    // Returns the new student id and parent id
+    public function addStudentWithNewParent(array $student, array $studentDetails, array $parent, array $parentDetails): array
+    {
+        return $this->transaction(function () use ($student, $studentDetails, $parent, $parentDetails): array
+        {
+            $parentId  = $this->add('parent', $parent, $parentDetails);
+            $studentId = $this->add('student', $student, $studentDetails, $parentId);
+
+            return [$studentId, $parentId];
+        });
+    }
+//573-599
+// Each duty goes to the teacher taking it over, or to nobody yet
+    // Then the account is switched off
+    public function handOver(int $teacherId, array $duties): void
+    {
+        $this->transaction(function () use ($teacherId, $duties): void
+        {
+            $assignments = new Assignments();
+
+            if ($duties['homeroom'] !== null)
+            {
+                $assignments->setClassTeacher((int) $duties['homeroom']['id'], $duties['homeroom']['to']);
+            }
+
+            foreach ($duties['subjects'] as $subject)
+            {
+                $assignments->setSubjectTeacher((int) $subject['class_id'], (int) $subject['subject_id'], $subject['to']);
+            }
+
+            foreach ($duties['extracurriculars'] as $extracurricular)
+            {
+                $assignments->setTeacherInCharge((int) $extracurricular['id'], $extracurricular['to']);
+            }
+
+            $this->switchAccount($teacherId, false);
+        });
+    }
+ //632-654
+ private function code(string $role, int $id): string
+    {
+        $format = config("white_label.academic.id_formats.{$role}", strtoupper(substr($role, 0, 3)) . '-{year}-{number}');
+
+        return str_replace(['{year}', '{number}'], [date('Y'), str_pad((string) $id, 4, '0', STR_PAD_LEFT)], $format);
+    }
+
+    // Made from the first and last name, with a number added when it is taken
+    private function schoolEmail(string $firstName, string $lastName): string
+    {
+        $tidy   = fn (string $name): string => preg_replace('/[^a-z]/', '', strtolower($name));
+        $base   = $tidy($firstName) . '_' . $tidy($lastName);
+        $domain = school('email_domain');
+        $email  = "{$base}@{$domain}";
+
+        for ($number = 2; $this->identifierTaken($email); $number++)
+        {
+            $email = "{$base}{$number}@{$domain}";
+        }
+
+        return $email;
+    }
+//669-732
+// A student's parents or a parent's children
+    // Both column names are fixed in this file, never from a form
+    private function linked(string $myColumn, string $theirColumn, int $id): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT u.id, u.identifier, u.role, u.activation_status, p.code, p.first_name, p.full_name, p.phone, p.emergency_phone,
+                    c.name AS class_name
+             FROM student_parents link
+             JOIN user_accounts u ON u.id = link.{$theirColumn}
+             JOIN profiles p ON p.account_id = u.id
+             LEFT JOIN current_class_students cs ON cs.student_id = u.id
+             LEFT JOIN classes c ON c.id = cs.class_id
+             WHERE link.{$myColumn} = :id
+             ORDER BY link.is_primary DESC, p.full_name"
+        );
+        $statement->execute(['id' => $id]);
+
+        return $statement->fetchAll();
+    }
+
+    // A typed % or _ is matched literally, not as a wildcard
+    private static function like(string $text): string
+    {
+        return '%' . addcslashes($text, '%_\\') . '%';
+    }
+
+    // The where text is fixed in this file, never from a form
+    private function parentRows(string $where, array $params): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT u.id, u.identifier, p.code, p.full_name, p.phone, pd.relationship,
+                    (SELECT GROUP_CONCAT(CONCAT(cp.full_name, ' (', COALESCE(c.name, '—'), ')') ORDER BY cp.full_name SEPARATOR ', ')
+                     FROM student_parents sp JOIN profiles cp ON cp.account_id = sp.student_account_id
+                     LEFT JOIN current_class_students cs ON cs.student_id = sp.student_account_id LEFT JOIN classes c ON c.id = cs.class_id
+                     WHERE sp.parent_account_id = u.id) AS children
+             FROM user_accounts u
+             JOIN profiles p ON p.account_id = u.id
+             JOIN parent_details pd ON pd.account_id = u.id
+             WHERE u.role = 'parent' AND u.activation_status <> 'INACTIVE' AND {$where}
+             ORDER BY p.full_name
+             LIMIT 20"
+        );
+        $statement->execute($params);
+
+        return $statement->fetchAll();
+    }
+
+    private function switchAccount(int $id, bool $active): void
+    {
+        $this->db->prepare(
+            "UPDATE user_accounts
+             SET activation_status = IF(:active, IF(password_hash IS NULL, 'PENDING', 'ACTIVE'), 'INACTIVE')
+             WHERE id = :id"
+        )->execute(['active' => (int) $active, 'id' => $id]);
+    }
+
+    private function exists(string $sql, string $value, ?int $exceptId): bool
+    {
+        $statement = $this->db->prepare($sql . ' LIMIT 1');
+        $statement->execute(['value' => $value, 'except' => $exceptId ?? 0]);
+
+        return $statement->fetchColumn() !== false;
+    }
+
+    //753-754
+     }
+}
