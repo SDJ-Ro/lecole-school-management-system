@@ -1,0 +1,50 @@
+.c-audit {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.c-audit__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .c-audit__toolbar {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.c-audit__search {
+  flex: 1 1 auto;
+  max-width: 28rem;
+}
+.c-audit__filters .c-dropdown {
+  width: 11rem;
+}
+
+.c-audit__sliders {
+  display: flex;
+  padding: 0 0.5rem;
+  color: var(--text-hint);
+}
+.c-audit__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.c-log-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-left: 6px solid var(--tone);
+  padding: 1rem;
+  transition: box-shadow var(--speed) ease;
+}
+
+.c-log-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
