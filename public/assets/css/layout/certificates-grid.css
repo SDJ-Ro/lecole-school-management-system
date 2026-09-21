@@ -1,0 +1,56 @@
+.l-certificates {
+  margin-top: 3.25rem;   /* Merges with the page header's margin, so the gap is 52px */
+}
+
+.l-certificates__pathways {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.75rem;
+}
+
+.l-certificates__group {
+  margin-bottom: 2rem;
+}
+
+.l-certificates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
+  gap: 16px 12px;
+}
+
+.l-certificates__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.l-certificate-own {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.l-certificate-own__main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+}
+
+/* On a phone this comes first, so the request button is not under the whole certificate */
+.l-certificate-own__side {
+  order: -1;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .l-certificate-own {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .l-certificate-own__side {
+    order: 0;
+  }
+}
