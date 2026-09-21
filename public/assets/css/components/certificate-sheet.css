@@ -1,0 +1,87 @@
+/* On screen each column is one A4 page, and the script slides one page at a time */
+.c-certificate-pages__paper {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 780px;
+  height: 1011px;
+  overflow: hidden;
+  border: 1px solid var(--alabaster);
+  border-radius: var(--radius-xs);
+  padding: 48px;
+  background: var(--white);
+  box-shadow: var(--shadow-md);
+}
+
+.c-certificate-pages__strip {
+  height: 100%;
+  column-count: 1;
+  column-gap: 96px;
+  column-fill: auto;
+  transition: transform var(--speed) ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-certificate-pages__strip {
+    transition: none;
+  }
+}
+.c-certificate-pages__corner {
+  position: absolute;
+  right: 56px;
+  bottom: 16px;
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.c-certificate-pages__corner:empty {
+  display: none;
+}
+.c-certificate-pages__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem auto 0;
+  max-width: 48rem;
+}
+
+.c-certificate-pages__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Dompdf also draws the certificate, so use no flex, grid or color-mix here */
+.c-certificate {
+  color: var(--midnight);
+}
+
+.c-certificate__soft {
+  opacity: 0.6;
+}
+.c-certificate__header {
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--alabaster);
+  padding-bottom: 28px;
+  text-align: center;
+}
+
+.c-certificate__school {
+  margin: 0;
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.c-certificate__motto {
+  margin: 4px 0 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--tan);
+}
