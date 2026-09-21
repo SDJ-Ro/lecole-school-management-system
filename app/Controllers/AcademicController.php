@@ -1,3 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Models\Assignments;
+use App\Models\ClassModel;
+use App\Models\PeopleModel;
+use App\Models\SchoolYear;
+use App\Models\StageModel;
+use App\Services\CalendarFeed;
+use App\Services\RecordBook;
+use App\Services\TeacherChoices;
+use App\Services\TermDates;
+use App\Services\TermResults;
+use App\Services\YearEnd;
+use Core\Controller;
+use Core\Validator;
+
+// Academic Records for students, and the school's grades, classes and subjects for admin and management
+// Nothing that has students or marks is ever deleted
+class AcademicController extends Controller
+{
     // GET /student/academic
     public function student(): void
     {
@@ -25,6 +49,64 @@
             'term'    => $term,
             'record'  => $record,
         ]);
+    }
+
+    // GET /{role}/academic. Changing the chart's filters reloads the page
+    public function overview(string $role): void
+    {
+        $user     = $this->guard($role);
+        $classes  = new ClassModel();
+        $model    = new StageModel();
+        $stages   = $model->all();
+        $marks    = $model->marks();
+        $grades   = $classes->grades();
+        $teachers = $classes->teachers();
+
+        foreach ($grades as &$grade)
+        {
+            $grade['stage'] = $this->stageFor($grade['number'], $stages);
+        }
+        unset($grade);
+
+        // A stage with marks can't be deleted, and its editor warns before a save removes subject teachers
+        foreach ($stages as &$stage)
+        {
+            $stage['marks']    = array_sum(array_intersect_key($marks, $stage['subjects'] + $stage['retired']));
+            $stage['assigned'] = $model->assignments($stage['id']);
+        }
+        unset($stage);
+
+        $numbers = config('white_label.academic.grade_numbers');
+
+        $this->page("{$role}/academic", $user, [
+            'pageUrl'             => $this->pageUrl($role),
+            'chartConfig'         => $this->chart($grades),
+            'calendarConfig'      => feature('calendar') ? CalendarFeed::config($user) : null,
+            'grades'              => $grades,
+            'stages'              => $stages,
+            'teachers'            => $teachers,
+            'teacherOptions'      => TeacherChoices::options($teachers, false),
+            'classTeacherOptions' => TeacherChoices::options($teachers, true),
+            'freeGradeNumbers'    => array_values(array_diff(range($numbers['first'], $numbers['last']), array_column($grades, 'number'))),
+            'workloads'           => $classes->workloads(),
+            'subjectTeachers'     => $classes->subjectTeachers(),
+            'classForm'           => $this->getFlash('class_form'),   // What was typed before a refused save
+            'stageForm'           => $this->getFlash('stage_form'),
+            'schoolYear'          => $this->schoolYear($this->getFlash('terms_form')),
+        ]);
+    }
+
+    private function guard(string $role): array
+    {
+        $user = $this->requireRole($role);
+
+
+        return $user;
+    }
+
+    private function pageUrl(string $role): string
+    {
+        return "/{$role}/academic";
     }
 
     // This year and next year
@@ -138,3 +220,5 @@
                  'options' => array_map(fn (int $t): array => ['value' => (string) $t, 'label' => word('term') . " {$t}"], $terms)],
             ],
         ];
+    }
+}
