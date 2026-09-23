@@ -1,0 +1,11 @@
+/* The tab content brings its own margins from the student pages */
+.l-child-profile__top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.l-child-profile__leaving {
+  margin-top: 1.5rem;
+}
