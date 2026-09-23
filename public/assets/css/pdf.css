@@ -1,0 +1,48 @@
+@page {
+  size: A4 portrait;
+  margin: 48px;
+}
+
+/* Dompdf can't load Google Fonts, so the font files are local */
+@font-face {
+  font-family: "Poppins";
+  font-weight: 400;
+  src: url("../fonts/poppins/Poppins-Regular.ttf");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 500;
+  src: url("../fonts/poppins/Poppins-Medium.ttf");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 500;
+  font-style: italic;
+  src: url("../fonts/poppins/Poppins-MediumItalic.ttf");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 600;
+  src: url("../fonts/poppins/Poppins-SemiBold.ttf");
+}
+
+@font-face {
+  font-family: "Poppins";
+  font-weight: 700;
+  src: url("../fonts/poppins/Poppins-Bold.ttf");
+}
+
+body {
+  margin: 0;
+  background-color: var(--white);
+  font-family: "Poppins";
+  line-height: 1.1;
+}
+
+/* Dompdf draws Poppins lines taller, so 1.1 here looks like 1.5 on screen */
+.c-certificate__points {
+  line-height: 1.1;
+}
