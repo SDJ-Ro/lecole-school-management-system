@@ -97,3 +97,109 @@ class TermMarkModel extends Model
     }
 
     // Published marks only, across all the grade's classes
+    public function gradeTerm(int $year, int $term, int $gradeNumber): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT cs.student_id, cs.class_id, m.subject_id, ss.name AS subject, m.mark
+             FROM class_students cs
+             JOIN classes c ON c.id = cs.class_id
+             JOIN grades g ON g.id = c.grade_id
+             JOIN term_publications tp ON tp.year = cs.year AND tp.class_id = cs.class_id AND tp.term = :term
+             JOIN marks m ON m.student_id = cs.student_id AND m.year = cs.year AND m.term = :term2
+             JOIN stage_subjects ss ON ss.id = m.subject_id
+             WHERE cs.year = :year AND g.sort_order = :grade
+             ORDER BY ss.sort_order, ss.name'
+        );
+        $statement->execute(['term' => $term, 'term2' => $term, 'year' => $year, 'grade' => $gradeNumber]);
+
+        return $statement->fetchAll();
+    }
+
+    // Top of Grade waits until every class with students has published
+    public function gradePublished(int $year, int $term, int $gradeNumber): bool
+    {
+        $statement = $this->db->prepare(
+            'SELECT COUNT(DISTINCT cs.class_id) = COUNT(DISTINCT tp.class_id)
+             FROM class_students cs
+             JOIN classes c ON c.id = cs.class_id
+             JOIN grades g ON g.id = c.grade_id
+             LEFT JOIN term_publications tp ON tp.year = cs.year AND tp.class_id = cs.class_id AND tp.term = :term
+             WHERE cs.year = :year AND g.sort_order = :grade'
+        );
+        $statement->execute(['term' => $term, 'year' => $year, 'grade' => $gradeNumber]);
+
+        return (bool) $statement->fetchColumn();
+    }
+
+    public function yearsOf(int $studentId): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT cs.year, cs.class_id, c.name AS class_name, g.sort_order AS grade_number
+             FROM class_students cs JOIN classes c ON c.id = cs.class_id JOIN grades g ON g.id = c.grade_id
+             WHERE cs.student_id = :id ORDER BY cs.year'
+        );
+        $statement->execute(['id' => $studentId]);
+
+        return $statement->fetchAll();
+    }
+
+    // Null when nothing is published yet
+    public function latestPublishedMarks(int $studentId): ?array
+    {
+        $statement = $this->db->prepare(
+            'SELECT m.year, m.term, m.mark
+             FROM marks m
+             JOIN class_students cs ON cs.student_id = m.student_id AND cs.year = m.year
+             JOIN term_publications p ON p.year = m.year AND p.class_id = cs.class_id AND p.term = m.term
+             WHERE m.student_id = :student
+               AND (m.year, m.term) = (SELECT p2.year, p2.term FROM term_publications p2
+                                       JOIN class_students c2 ON c2.class_id = p2.class_id AND c2.year = p2.year
+                                       WHERE c2.student_id = :again ORDER BY p2.year DESC, p2.term DESC LIMIT 1)'
+        );
+        $statement->execute(['student' => $studentId, 'again' => $studentId]);
+        $rows = $statement->fetchAll();
+
+        return $rows === [] ? null : ['year' => (int) $rows[0]['year'], 'term' => (int) $rows[0]['term'],
+            'marks' => array_map(fn (array $row): ?int => $row['mark'] === null ? null : (int) $row['mark'], $rows)];
+    }
+
+    // Used for the No-Promotion Mark, from published terms only
+    // An absent mark counts as 0, and the result is a percentage
+    // A student with no published marks that year is left out, so they move up
+    public function yearAverages(int $year): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT m.student_id, SUM(COALESCE(m.mark, 0)) * 100 / (100 * COUNT(*)) AS average
+             FROM marks m
+             JOIN class_students cs ON cs.student_id = m.student_id AND cs.year = m.year
+             JOIN term_publications p ON p.year = m.year AND p.class_id = cs.class_id AND p.term = m.term
+             WHERE m.year = :year
+             GROUP BY m.student_id'
+        );
+        $statement->execute(['year' => $year]);
+
+        return array_map('floatval', array_column($statement->fetchAll(), 'average', 'student_id'));
+    }
+
+    public function commentsOf(int $studentId): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT tc.year, tc.term, tc.comment, p.full_name AS teacher FROM term_comments tc LEFT JOIN profiles p ON p.account_id = tc.written_by
+             WHERE tc.student_id = :id AND tc.comment <> '' ORDER BY tc.year, tc.term"
+        );
+        $statement->execute(['id' => $studentId]);
+
+        return $statement->fetchAll();
+    }
+
+    public function comment(int $studentId, int $year, int $term): ?array
+    {
+        $statement = $this->db->prepare(
+            'SELECT tc.comment, p.full_name AS teacher FROM term_comments tc LEFT JOIN profiles p ON p.account_id = tc.written_by
+             WHERE tc.student_id = :id AND tc.year = :year AND tc.term = :term'
+        );
+        $statement->execute(['id' => $studentId, 'year' => $year, 'term' => $term]);
+
+        return $statement->fetch() ?: null;
+    }
+}
