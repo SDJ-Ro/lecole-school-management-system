@@ -1,0 +1,22 @@
+.c-school-year {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+}
+
+.c-school-year__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.c-school-year--past {
+  padding: 0;
+}
+.c-school-year__more {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
