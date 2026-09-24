@@ -1,0 +1,56 @@
+.c-person__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1.25rem 1.75rem;
+}
+.c-person__header--page {
+  border: 1px solid color-mix(in srgb, var(--skyblue) 50%, transparent);
+  border-radius: var(--radius-xl);
+}
+
+.c-person__header--sky {
+  background: color-mix(in srgb, var(--skyblue) 35%, transparent);
+}
+
+.c-person__header--sunshine {
+  background: color-mix(in srgb, var(--sunshine) 12%, transparent);
+}
+
+.c-person__header--terracotta {
+  background: color-mix(in srgb, var(--terracotta) 10%, transparent);
+}
+
+.c-person__header--maroon {
+  background: color-mix(in srgb, var(--maroon) 10%, transparent);
+}
+
+.c-person__who {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.c-person__eyebrow {
+  margin: 0;
+}
+
+.c-person__sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+
+.c-person__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+}
+.c-person__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.75rem;
+}
+
