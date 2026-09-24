@@ -1,0 +1,21 @@
+.l-approvals {
+  margin-top: 3.25rem;   /* Merges with the page header's margin, so the gap is 52px */
+}
+
+/* Padding, because a margin would merge with the margin of the cards row */
+.l-approvals-summary {
+  margin: 0 0 1.75rem;
+  padding-top: 0.25rem;
+}
+
+.l-approvals-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .l-approvals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
