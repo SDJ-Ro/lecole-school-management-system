@@ -1,0 +1,71 @@
+.c-marks-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--panel-line);
+  border-radius: var(--radius-xl);
+  padding: 0.875rem 1.125rem 1rem;
+  background: var(--panel-tint);
+  box-shadow: var(--shadow-sm);
+  animation: c-marks-panel-in 240ms var(--ease-out);
+}
+
+.c-marks-panel::-webkit-scrollbar {
+  width: 5px;
+}
+
+.c-marks-panel::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-full);
+  background: var(--line-strong);
+}
+
+@keyframes c-marks-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.c-marks-panel--slate {
+  --card-tone: var(--card-slate);
+  --panel-tint: var(--card-slate-tint);
+  --panel-line: var(--card-slate-line);
+}
+
+.c-marks-panel--steel {
+  --card-tone: var(--card-steel);
+  --panel-tint: var(--card-steel-tint);
+  --panel-line: var(--card-steel-line);
+}
+
+.c-marks-panel--taupe {
+  --card-tone: var(--card-taupe);
+  --panel-tint: var(--card-taupe-tint);
+  --panel-line: var(--card-taupe-line);
+}
+
+.c-marks-panel--sand {
+  --card-tone: var(--card-sand);
+  --panel-tint: var(--card-sand-tint);
+  --panel-line: var(--card-sand-line);
+}
+
+.c-marks-panel--seafoam {
+  --card-tone: var(--card-seafoam);
+  --panel-tint: var(--card-seafoam-tint);
+  --panel-line: var(--card-seafoam-line);
+}
+
+.c-marks-panel--sage {
+  --card-tone: var(--card-sage);
+  --panel-tint: var(--card-sage-tint);
+  --panel-line: var(--card-sage-line);
+}
