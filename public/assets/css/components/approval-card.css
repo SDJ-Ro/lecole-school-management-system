@@ -1,0 +1,24 @@
+.c-approval-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-left: 6px solid var(--terracotta);
+  padding: 1.25rem;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: c-fade-up 320ms ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-approval-card {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+.c-approval-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
