@@ -1,0 +1,35 @@
+.c-staff-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--alabaster);
+  border-radius: var(--radius-xl);
+  padding: 0.875rem 1.125rem;
+  background: var(--cream);
+}
+
+.c-staff-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.c-staff-card__title {
+  margin: 0;
+}
+
+.c-staff-card__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.15rem 0.4rem;
+  background: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--midnight);
+  cursor: pointer;
+}
+
