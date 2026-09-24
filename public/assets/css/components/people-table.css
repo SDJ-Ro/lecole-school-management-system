@@ -1,0 +1,35 @@
+.c-people-table-wrap {
+  overflow-x: auto;
+}
+
+.c-people-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.c-people-table th {
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--midnight);
+}
+
+.c-people-table--sky thead tr {
+  background: color-mix(in srgb, var(--skyblue) 20%, transparent);
+}
+
+.c-people-table--sunshine thead tr {
+  background: color-mix(in srgb, var(--sunshine) 20%, transparent);
+}
+
+.c-people-table--terracotta thead tr {
+  background: color-mix(in srgb, var(--terracotta) 15%, transparent);
+}
+
+.c-people-table--maroon thead tr {
+  background: color-mix(in srgb, var(--maroon) 10%, transparent);
+}
+
