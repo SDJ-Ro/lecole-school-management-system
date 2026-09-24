@@ -1,0 +1,33 @@
+.c-people__header-search {
+  width: 16rem;
+}
+.c-people__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 1.125rem 1.5rem;
+}
+
+.c-people__toolbar--sky {
+  border-color: color-mix(in srgb, var(--skyblue) 45%, transparent);
+  background: color-mix(in srgb, var(--skyblue) 15%, transparent);
+}
+
+.c-people__toolbar--sunshine {
+  border-color: color-mix(in srgb, var(--sunshine) 50%, transparent);
+  background: color-mix(in srgb, var(--sunshine) 15%, transparent);
+}
+
+.c-people__toolbar--terracotta {
+  border-color: color-mix(in srgb, var(--terracotta) 45%, transparent);
+  background: color-mix(in srgb, var(--terracotta) 10%, transparent);
+}
+
+.c-people__toolbar--maroon {
+  border-color: color-mix(in srgb, var(--maroon) 40%, transparent);
+  background: color-mix(in srgb, var(--maroon) 8%, transparent);
+}
