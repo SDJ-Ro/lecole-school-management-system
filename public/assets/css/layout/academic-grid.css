@@ -1,0 +1,18 @@
+.l-academic-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr;
+  align-items: start;
+  gap: 1.25rem;
+}
+
+.l-academic-grid__side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@media (max-width: 1080px) {
+  .l-academic-grid {
+    grid-template-columns: 1fr;
+  }
+}
