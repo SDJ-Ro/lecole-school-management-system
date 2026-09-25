@@ -1,0 +1,41 @@
+.l-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 860px) {
+  .l-filter-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.l-filter-bar--page {
+  margin: 3.25rem 0 3rem;   /* The top merges with the page header's margin, so the gap is 52px */
+}
+
+.l-filter-bar--close {
+  margin-bottom: 1.75rem;
+}
+
+.l-filter-bar__search {
+  flex: 1 1 auto;
+  max-width: 28rem;
+}
+
+.l-filter-bar__search--narrow {
+  flex: 0 1 260px;
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.l-filter-bar__selects {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
