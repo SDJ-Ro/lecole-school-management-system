@@ -1,0 +1,65 @@
+.l-student-cards-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.l-student-cards-bar .c-search {
+  flex: 1 1 auto;
+  min-width: 18rem;
+  max-width: 28rem;
+}
+
+.l-student-cards-bar--marks {
+  margin-bottom: 1rem;
+}
+
+.l-student-cards-bar--marks .c-dropdown {
+  min-width: 9.5rem;
+}
+
+.l-student-cards-bar__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.l-student-cards-back {
+  display: flex;
+  margin: 0 0 2.25rem;
+}
+
+/* The top padding is room for the photos that pop out of the first row's cards */
+.l-student-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem 1.5rem;
+  padding-top: 2.25rem;
+}
+
+.l-student-cards-grid[hidden] {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .l-student-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .l-student-cards-grid:not(.l-student-cards-grid--marks) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* A wider breakpoint, because the marks panel takes room beside the cards */
+@media (min-width: 1100px) {
+  .l-student-cards-grid--marks {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
