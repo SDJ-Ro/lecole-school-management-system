@@ -1,0 +1,26 @@
+.c-class-editor {
+  display: grid;
+  gap: 0.75rem;
+  background: color-mix(in srgb, var(--cream) 70%, transparent);
+  padding: 1rem 1.25rem;
+}
+
+/* Keeps the grade card's round bottom corners */
+.c-class-editor:last-child {
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+}
+
+@media (min-width: 1024px) {
+  .c-class-editor {
+    grid-template-columns: minmax(0, 0.65fr) minmax(0, 0.5fr) minmax(0, 1.35fr) auto;
+    align-items: end;
+  }
+}
+
+.c-class-editor__field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
