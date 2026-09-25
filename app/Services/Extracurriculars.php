@@ -132,3 +132,123 @@ final class Extracurriculars
             'phone'     => $row['coach_phone'] ?? '',
         ];
     }
+
+    private static function person(array $person): array
+    {
+        return [
+            'id'        => $person['id'],
+            'name'      => $person['name'],
+            'photo'     => $person['photo'] ?? '',
+            'grade'     => $person['grade_number'],
+            'ageGroup'  => JoinRules::ageGroup($person['date_of_birth']) ?? '—',
+            'role'      => $person['position'] ?? 'Member',
+            'position'  => $person['position'] ?? null,
+            'indexNo'   => $person['code'] ?? '',
+            'submitted' => $person['asked_on'] ?? null,
+        ];
+    }
+
+    // A team with no age group takes any age
+    private static function team(array $team, string $programmeCover): array
+    {
+        return [
+            'id'       => $team['id'],
+            'name'     => $team['name'],
+            'ageGroup' => $team['age_group'] ?? '',
+            'cover'    => $team['cover_url'] ?? $programmeCover,
+            'roster'   => array_map(fn (array $person): array => self::person($person), $team['members']),
+        ];
+    }
+
+    // The award opened in the pop-up. $wanted is its id, or 'new' for staff who may add one.
+    // Returns null if it is missing, belongs to another programme, or achievements are off.
+    public static function award(array $programme, string $wanted, bool $canEdit): ?array
+    {
+        if ($programme['awards'] === null || $wanted === '' || ($wanted === 'new' && !$canEdit))
+        {
+            return null;
+        }
+
+        $row = $wanted === 'new' ? null : (new AchievementModel())->find((int) $wanted);
+
+        if ($wanted !== 'new' && ($row === null || (int) $row['extracurricular_id'] !== (int) $programme['id']))
+        {
+            return null;
+        }
+
+        return [
+            'id'           => $row['id'] ?? 'new',
+            'title'        => $row['title'] ?? '',
+            'year'         => isset($row) ? substr($row['achieved_on'], 0, 4) : '',
+            'date'         => $row['achieved_on'] ?? '',
+            'venue'        => $row['venue'] ?? '',
+            'level'        => $row['level'] ?? '',
+            'tournament'   => $row['event_name'] ?? '',
+            'organisedBy'  => $row['organiser'] ?? '',
+            'place'        => $row['result'] ?? '',
+            'medal'        => $row['medal'] ?? '',
+            'ageGroup'     => $row['age_group'] ?? '',
+            'representing' => $row['team'] ?? (isset($row) ? 'Individual' : ''),
+            'summary'      => $row['summary'] ?? '',
+            'image'        => isset($row) ? ($row['photo_url'] ?? $programme['image']) : '',
+            'participants' => $row['students'] ?? [],
+            'others'       => $row['others'] ?? '',      // Names of people who are not in the portal
+            'gallery'      => $row['photos'] ?? [],
+            'honours'      => (bool) ($row['on_honours_board'] ?? false),
+        ];
+    }
+
+    private static function awardCard(array $award, string $programmeCover): array
+    {
+        return [
+            'id'    => $award['id'],
+            'title' => $award['title'],
+            'year'  => substr($award['achieved_on'], 0, 4),
+            'level' => $award['level'],
+            'kind'  => $award['team'] === null ? 'Individual' : 'Team',
+            'image' => $award['photo_url'] ?? $programmeCover,
+        ];
+    }
+
+    // Only members and staff see the coach's contact details
+    private static function staffCards(array $row, ?array $current, bool $member): array
+    {
+        $hidden = 'Shown once you join';
+        $value  = fn (?string $text): string => ($text ?? '') !== '' ? $text : '—';
+        $status = $current['status'] ?? null;
+
+        return [
+            'tic'     => ['title' => words('{Teacher} in Charge'), 'person' => [
+                'name' => $row['tic_name'] ?? 'Not assigned yet', 'line' => $value($row['tic_subjects']), 'photo' => $row['tic_photo'] ?? '',
+                'assigned' => $row['tic_id'] !== null, 'email' => $value($row['tic_email']), 'phone' => $value($row['tic_phone'])]],
+            'coach'   => ['title' => 'Coach / Instructor', 'person' => [
+                'name' => $row['coach_name'] ?? 'Not assigned yet', 'line' => $value($row['coach_specialty']), 'photo' => '',
+                'assigned' => ($row['coach_name'] ?? '') !== '',
+                'email' => $member ? $value($row['coach_email']) : $hidden, 'phone' => $member ? $value($row['coach_phone']) : $hidden]],
+            'details' => ['title' => 'Details', 'person' => null, 'items' => [
+                ['clock', 'Schedule', $value($row['schedule'])],
+                ['mapPin', 'Location', $value($row['venue'])],
+            ]],
+            'status'  => ['title' => 'Status', 'person' => null, 'items' => [
+                ['check', 'Membership', match ($status)
+                {
+                    'member'  => 'Enrolled',
+                    'parent'  => words('Waiting for your {parent}'),
+                    'teacher' => words('Waiting for the {teacher} in charge'),
+                    default   => 'Not Enrolled',
+                }],
+                ['calendar', 'Joined', $status === 'member' && $current['joined_on'] !== null ? date(country('date_format'), strtotime($current['joined_on'])) : '—'],
+            ]],
+            'created' => ['title' => 'Created Date', 'person' => null, 'items' => [
+                ['calendar', 'Date Added', date(country('date_format'), strtotime($row['created_at']))],
+            ]],
+        ];
+    }
+
+    // Notices here are read only, with no pin, edit or delete
+    private static function noticeCards(array $user, int $id): array
+    {
+        return array_map(fn (array $notice): array => $notice + ['canManage' => false, 'canReview' => false, 'isMine' => false, 'isForMe' => true],
+            (new NoticeModel())->forExtracurricular($user, $id));
+    }
+}
