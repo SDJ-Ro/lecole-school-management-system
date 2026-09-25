@@ -1,0 +1,30 @@
+.l-grade-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Columns instead of a grid, because the grade cards have different heights */
+.l-grade-grid {
+  column-gap: 1.25rem;
+}
+
+.l-grade-grid > * {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
+}
+
+.l-stage-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .l-grade-grid {
+    column-count: 2;
+  }
+
+  .l-stage-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
