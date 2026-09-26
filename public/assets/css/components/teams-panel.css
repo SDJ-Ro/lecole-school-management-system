@@ -1,0 +1,24 @@
+.c-teams__filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--alabaster);
+  padding-bottom: 1rem;
+}
+
+.c-teams__filter-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-teams__filter-choice {
+  min-width: 180px;
+}
+
+.c-teams__unassigned {
+  margin-bottom: 1.5rem;
+}
