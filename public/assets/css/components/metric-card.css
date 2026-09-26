@@ -1,0 +1,40 @@
+.c-metric-card {
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: c-fade-up 420ms ease forwards;
+  transition: box-shadow var(--speed) ease;
+}
+.c-metric-card:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.c-metric-card:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.c-metric-card:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.c-metric-card:nth-child(5) {
+  animation-delay: 200ms;
+}
+
+.c-metric-card:hover {
+  box-shadow: var(--shadow-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .c-metric-card {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+.c-metric-card--sand {
+  background: var(--sand);
+  color: var(--midnight);
+}
+
