@@ -1,0 +1,84 @@
+.c-total-marks {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--moss) 15%, transparent);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, var(--sprout), var(--sprout-soft));
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  animation: c-fade-up 400ms ease forwards;
+}
+
+.c-total-marks__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1rem;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--white) 70%, transparent);
+  color: var(--leaf);
+}
+
+.c-total-marks__label {
+  margin: 0 0 0.5rem;
+  color: var(--lichen);
+}
+
+.c-total-marks__value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--forest);
+}
+
+.c-total-marks__out-of {
+  font-size: 1.125rem;
+  color: var(--willow);
+}
+
+.c-total-marks__line {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lichen);
+}
+
+.c-total-marks__value + .c-total-marks__line {
+  margin-top: 0.75rem;
+}
+
+.c-total-marks__line strong {
+  font-weight: 700;
+  color: var(--forest);
+}
+.c-trend {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  opacity: 0;
+  animation: c-fade-up 400ms ease 100ms forwards;
+}
+
+.c-trend__title {
+  margin-bottom: 4px;
+}
+
+.c-trend__sub {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.c-trend__carousel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
