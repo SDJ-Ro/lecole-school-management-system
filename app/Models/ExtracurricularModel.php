@@ -145,6 +145,17 @@ class ExtracurricularModel extends Model
         )->fetchAll(\PDO::FETCH_COLUMN));
     }
 
+        public function watchLift(int $studentId, int $year, int $term): ?array
+    {
+        $statement = $this->db->prepare(
+            'SELECT l.reason, l.lifted_at, p.full_name AS lifted_by_name FROM academic_watch_lifts l LEFT JOIN profiles p ON p.account_id = l.lifted_by
+             WHERE l.student_id = :student AND l.year = :year AND l.term = :term'
+        );
+        $statement->execute(['student' => $studentId, 'year' => $year, 'term' => $term]);
+
+        return $statement->fetch() ?: null;
+    }
+
     // Requests waiting for any parent of their children, plus the ones this parent already answered
     public function forParent(int $parentId): array
     {
@@ -165,5 +176,45 @@ class ExtracurricularModel extends Model
 
         return $statement->fetchAll();
     }
+
+        public function memberCounts(): array
+    {
+        return $this->db->query(
+            "SELECT x.id, x.name, x.type, COUNT(em.student_id) AS members
+             FROM extracurriculars x LEFT JOIN extracurricular_members em ON em.extracurricular_id = x.id AND em.status = 'member'
+             WHERE x.review = 'approved' AND x.archived_at IS NULL
+             GROUP BY x.id, x.name, x.type ORDER BY members DESC, x.name"
+        )->fetchAll();
+    }
+
+    // For each grade, its students this year and how many are in a programme of this type
+    public function membersByGradeOfType(string $type): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT g.sort_order AS grade, COUNT(cs.student_id) AS total,
+                    COALESCE(SUM(EXISTS (SELECT 1 FROM extracurricular_members em JOIN extracurriculars x ON x.id = em.extracurricular_id
+                                         WHERE em.student_id = cs.student_id AND em.status = 'member' AND x.type = :type AND x.archived_at IS NULL)), 0) AS members
+             FROM grades g LEFT JOIN classes c ON c.grade_id = g.id LEFT JOIN current_class_students cs ON cs.class_id = c.id
+             GROUP BY g.id, g.sort_order ORDER BY g.sort_order"
+        );
+        $statement->execute(['type' => $type]);
+
+        return $statement->fetchAll();
+    }
+
+    // The number of members in each grade
+    public function membersByGrade(int $id): array
+    {
+        $statement = $this->db->prepare(
+            "SELECT g.sort_order AS grade, COUNT(*) AS members
+             FROM extracurricular_members em JOIN current_class_students cs ON cs.student_id = em.student_id
+             JOIN classes c ON c.id = cs.class_id JOIN grades g ON g.id = c.grade_id
+             WHERE em.extracurricular_id = :id AND em.status = 'member'
+             GROUP BY g.sort_order ORDER BY g.sort_order"
+        );
+        $statement->execute(['id' => $id]);
+
+        return $statement->fetchAll(\PDO::FETCH_KEY_PAIR);
+    
     }
 }
