@@ -1,0 +1,39 @@
+.l-metric-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.l-metric-cards-grid--tight {
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .l-metric-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .l-metric-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .l-metric-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .l-metric-cards-grid--four {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Keep this last so the three column version wins over the rules above */
+@media (min-width: 768px) {
+  .l-metric-cards-grid--three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
