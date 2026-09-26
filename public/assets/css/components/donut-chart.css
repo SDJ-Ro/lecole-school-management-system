@@ -1,0 +1,24 @@
+.c-donut-card > .c-panel__title {
+  margin-bottom: 0.5rem;
+}
+
+.c-donut-card__plot {
+  position: relative;
+  height: 11rem;
+  overflow: visible;
+}
+
+.c-donut-card__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Each slice is a circle outline, and its dash length sets the slice size */
+.c-donut-card__slice {
+  fill: none;
+  stroke: var(--series-color);
+  stroke-width: 20;
+  cursor: pointer;
+  transition: opacity var(--speed) ease, filter var(--speed) ease;
+}
