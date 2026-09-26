@@ -1,0 +1,30 @@
+.l-chart-calendar-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 2rem;
+}
+
+.l-chart-calendar-grid--tight {
+  margin-top: 2.5rem;   /* Merges with the page header's margin, so the gap is 40px */
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .l-chart-calendar-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  .l-chart-calendar-grid > :first-child {
+    grid-column: span 2;
+    min-width: 0;
+  }
+
+  /* If only one card is shown, let it use the full width */
+  .l-chart-calendar-grid > :first-child:not(:has(~ :not(template, dialog))) {
+    grid-column: 1 / -1;
+  }
+}
