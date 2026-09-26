@@ -1,0 +1,24 @@
+/* A bar or slice, its legend dot and its tooltip dot all share one --series-color */
+.c-series--maroon {
+  --series-color: var(--maroon);
+}
+
+.c-series--skyblue {
+  --series-color: var(--skyblue);
+}
+
+.c-series--lightblue {
+  --series-color: var(--lightblue);
+}
+
+.c-series--sunshine {
+  --series-color: var(--sunshine);
+}
+
+.c-series--terracotta {
+  --series-color: var(--terracotta);
+}
+
+.c-series--moss {
+  --series-color: var(--moss);
+}
