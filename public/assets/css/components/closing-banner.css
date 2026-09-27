@@ -1,0 +1,8 @@
+.c-closing-banner {
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.c-closing-banner__text {
+  flex: 1;
+}
