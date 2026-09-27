@@ -65,8 +65,8 @@ return static function (Router $router): void
     {
         foreach (config('permissions.calendar.create') as $role)
         {
-
-
+            $router->post("/{$role}/calendar/save", [CalendarController::class, 'save', $role]);
+            $router->post("/{$role}/calendar/delete", [CalendarController::class, 'delete', $role]);
         }
     }
 
@@ -92,13 +92,13 @@ return static function (Router $router): void
             
     // The "Viewing" switch picks which child the whole parent portal shows
     $router->get('/parent/child-profile', [ChildProfileController::class, 'show']);
-
+    $router->post('/parent/child', [ChildProfileController::class, 'choose']);
 
     // Leaving needs the parent's approval, so these pages only exist when parent consent is on
     if (feature('parent_consent'))
     {
         $router->get('/parent/approvals', [ApprovalController::class, 'index']);
-
+        $router->post('/parent/approvals/answer', [ApprovalController::class, 'answer']);
 
 
 
@@ -133,7 +133,9 @@ return static function (Router $router): void
     if (feature('complaints'))
     {
         $router->get('/parent/complaints', [ComplaintController::class, 'parent']);
+        $router->post('/parent/complaints/send', [ComplaintController::class, 'send']);
         $router->get('/management/complaints', [ComplaintController::class, 'management']);
+        $router->post('/management/complaints/resolve', [ComplaintController::class, 'resolve']);
    
    
     }
@@ -162,14 +164,12 @@ return static function (Router $router): void
         foreach (config('permissions.extracurricular.page') as $role)
         {
             $router->get("/{$role}/extracurricular", [ExtracurricularController::class, 'index', $role]);
+
+
             $router->get("/{$role}/extracurricular/member", [ExtracurricularController::class, 'member', $role]);
-
-
-
-
-
-
-
+            $router->post("/{$role}/extracurricular/team", [ExtracurricularController::class, 'saveTeam', $role]);
+            $router->post("/{$role}/extracurricular/assign", [ExtracurricularController::class, 'assign', $role]);
+            $router->post("/{$role}/extracurricular/team-delete", [ExtracurricularController::class, 'deleteTeam', $role]);
 
 
 
@@ -184,7 +184,7 @@ return static function (Router $router): void
     // Lift or lock a student's Academic Watch
     foreach (config('permissions.extracurricular.watch') as $role)
     {
-
+            $router->post("/{$role}/extracurricular/watch", [ExtracurricularController::class, 'watch', $role]);
     }
 }
 
@@ -227,7 +227,8 @@ return static function (Router $router): void
         $router->get('/student/academic/print', [AcademicController::class, 'recordPrint', 'student']);
         $router->get('/parent/child-profile/print', [AcademicController::class, 'recordPrint', 'parent']);
         $router->get('/teacher/marks', [TermMarkController::class, 'index']);
-        
+        $router->post('/teacher/marks/save', [TermMarkController::class, 'save']);
+        $router->post('/teacher/marks/publish', [TermMarkController::class, 'publish']);       
     
     }
 
@@ -239,10 +240,9 @@ return static function (Router $router): void
        
        
        
-
-
-
-
+            $router->post("/{$role}/academic/stages/save", [AcademicController::class, 'saveStage', $role]);
+            $router->post("/{$role}/academic/stages/delete", [AcademicController::class, 'deleteStage', $role]);
+            $router->post("/{$role}/academic/terms/save", [AcademicController::class, 'saveTerms', $role]);
         }
     }
 
@@ -275,13 +275,14 @@ return static function (Router $router): void
 
             if (config("profile.editable.{$role}") !== [])
             {
-
+                $router->post("/{$role}/profile/save", [ProfileController::class, 'save', $role]);
+                $router->post("/{$role}/profile/photo", [ProfileController::class, 'photo', $role]);
 
             }
 
             if (in_array($role, config('permissions.profile.password'), true))
             {
-                
+                $router->post("/{$role}/profile/password", [ProfileController::class, 'password', $role]);                
             }
         }
     }
