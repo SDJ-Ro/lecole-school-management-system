@@ -1,0 +1,30 @@
+.c-hero-back {
+  align-self: flex-start;
+}
+
+.c-programme-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 20rem;
+  overflow: hidden;
+  border: 1px solid var(--alabaster);
+  border-radius: var(--radius-xl);
+  background: var(--deepsea);
+  box-shadow: var(--shadow-sm);
+}
+
+.c-programme-hero__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.c-programme-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--midnight) 20%, transparent), color-mix(in srgb, var(--midnight) 92%, transparent));
+}
