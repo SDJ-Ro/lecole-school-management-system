@@ -33,6 +33,46 @@ class ComplaintController extends Controller
         $this->page('management/complaints', $user, $this->board((new ComplaintModel())->forManagement(), true));
     }
 
+    // POST /parent/complaints/send
+    public function send(): never
+    {
+        $user  = $this->requireRole('parent');
+        $back  = '/parent/complaints';
+        $model = new ComplaintModel();
+
+
+        $limits   = config('complaints.limits');
+        $category = $this->postText('category', 50);
+        $subject  = $this->postText('subject', $limits['subject'] + 1);
+        $body     = $this->postText('message', $limits['body'] + 1);
+        $students = array_values(array_unique(array_map('intval', $this->postList('students'))));
+
+
+        
+        
+        $names = array_map(fn (int $id): string => $this->children($user)[$id], $students);
+        $this->log($user, 'COMPLAINT_SENT', "{$subject} (" . implode(', ', $names) . ')');
+        $this->done($back, 'Inquiry submitted.');
+    }
+
+    // POST /management/complaints/resolve. Gives the one answer to an inquiry still in progress
+    public function resolve(): never
+    {
+        $user     = $this->requireRole('management');
+        $back     = '/management/complaints';
+        $model    = new ComplaintModel();
+        $max      = config('complaints.limits.response');
+        $response = $this->postText('response', $max + 1);
+
+
+        $complaint = $model->find((int) $this->postText('id', 11)) ?? $this->refuse('This inquiry is unavailable.', $back, 404);
+
+
+        $this->log($user, 'COMPLAINT_RESOLVED', "{$complaint['subject']} ({$complaint['students']})");
+        Notify::parents(array_map('intval', explode(',', $complaint['student_ids'])), "Your inquiry \"{$complaint['subject']}\" was answered.", 'complaints');
+        $this->done($back, 'Inquiry resolved.');
+    }
+       
     // Unknown filter values are dropped
     // $byClass adds the grade and class filters for management, using the class each child was in that year
     // The 'none' class filter finds children with no class that year
@@ -77,5 +117,31 @@ class ComplaintController extends Controller
         ];
     }
 
+    private function card(array $row): array
+    {
+        return [
+            'id'       => (int) $row['id'],
+            'title'    => $row['subject'],
+            'category' => $row['category'],
+            'message'  => $row['body'],
+            'status'   => $row['status'],
+            'date'     => $row['created_at'],
+            'students' => $row['students'],   // Each with the class they were in that year
+            'several'  => str_contains($row['student_ids'], ','),
+            'parent'   => $row['parent_name'],
+            'response' => $row['response'] ?? '',
+            'waiting'  => $row['status'] === 'in_progress' ? (new DateTime(substr($row['created_at'], 0, 10)))->diff(new DateTime(date('Y-m-d')))->days : null,   // In days
+        ];
+    }
+
+    private function done(string $back, string $message): never
+    {
+        if ($this->wantsJson())
+        {
+            $this->sendJson(['ok' => true, 'message' => $message]);
+        }
+
+        $this->setFlash('notice', $message);
+        $this->redirect($back);    
     }
 }
