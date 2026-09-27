@@ -1,0 +1,91 @@
+.l-programme-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .l-programme-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .l-programme-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.l-programme {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Adds to the grid gap to make 32px under the hero */
+.l-programme__hero {
+  margin-bottom: 0.5rem;
+}
+
+.l-pair-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .l-pair-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Same size as the dashboard calendar. The grid lets the calendar fill the box */
+.l-calendar-box {
+  display: grid;
+  width: 22.5rem;
+  max-width: 100%;
+  min-height: 33rem;
+}
+
+.l-roster-calendar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .l-roster-calendar-grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+
+.l-schedule-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 960px) {
+  .l-schedule-grid {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+}
+
+.l-schedule-grid__side {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.875rem;
+}
+
+.l-schedule-grid__pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
+}
+
+@media (min-width: 600px) {
+  .l-schedule-grid__pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
