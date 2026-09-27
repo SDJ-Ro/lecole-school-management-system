@@ -98,7 +98,7 @@ return static function (Router $router): void
     if (feature('parent_consent'))
     {
         $router->get('/parent/approvals', [ApprovalController::class, 'index']);
-
+        $router->post('/parent/approvals/permission', [ApprovalController::class, 'answerPermission']);
 
 
 
@@ -121,12 +121,14 @@ return static function (Router $router): void
         $router->get('/teacher/feedback', [FeedbackController::class, 'teacher']);
         $router->get('/parent/feedback', [FeedbackController::class, 'parent']);
         $router->get('/student/feedback', [FeedbackController::class, 'student']);
-
+        $router->post('/teacher/feedback/save', [FeedbackController::class, 'save']);
+        $router->post('/teacher/feedback/delete', [FeedbackController::class, 'delete']);
+        
 
 
         foreach (config('permissions.feedback.read') as $role)
         {
-
+            $router->post("/{$role}/feedback/read", [FeedbackController::class, 'read', $role]);
         }
     }
 
@@ -144,14 +146,18 @@ return static function (Router $router): void
     {
         $router->get('/student/certificates', [CertificateController::class, 'student']);
         $router->get('/student/certificates/pdf', [CertificateController::class, 'pdf', 'student']);
-        $router->get('/parent/child-profile/certificate-pdf', [CertificateController::class, 'pdf', 'parent']);
+        $router->get('/parent/child-profile/certificate-pdf', [CertificateController::class, 'pdf', 'parent']);          $router->post('/student/certificates/request', [CertificateController::class, 'requestCopy']);
 
 
         foreach (config('permissions.certificates.manage') as $role)
         {
             $router->get("/{$role}/character-certificate", [CertificateController::class, 'management', $role]);
             $router->get("/{$role}/character-certificate/pdf", [CertificateController::class, 'pdf', $role]);
-        
+            $router->post("/{$role}/character-certificate/wording", [CertificateController::class, 'wording', $role]);
+            $router->post("/{$role}/character-certificate/finalise", [CertificateController::class, 'finalise', $role]);
+            $router->post("/{$role}/character-certificate/reopen", [CertificateController::class, 'reopen', $role]);
+            $router->post("/{$role}/character-certificate/request", [CertificateController::class, 'decide', $role]);
+
         
         
 
@@ -164,7 +170,9 @@ return static function (Router $router): void
         foreach (config('permissions.extracurricular.page') as $role)
         {
             $router->get("/{$role}/extracurricular", [ExtracurricularController::class, 'index', $role]);
-
+            $router->post("/{$role}/extracurricular/interest", [ExtracurricularController::class, 'interest', $role]);
+            $router->post("/{$role}/extracurricular/request", [ExtracurricularController::class, 'decide', $role]);
+            $router->post("/{$role}/extracurricular/remove", [ExtracurricularController::class, 'remove', $role]);
 
             $router->get("/{$role}/extracurricular/member", [ExtracurricularController::class, 'member', $role]);
 
@@ -174,8 +182,8 @@ return static function (Router $router): void
             // A programme's achievements go with the achievements module
             if (feature('achievements'))
             {
-
-
+            $router->post("/{$role}/extracurricular/award", [ExtracurricularController::class, 'saveAward', $role]);
+            $router->post("/{$role}/extracurricular/award-delete", [ExtracurricularController::class, 'deleteAward', $role]);
             }
         }
         
@@ -204,19 +212,21 @@ return static function (Router $router): void
     if (feature('achievements'))
     {
         $router->get('/student/achievements', [AchievementController::class, 'student']);
+        $router->post('/student/achievements/missing-record', [AchievementController::class, 'sendRequest']);
 
         
         foreach (config('permissions.achievements.record') as $role)
         {
             $router->get("/{$role}/achievements", [AchievementController::class, 'staff', $role]);
-
+            $router->post("/{$role}/achievements/save", [AchievementController::class, 'save', $role]);
+            $router->post("/{$role}/achievements/delete", [AchievementController::class, 'delete', $role]);
 
         }
 
         foreach (config('permissions.achievements.answer') as $role)
         {
             $router->get("/{$role}/achievements/evidence", [AchievementController::class, 'evidence', $role]);
-        
+            $router->post("/{$role}/achievements/answer", [AchievementController::class, 'answer', $role]);
         }
     }
     
