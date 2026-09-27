@@ -1,0 +1,84 @@
+.c-programme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--radius-2xl);
+  border: 2px solid var(--alabaster);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--speed) ease, box-shadow var(--speed) ease, border-color var(--speed) ease;
+}
+
+.c-programme-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--skyblue) 50%, transparent);
+  box-shadow: var(--shadow-md);
+}
+.c-programme-card--waiting {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--sunshine) 60%, transparent);
+  background: var(--ivory);
+  filter: grayscale(0.65);
+  opacity: 0.88;
+}
+
+.c-programme-card--waiting:hover {
+  border-color: var(--sunshine);
+  filter: grayscale(0.2);
+  opacity: 1;
+}
+.c-programme-card__top {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 9.5rem;
+  padding: 1.25rem;
+  background: var(--deepsea);
+  color: var(--white);
+}
+
+.c-programme-card__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.c-programme-card__top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--deepsea) 25%, transparent), color-mix(in srgb, var(--deepsea) 70%, transparent));
+}
+
+.c-programme-card__pill,
+.c-programme-card__titles {
+  position: relative;
+  z-index: 1;
+}
+
+.c-programme-card__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  align-self: flex-end;
+}
+
+.c-programme-card__pill--sport {
+  background: var(--maroon);
+  color: var(--white);
+}
+
+.c-programme-card__pill--club {
+  background: var(--card-seafoam-line);
+  color: var(--midnight);
+}
+
+.c-programme-card__pill--enrolled {
+  background: color-mix(in srgb, var(--white) 25%, transparent);
+  color: var(--white);
+  backdrop-filter: blur(4px);
+}
