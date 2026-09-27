@@ -98,7 +98,7 @@ return static function (Router $router): void
     if (feature('parent_consent'))
     {
         $router->get('/parent/approvals', [ApprovalController::class, 'index']);
-        $router->post('/parent/approvals/answer', [ApprovalController::class, 'answer']);
+
 
 
 
@@ -106,13 +106,13 @@ return static function (Router $router): void
 
 
         foreach (config('permissions.leaving.change') as $role)
-        {        
-
+        { 
+            $router->post("/{$role}/leaving", [LeavingController::class, 'change', $role]);       
         }
 
         foreach (config('permissions.leaving.start') as $role)
         {        
-
+            $router->post("/{$role}/leaving/left", [LeavingController::class, 'leftWithoutNotice', $role]);
         }
     }
     
@@ -167,9 +167,7 @@ return static function (Router $router): void
 
 
             $router->get("/{$role}/extracurricular/member", [ExtracurricularController::class, 'member', $role]);
-            $router->post("/{$role}/extracurricular/team", [ExtracurricularController::class, 'saveTeam', $role]);
-            $router->post("/{$role}/extracurricular/assign", [ExtracurricularController::class, 'assign', $role]);
-            $router->post("/{$role}/extracurricular/team-delete", [ExtracurricularController::class, 'deleteTeam', $role]);
+
 
 
 
@@ -200,6 +198,7 @@ return static function (Router $router): void
     {
 
         $router->get("/{$role}/settings", [SettingsController::class, 'show', $role]);
+        $router->post("/{$role}/settings", [SettingsController::class, 'save', $role]);
     }
     
     if (feature('achievements'))
@@ -256,7 +255,10 @@ return static function (Router $router): void
             $router->get("/{$role}/people/add", [PeopleAddController::class, 'form', $role]);
             $router->get("/{$role}/people/parents", [PeopleAddController::class, 'parents', $role]);
         
-        
+            $router->post("/{$role}/people/status", [PeopleController::class, 'status', $role]);
+            $router->post("/{$role}/people/update", [PeopleController::class, 'update', $role]);        
+            $router->post("/{$role}/people/handover", [PeopleController::class, 'handover', $role]);
+            $router->post("/{$role}/people/add", [PeopleAddController::class, 'add', $role]);
         
         
         }
