@@ -1,0 +1,47 @@
+.c-notifications-card__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.c-notifications-card__bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--terracotta);
+}
+
+.c-notifications-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.c-notifications-card__view-all {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: var(--midnight);
+  transition: background-color var(--speed) ease, color var(--speed) ease;
+}
+
+.c-notifications-card__view-all:hover {
+  background: var(--wash-strong);
+  color: var(--terracotta);
+}
+
+.c-notifications-card__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.c-notifications-card__item {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--sand) 45%, transparent);
+  padding: 0.875rem 1rem 0.875rem 1.25rem;
+  text-decoration: none;
+  transition: background-color var(--speed) ease;
+}
+
