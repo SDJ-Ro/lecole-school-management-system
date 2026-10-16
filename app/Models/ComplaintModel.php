@@ -47,6 +47,51 @@ class ComplaintModel extends Model
 
         return $statement->fetch() ?: null;
     }
+    
+    public function openCount(int $parentId): int
+    {
+        $statement = $this->db->prepare("SELECT COUNT(*) FROM complaints WHERE parent_id = :parent AND status = 'in_progress'");
+        $statement->execute(['parent' => $parentId]);
 
+        return (int) $statement->fetchColumn();
+    }
+
+    // Checks again that every child belongs to this parent
+    // Returns the new id, or 0 when nothing was saved
+    public function submit(int $parentId, array $studentIds, int $year, string $category, string $subject, string $body): int
+    {
+        return $this->transaction(function () use ($parentId, $studentIds, $year, $category, $subject, $body): int
+        {
+            $linked = $this->db->prepare('SELECT COUNT(*) FROM student_parents WHERE parent_account_id = :parent
+                AND student_account_id IN (' . self::idList($studentIds) . ')');
+            $linked->execute(['parent' => $parentId]);
+
+            if ($studentIds === [] || (int) $linked->fetchColumn() !== count($studentIds))
+            {
+                return 0;
+            }
+
+            $this->db->prepare('INSERT INTO complaints (parent_id, school_year, category, subject, body) VALUES (:parent, :year, :category, :subject, :body)')
+                ->execute(['parent' => $parentId, 'year' => $year, 'category' => $category, 'subject' => $subject, 'body' => $body]);
+            $id      = (int) $this->db->lastInsertId();
+            $student = $this->db->prepare('INSERT INTO complaint_students (complaint_id, student_id) VALUES (:id, :student)');
+
+            foreach ($studentIds as $studentId)
+            {
+                $student->execute(['id' => $id, 'student' => $studentId]);
+            }
+
+            return $id;
+        });
+    }
+
+    // The first answer wins, so this returns false when it was already answered
+    public function resolve(int $id, string $response, int $resolverId): bool
+    {
+        $statement = $this->db->prepare("UPDATE complaints SET status = 'resolved', response = :response, resolved_by = :resolver,
+            resolved_at = NOW() WHERE id = :id AND status = 'in_progress'");
+        $statement->execute(['response' => $response, 'resolver' => $resolverId, 'id' => $id]);
+
+        return $statement->rowCount() === 1;
     }
 }
