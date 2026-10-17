@@ -75,3 +75,80 @@ final class Mailer
     }
 
     // Sends over STARTTLS, which uses port 587
+    private static function sendSmtp(string $to, string $subject, string $html): void
+    {
+        $cfg = config('mail.smtp');
+
+        $socket = fsockopen($cfg['host'], $cfg['port'], $errno, $errstr, 15);
+
+        if (!$socket)
+        {
+            throw new RuntimeException("Could not connect to SMTP server: {$errstr} ({$errno})");
+        }
+
+        // A reply can have several lines. The last one has a space after its code.
+        $read = function () use ($socket): string
+        {
+            $data = '';
+
+            while ($line = fgets($socket, 512))
+            {
+                $data .= $line;
+
+                if (isset($line[3]) && $line[3] === ' ')
+                {
+                    break;
+                }
+            }
+
+            return $data;
+        };
+
+        $command = function (string $cmd, int $expectedCode) use ($socket, $read): void
+        {
+            fwrite($socket, $cmd . "\r\n");
+            $response = $read();
+
+            if ((int) substr($response, 0, 3) !== $expectedCode)
+            {
+                throw new RuntimeException("SMTP error [{$cmd}]: {$response}");
+            }
+        };
+
+        $read();
+        $command('EHLO ' . gethostname(), 250);
+        $command('STARTTLS', 220);
+
+        stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+        $command('EHLO ' . gethostname(), 250);
+        $command('AUTH LOGIN', 334);
+        $command(base64_encode($cfg['username']), 334);
+        $command(base64_encode($cfg['password']), 235);
+        $command('MAIL FROM:<' . config('mail.from_address') . '>', 250);
+        $command("RCPT TO:<{$to}>", 250);
+        $command('DATA', 354);
+
+        $from    = sprintf('"%s" <%s>', addcslashes(config('mail.from_name'), '"'), config('mail.from_address'));
+        $headers = [
+            "From: {$from}",
+            "To: <{$to}>",
+            'Subject: =?UTF-8?B?' . base64_encode($subject) . '?=',
+            'Date: ' . date('r'),
+            'MIME-Version: 1.0',
+            'Content-Type: text/html; charset=UTF-8',
+        ];
+
+        // A line that starts with "." gets a second one, because a lone "." ends the message
+        $body = preg_replace('/^\./m', '..', preg_replace('/\r?\n/', "\r\n", $html));
+        fwrite($socket, implode("\r\n", $headers) . "\r\n\r\n" . $body . "\r\n.\r\n");
+        $accepted = $read();
+
+        if ((int) substr($accepted, 0, 3) !== 250)
+        {
+            throw new RuntimeException("SMTP error [message]: {$accepted}");
+        }
+
+        $command('QUIT', 221);
+        fclose($socket);
+    }
+}
