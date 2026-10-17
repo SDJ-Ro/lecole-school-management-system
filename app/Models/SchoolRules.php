@@ -53,7 +53,27 @@ class SchoolRules extends Model
 
         return $rows;
     }
+    // An empty value removes that year's row, so the year before's value carries on
+    // The keys come from the settings config only, never from the form
+    public function save(int $year, array $values, int $adminId): void
+    {
+        $this->transaction(function () use ($year, $values, $adminId): void
+        {
+            $forget = $this->db->prepare('DELETE FROM school_rules WHERE from_year = :year AND rule_key = :key');
+            $keep   = $this->db->prepare(
+                'INSERT INTO school_rules (from_year, rule_key, value, updated_by) VALUES (:year, :key, :value, :by)
+                 ON DUPLICATE KEY UPDATE value = VALUES(value), updated_by = VALUES(updated_by)'
+            );
 
+            foreach ($values as $key => $value)
+            {
+                $value === null
+                    ? $forget->execute(['year' => $year, 'key' => $key])
+                    : $keep->execute(['year' => $year, 'key' => $key, 'value' => json_encode($value), 'by' => $adminId]);
+            }
+        });
+
+        self::$rows = null;   // So the next read sees the new values
     
     }
 }
