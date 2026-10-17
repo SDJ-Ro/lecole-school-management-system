@@ -134,6 +134,39 @@ class SettingsController extends Controller
     }
 
     // Lists what changed, for the Audit Log
+    private function changed(array $values): string
+    {
+        $keys = array_keys(array_filter($values, fn (mixed $value, string $key): bool => $value !== SchoolSettings::saved($key), ARRAY_FILTER_USE_BOTH));
+
+        return $keys === [] ? 'nothing changed' : implode(', ', array_map(fn (string $key): string => substr($key, strpos($key, '.') + 1), $keys));
+    }
+
+    // Cards show the value in use, and each box's placeholder shows the file's value
+    private function profileCards(array $typed): array
+    {
+        $text     = fn (mixed $value, string $join): string => is_array($value) ? implode($join, $value) : (string) $value;
+        $sections = [];
+
+        foreach (config('settings.profile') as $key => $field)
+        {
+            [$label, , $section, $icon] = $field;
+            $lines = ($field[4] ?? '') === 'lines';
+
+            $sections[$section][] = [
+                'label'       => words($label),
+                'icon'        => $icon,
+                'value'       => $text(school($key), ', ') ?: '—',
+                'edit'        => $key,
+                'raw'         => $typed[$key] ?? $text(school($key), "\n"),
+                'box'         => $lines ? 'lines' : 'text',
+                'placeholder' => $text(config("white_label.school.{$key}"), $lines ? "\n" : ', '),
+                'wide'        => $lines,
+            ];
+        }
+
+        return $sections;
+    }
+
     
     //175-203
     // 'beside' is the card that shares the logo's row
@@ -164,6 +197,79 @@ class SettingsController extends Controller
 
         return $sections;
     }
+    // One card per word, with a box for the singular and one for the plural
+    private function terminologyCards(array $typed): array
+    {
+        $card = function (string $singular, ?string $plural) use ($typed): array
+        {
+            $keys = array_values(array_filter([$singular, $plural]));
+            $each = fn (callable $value): array|string => count($keys) > 1 ? array_map($value, $keys) : $value($singular);
+
+            return [
+                'label'       => default_word($singular),
+                'icon'        => null,
+                'value'       => implode(' · ', array_map('word', $keys)),
+                'edit'        => implode(',', $keys),
+                'raw'         => $each(fn (string $key): string => $typed[$key] ?? word($key)),
+                'placeholder' => $each('default_word'),
+                'wide'        => false,
+            ];
+        };
+
+        return array_map(fn (array $terms): array => array_map($card, array_keys($terms), array_values($terms)), config('settings.terminology'));
+    }
+
+    // Shows this year's value, plus next year's when it is different
+    // The box edits next year's value
+    private function ruleCards(array $typed): array
+    {
+        $next  = (new SchoolYear())->current() + 1;
+        $cards = [];
+
+        foreach (config('settings.rules') as $key => [$label, , $section, $icon])
+        {
+            $box = $this->ruleBox($key);
+
+            $cards[$section][] = [
+                'label'       => words($label),
+                'icon'        => $icon,
+                'value'       => rule($key) . (rule($key, $next) !== rule($key) ? ' · ' . rule($key, $next) . " from {$next}" : ''),
+                'edit'        => $box,
+                'raw'         => $typed[$box] ?? (string) rule($key, $next),
+                'placeholder' => (string) config("white_label.rules.{$key}"),
+                'wide'        => false,
+            ];
+        }
+
+        return $cards;
+    }
+
+    // A form box name can't hold a dot, because PHP turns it into an underscore
+    private function ruleBox(string $key): string
+    {
+        return 'rule_' . str_replace('.', '_', $key);
+    }
+
+    // View only, because only the installer changes these
+    private function systemCards(): array
+    {
+        $card    = fn (string $label, string $icon, string $value, bool $wide = false): array =>
+            ['label' => $label, 'icon' => $icon, 'value' => $value ?: '—', 'edit' => null, 'raw' => '', 'wide' => $wide];
+        $modules = array_filter(config('white_label.features'), fn (bool $on, string $key): bool => $on && !str_ends_with($key, '_signup') && $key !== 'demo_quickfill',
+            ARRAY_FILTER_USE_BOTH);
+        $signUps = array_filter(config('app.roles'), fn (string $role): bool => feature("{$role}_signup"));
+
+        return [
+            $card('Organisation Type', 'building2', ucfirst((string) school('type'))),
+            $card('Email Domain', 'mail', (string) school('email_domain')),
+            $card(words('{Grades} Offered'), 'graduationCap', grade_range((int) config('white_label.academic.grade_numbers.first'),
+                (int) config('white_label.academic.grade_numbers.last'))),
+            $card('Self Sign-Up', 'usersRound', implode(', ', array_map(fn (string $role): string => plural($role), $signUps))),
+            $card('Country & Region', 'mapPin', (string) country('name')),
+            $card('Time Zone', 'clock', (string) country('timezone')),
+            $card('Date Format', 'calendar', date(country('date_format')) . ' (today)'),
+            $card('Enabled Modules', 'sliders', implode(', ', array_map(fn (string $key): string => ucwords(str_replace('_', ' ', $key)), array_keys($modules))), true),
+        ];
 //277-278
     }
 }
