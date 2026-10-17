@@ -41,15 +41,15 @@ return static function (Router $router): void
     foreach (config('app.roles') as $role)
     {
         $router->get("/auth/{$role}", [AuthController::class, 'signin', $role]);
-
+        $router->post("/auth/{$role}", [AuthController::class, 'handleSignin', $role]);
 
         $router->get("/auth/{$role}/signup", [AuthController::class, 'signup', $role]);
-        
+        $router->post("/auth/{$role}/signup", [AuthController::class, 'handleSignup', $role]);
+        $router->post("/auth/{$role}/verify", [AuthController::class, 'handleActivate', $role]);
+        $router->post("/auth/{$role}/resend", [AuthController::class, 'resendActivation', $role]);
 
-
-
-
-
+        $router->post("/auth/{$role}/forgot", [AuthController::class, 'handleForgot', $role]);
+        $router->post("/auth/{$role}/reset", [AuthController::class, 'handleReset', $role]);
 
         $router->get("/{$role}", [DashboardController::class, 'show', $role]);
         $router->get("/{$role}/dashboard", [DashboardController::class, 'show', $role]);
@@ -58,7 +58,7 @@ return static function (Router $router): void
     foreach (config('permissions.notifications.see') as $role)
     {
         $router->get("/{$role}/notifications/open", [NotificationController::class, 'open', $role]);
-    
+        $router->post("/{$role}/notifications/read-all", [NotificationController::class, 'readAll', $role]);
     }
 
     if (feature('calendar'))
@@ -78,14 +78,14 @@ return static function (Router $router): void
 
             if (in_array($role, config('permissions.notices.post'), true))
             {
-
-
-
+                $router->post("{$board['url']}/save", [NoticeController::class, 'save', $role]);
+                $router->post("{$board['url']}/pin", [NoticeController::class, 'pin', $role]);
+                $router->post("{$board['url']}/delete", [NoticeController::class, 'delete', $role]);
             }
 
             if (feature('approvals') && in_array($role, config('permissions.notices.approve'), true))
             {
-
+                $router->post("{$board['url']}/review", [NoticeController::class, 'review', $role]);
             }
         }
     }
@@ -246,9 +246,10 @@ return static function (Router $router): void
         foreach (config('permissions.academic.edit') as $role)
         {
             $router->get("/{$role}/academic", [AcademicController::class, 'overview', $role]);
-       
-       
-       
+            $router->post("/{$role}/academic/grades/add", [AcademicController::class, 'addGrade', $role]);
+            $router->post("/{$role}/academic/grades/delete", [AcademicController::class, 'deleteGrade', $role]);
+            $router->post("/{$role}/academic/classes/save", [AcademicController::class, 'saveClass', $role]);
+            $router->post("/{$role}/academic/subject-teacher", [AcademicController::class, 'saveSubjectTeacher', $role]);
             $router->post("/{$role}/academic/stages/save", [AcademicController::class, 'saveStage', $role]);
             $router->post("/{$role}/academic/stages/delete", [AcademicController::class, 'deleteStage', $role]);
             $router->post("/{$role}/academic/terms/save", [AcademicController::class, 'saveTerms', $role]);
