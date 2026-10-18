@@ -110,6 +110,104 @@ class AchievementModel extends Model
 
         return $row + ['students' => $students->fetchAll(), 'photos' => $photos->fetchAll()];
     }
+    
+    // Saves a programme's achievement with its photo gallery
+    // Returns the id and the old photos that can now be removed
+    public function save(?int $achievementId, int $extracurricularId, array $values, array $studentIds, array $keptPhotoIds, array $newPhotos, int $by): array
+    {
+        return $this->transaction(function () use ($achievementId, $extracurricularId, $values, $studentIds, $keptPhotoIds, $newPhotos, $by): array
+        {
+            $values = array_intersect_key($values, array_flip(self::COLUMNS));
+            $old    = $achievementId === null ? null : $this->find($achievementId);
+
+            if ($achievementId === null)
+            {
+                $columns = array_keys($values);
+                $this->db->prepare('INSERT INTO achievements (' . implode(', ', $columns) . ', extracurricular_id, added_by)
+                                    VALUES (:' . implode(', :', $columns) . ', :extracurricular, :by)')
+                    ->execute($values + ['extracurricular' => $extracurricularId, 'by' => $by]);
+                $achievementId = (int) $this->db->lastInsertId();
+            }
+            else
+            {
+                $sets = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($values)));
+                $this->db->prepare("UPDATE achievements SET {$sets} WHERE id = :id")->execute($values + ['id' => $achievementId]);
+            }
+
+            $this->db->prepare('DELETE FROM achievement_students WHERE achievement_id = :id')->execute(['id' => $achievementId]);
+            $student = $this->db->prepare('INSERT INTO achievement_students (achievement_id, student_id) VALUES (:id, :student)');
+
+            foreach ($studentIds as $studentId)
+            {
+                $student->execute(['id' => $achievementId, 'student' => $studentId]);
+            }
+
+            $gone = array_values(array_filter($old['photos'] ?? [], fn (array $photo): bool => !in_array((int) $photo['id'], $keptPhotoIds, true)));
+            $drop = $this->db->prepare('DELETE FROM achievement_photos WHERE id = :photo AND achievement_id = :id');
+            $move = $this->db->prepare('UPDATE achievement_photos SET sort_order = :place WHERE id = :photo AND achievement_id = :id');
+            $add  = $this->db->prepare('INSERT INTO achievement_photos (achievement_id, url, sort_order) VALUES (:id, :url, :place)');
+
+            foreach ($gone as $photo)
+            {
+                $drop->execute(['photo' => $photo['id'], 'id' => $achievementId]);
+            }
+
+            foreach (array_values($keptPhotoIds) as $place => $photoId)
+            {
+                $move->execute(['place' => $place, 'photo' => $photoId, 'id' => $achievementId]);
+            }
+
+            foreach (array_values($newPhotos) as $place => $url)
+            {
+                $add->execute(['id' => $achievementId, 'url' => $url, 'place' => count($keptPhotoIds) + $place]);
+            }
+
+            $unused = array_column($gone, 'url');
+
+            if (isset($values['photo_url']) && $old !== null)
+            {
+                $unused[] = $old['photo_url'];   // The old cover photo
+            }
+
+            return [$achievementId, $unused];
+        });
+    }
+
+    // Saves one student's achievement
+    // An edit does not change the students, because an honours board one may have several
+    public function record(?int $achievementId, int $studentId, array $values, int $by): int
+    {
+        return $this->transaction(function () use ($achievementId, $studentId, $values, $by): int
+        {
+            $values = array_intersect_key($values, array_flip(self::RECORD_COLUMNS));
+
+            if ($achievementId !== null)
+            {
+                $sets = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($values)));
+                $this->db->prepare("UPDATE achievements SET {$sets} WHERE id = :id")->execute($values + ['id' => $achievementId]);
+
+                return $achievementId;
+            }
+
+            $columns = array_keys($values);
+            $this->db->prepare('INSERT INTO achievements (' . implode(', ', $columns) . ', added_by) VALUES (:' . implode(', :', $columns) . ', :by)')
+                ->execute($values + ['by' => $by]);
+            $achievementId = (int) $this->db->lastInsertId();
+            $this->db->prepare('INSERT INTO achievement_students (achievement_id, student_id) VALUES (:id, :student)')
+                ->execute(['id' => $achievementId, 'student' => $studentId]);
+
+            return $achievementId;
+        });
+    }
+
+    // Returns the photo URLs so the files can be removed too
+    public function delete(int $achievementId): array
+    {
+        $row = $this->find($achievementId);
+        $this->db->prepare('DELETE FROM achievements WHERE id = :id')->execute(['id' => $achievementId]);
+
+        return $row === null ? [] : [$row['photo_url'], ...array_column($row['photos'], 'url')];
+    }
 
     // With no teacher given, returns every student
     // A teacher gets their class and the members of programmes they run
