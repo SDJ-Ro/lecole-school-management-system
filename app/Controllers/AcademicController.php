@@ -96,6 +96,113 @@ class AcademicController extends Controller
         ]);
     }
 
+    // POST /{role}/academic/stages/save. Without an id it adds a new stage
+    public function saveStage(string $role): never
+    {
+        $user    = $this->guard($role);
+        $model   = new StageModel();
+        $id      = (int) $this->postText('id') ?: null;
+        $stage   = $id === null ? null : ($model->find($id) ?? $this->refuse('That stage no longer exists.', $this->pageUrl($role), 404));
+        $numbers = config('white_label.academic.grade_numbers');
+        $data    = [
+            'first_grade' => $this->postText('first_grade', 3),
+            'last_grade'  => $this->postText('last_grade', 3),
+            'description' => $this->postText('description', 255),
+        ];
+        $names    = $this->postList('subjects');
+        $ids      = $this->postList('subject_ids');   // One id per name, in the same order. An empty id is a new subject
+        $back     = $this->pageUrl($role) . '#curriculum';
+
+
+        $subjects = $this->matchSubjects($names, $ids, $stage['subjects'] ?? []);
+        $refuse   = function (string $message) use ($data, $subjects, $id, $model, $back): never
+        {
+            // Reopens the editor
+            $this->setFlash('stage_form', $data + ['id' => $id, 'subjects' => $subjects, 'assigned' => $id === null ? [] : $model->assignments($id)]);
+            $this->refuse($message, $back, 422);
+        };
+        $range    = "required|between:{$numbers['first']},{$numbers['last']}";
+        $errors   = Validator::check($data, ['first_grade' => $range, 'last_grade' => $range, 'description' => 'max:255'], [
+            'first_grade' => 'From ' . strtolower(word('grade')), 'last_grade' => 'To ' . strtolower(word('grade')),
+        ]);
+
+        if ($errors !== [])
+        {
+            $refuse(reset($errors));
+        }
+
+        [$first, $last] = [(int) $data['first_grade'], (int) $data['last_grade']];
+
+        if ($first > $last)
+        {
+            $refuse('"To" must be the same as or after "From".');
+        }
+
+        if (($other = $model->overlapping($first, $last, $id)) !== null)
+        {
+            $refuse("These overlap with {$other}. Each " . strtolower(word('grade')) . ' can be in only one stage.');
+        }
+
+        if ($model->gradesIn($first, $last) === 0)
+        {
+            $refuse('Add a ' . strtolower(word('grade')) . ' in ' . grade_range($first, $last) . ' first.');
+        }
+
+        if ($subjects === [])
+        {
+            $refuse(words('Add at least one {subject}.'));
+        }
+
+        foreach ($subjects as $subject)
+        {
+            if (mb_strlen($subject['name']) > 100)
+            {
+                $refuse("\"{$subject['name']}\" is too long (100 characters at most).");
+            }
+        }
+
+        // A subject with marks keeps its old name on old reports
+        // If it is renamed, a new subject takes over this year's teachers and the old one is retired
+        // If it is taken out, it is retired
+        $marks = $model->marks();
+
+        foreach ($subjects as &$subject)
+        {
+            $oldName = $stage['subjects'][$subject['id']] ?? null;
+
+            if ($oldName !== null && mb_strtolower($oldName) !== mb_strtolower($subject['name']) && isset($marks[$subject['id']]))   // Changing only capital letters keeps the same subject
+            {
+                $subject = ['id' => null, 'name' => $subject['name'], 'replaces' => $subject['id']];
+            }
+        }
+        unset($subject);
+
+        [$id, $removed] = $model->save($id, ['first_grade' => $first, 'last_grade' => $last, 'description' => $data['description'] ?: null], $subjects);
+        $title = grade_range($first, $last);
+        $this->log($user, $stage === null ? 'STAGE_ADDED' : 'STAGE_UPDATED', "{$title}: " . implode(', ', array_column($subjects, 'name')));
+        $this->done("{$title} curriculum saved." . ($removed > 0 ? " {$removed} " . words('{subject} ') . strtolower($removed === 1 ? word('teacher') : plural('teacher')) . ' removed.' : ''), $back);
+    }
+
+    // POST /{role}/academic/stages/delete. Refused while its subjects have marks
+    public function deleteStage(string $role): never
+    {
+        $user  = $this->guard($role);
+        $model = new StageModel();
+        $back  = $this->pageUrl($role) . '#curriculum';
+        $stage = $model->find((int) $this->postText('id')) ?? $this->refuse('That stage no longer exists.', $back, 404);
+        $title = grade_range($stage['first_grade'], $stage['last_grade']);
+
+
+        $model->delete($stage['id']);
+        $this->log($user, 'STAGE_DELETED', $title);
+        $this->done("{$title} curriculum deleted.", $back);
+    }
+
+    // POST /{role}/academic/terms/save. Saves this year's and next year's term dates
+    // A locked date keeps its saved value, whatever is sent
+    // Next year is not saved while all its boxes are empty
+    // When next year's Term 1 starts, it becomes the current year by itself
+    
     private function guard(string $role): array
     {
         $user = $this->requireRole($role);
