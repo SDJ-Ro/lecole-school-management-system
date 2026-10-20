@@ -116,12 +116,56 @@ class CertificateController extends Controller
         exit;
     }
 
+    // POST /{role}/character-certificate/wording. Only while it isn't issued
+    public function wording(string $role): never
+    {
+        $user        = $this->requireRole($role);
+        $certificate = $this->certificate($this->postText('student', 20), "/{$role}/character-certificate");
+        $back        = $this->oneUrl($role, $certificate);
+        $models      = new CertificateModel();
+        $sections    = array_values(array_intersect(array_keys(config('certificates.sections')), $this->postList('sections')));
+
+        
+        foreach ($sections as $section)
+        {
+            // At most 20 points of up to 300 characters each, leaving out empty ones
+            $points = array_slice(array_values(array_filter(array_map(fn (string $point): string => trim(mb_substr($point, 0, 300)), $this->postList($section)))), 0, 20);
+        }
+
+        $this->log($user, 'CERTIFICATE_WORDING_SAVED', "{$certificate['name']} ({$certificate['id']}): " . implode(', ', $sections));
+        $this->setFlash('notice', 'Wording saved.');
+        $this->redirect($back);
+    }
+
+    // POST /student/certificates/request. Only one request may wait at a time
+    public function requestCopy(): never
+    {
+        $user = $this->requireRole('student');
+        $back = '/student/certificates';
+        $sent = ['purpose' => $this->postText('purpose', 100), 'copies' => $this->postText('copies', 2), 'delivery' => $this->postText('delivery', 60),
+                 'notes' => $this->postText('notes', 500)];
+
+        $errors = Validator::check($sent, [
+            'purpose'  => 'required|in:' . implode(',', config('certificates.purposes')),
+            'copies'   => 'required|between:1,' . config('certificates.max_copies'),
+            'delivery' => 'required|in:' . implode(',', config('certificates.deliveries')),
+        ], ['purpose' => 'Purpose', 'copies' => 'Number of copies', 'delivery' => 'Delivery method']);
+ 
+        $this->setFlash('notice', 'Certificate requested.');
+        $this->redirect($back);
+    }
+
     // Same message for any code that isn't a student
     private function certificate(string $code, string $back): array
     {
         $id = (new CertificateModel())->studentId($code);
 
         return ($id === null ? null : CertificateDraft::of($id)) ?? $this->refuse('That certificate does not exist.', $back, 404);
+    }
+
+    private function oneUrl(string $role, array $certificate): string
+    {
+        return "/{$role}/character-certificate?student=" . rawurlencode($certificate['id']);
     }
 
     private function one(string $role, array $certificate): array
@@ -159,5 +203,24 @@ class CertificateController extends Controller
             'activity'      => $activity,
         ];
     }
+
+    // A student has left if their account is off, their leaving date has passed, or they graduated
+    // Graduated means their latest class is from an earlier year
+    private function card(array $row): array
+    {
+        $this->year ??= (new SchoolYear())->current();
+
+        return [
+            'id'         => $row['code'],
+            'name'       => $row['name'],
+            'class'      => $row['class_name'] ?? '—',
+            'tone'       => card_tone($row['code']),
+            'status'     => $row['status'] ?? 'draft',
+            'pathway'    => $row['leaving_on'] !== null ? 'leaving' : 'graduating',
+            'left'       => $row['activation_status'] === 'INACTIVE' || ($row['leaving_on'] !== null && $row['leaving_on'] <= date('Y-m-d'))
+                || ($row['class_year'] !== null && (int) $row['class_year'] < $this->year),
+            'hasWaiting' => ($row['status'] ?? 'draft') !== 'issued' || $row['waiting_requests'] > 0 || $row['waiting_records'] > 0,
+            'closing'    => AccountClosing::waitingBeforeClosing($row),
+        ];
     }
 }
