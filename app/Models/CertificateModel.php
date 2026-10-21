@@ -67,6 +67,31 @@ class CertificateModel extends Model
         return $statement->fetchAll();
     }
 
+    // With no points given, the section goes back to the wording from the records
+    // Returns false when the certificate is already issued
+    public function saveWording(int $studentId, string $section, ?array $points): bool
+    {
+        if (!in_array($section, self::SECTIONS, true))
+        {
+            return false;
+        }
+
+        return $this->transaction(function () use ($studentId, $section, $points): bool
+        {
+            if (($this->locked($studentId)['status'] ?? 'draft') === 'issued')
+            {
+                return false;
+            }
+
+            $this->db->prepare(
+                "INSERT INTO certificates (student_id, {$section}, edited_at) VALUES (:id, :points, NOW())
+                 ON DUPLICATE KEY UPDATE {$section} = VALUES({$section}), edited_at = NOW()"
+            )->execute(['id' => $studentId, 'points' => $points === null ? null : json_encode(array_values($points))]);
+
+            return true;
+        });
+    }
+
     public function waitingRequests(): int
     {
         return (int) $this->db->query("SELECT COUNT(*) FROM certificate_requests WHERE status = 'pending'")->fetchColumn();
@@ -82,5 +107,34 @@ class CertificateModel extends Model
 
         return $statement->fetchAll();
     }
+
+    // Returns false when the student already has a request waiting
+    public function ask(int $studentId, string $purpose, int $copies, string $delivery, ?string $notes): bool
+    {
+        return $this->transaction(function () use ($studentId, $purpose, $copies, $delivery, $notes): bool
+        {
+            $waiting = $this->db->prepare("SELECT COUNT(*) FROM certificate_requests WHERE student_id = :id AND status = 'pending' FOR UPDATE");
+            $waiting->execute(['id' => $studentId]);
+
+            if ((int) $waiting->fetchColumn() > 0)
+            {
+                return false;
+            }
+
+            $this->db->prepare('INSERT INTO certificate_requests (student_id, purpose, copies, delivery, notes) VALUES (:id, :purpose, :copies, :delivery, :notes)')
+                ->execute(['id' => $studentId, 'purpose' => $purpose, 'copies' => $copies, 'delivery' => $delivery, 'notes' => $notes]);
+
+            return true;
+        });
+    }
+
+    // Locked until the transaction ends, so two saves at once wait for each other
+    private function locked(int $studentId): ?array
+    {
+        $statement = $this->db->prepare('SELECT status FROM certificates WHERE student_id = :id FOR UPDATE');
+        $statement->execute(['id' => $studentId]);
+
+        return $statement->fetch() ?: null;
+
     }
 }
