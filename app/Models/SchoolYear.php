@@ -48,6 +48,34 @@ class SchoolYear extends Model
         return $terms === [] ? null : end($terms)['ends_on'];
     }
 
+    // Gives next year once this year's last term has ended
+    // A student admitted then starts with everyone when the new year begins
+    // So the year end does not move them up a grade again
+    public function placementYear(): int
+    {
+        $year = $this->current();
+        $ends = $this->lastDay($year);
+
+        return $ends !== null && $ends < date('Y-m-d') ? $year + 1 : $year;
+    }
+
+    // Today comes from PHP's date, not the database's
+    public function startedTerms(): array
+    {
+        $today = date('Y-m-d');
+
+        return array_keys(array_filter($this->terms($this->current()), fn (array $term): bool => $term['starts_on'] <= $today));
+    }
+
+    // The dates of a published term cannot change any more
+    public function publishedTerms(int $year): array
+    {
+        $statement = $this->db->prepare('SELECT DISTINCT term FROM term_publications WHERE year = :year ORDER BY term');
+        $statement->execute(['year' => $year]);
+
+        return array_map('intval', $statement->fetchAll(\PDO::FETCH_COLUMN));
+    }
+
     // True when the dates were filled in automatically, so the admin is asked to check them
     public function datesFromUsual(int $year): bool
     {
@@ -56,6 +84,29 @@ class SchoolYear extends Model
 
         return (bool) $statement->fetchColumn();
     }
+    
+    // Dates filled in by the year end are marked, and dates the admin types clear the mark
+    public function saveTerms(array $years, bool $fromUsual = false): void
+    {
+        $this->transaction(function () use ($years, $fromUsual): void
+        {
+            $mark      = $this->db->prepare('UPDATE school_years SET dates_from_usual = :usual WHERE year = :year');
+            $addYear   = $this->db->prepare('INSERT IGNORE INTO school_years (year) VALUES (:year)');
+            $saveTerm  = $this->db->prepare(
+                'INSERT INTO school_terms (year, term, starts_on, ends_on) VALUES (:year, :term, :starts, :ends)
+                 ON DUPLICATE KEY UPDATE starts_on = VALUES(starts_on), ends_on = VALUES(ends_on)'
+            );
 
+            foreach ($years as $year => $terms)
+            {
+                $addYear->execute(['year' => $year]);
+                $mark->execute(['usual' => (int) $fromUsual, 'year' => $year]);
+
+                foreach ($terms as $term => $dates)
+                {
+                    $saveTerm->execute(['year' => $year, 'term' => $term, 'starts' => $dates['starts_on'], 'ends' => $dates['ends_on']]);
+                }
+            }
+        });
     }
 }
