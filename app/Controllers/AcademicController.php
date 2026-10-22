@@ -202,7 +202,54 @@ class AcademicController extends Controller
     // A locked date keeps its saved value, whatever is sent
     // Next year is not saved while all its boxes are empty
     // When next year's Term 1 starts, it becomes the current year by itself
-    
+    public function saveTerms(string $role): never
+    {
+        $user    = $this->guard($role);
+        $back    = $this->pageUrl($role) . '#school-year';
+        $years   = new SchoolYear();
+        $current = $years->current();
+        $today   = date('Y-m-d');
+        $typed   = [];
+
+        // Box names come from the years and terms here, never from the form
+        foreach ([$current, $current + 1] as $year)
+        {
+            foreach (range(1, (int) config('white_label.academic.terms_per_year')) as $term)
+            {
+                $typed[$year][$term] = ['starts_on' => $this->postText("start_{$year}_{$term}", 10), 'ends_on' => $this->postText("end_{$year}_{$term}", 10)];
+            }
+        }
+
+        $before  = $years->lastDay($current - 1);
+        $changed = [];
+
+        foreach ($typed as $year => $terms)
+        {
+            $saved              = $years->terms($year);
+            [$dates, $refusal] = TermDates::check($year, $terms, $saved, $years->publishedTerms($year), $before, $today);
+
+            $moved = array_filter($dates, fn (array $term, int $number): bool => [$term['starts_on'], $term['ends_on']]
+                !== [$saved[$number]['starts_on'] ?? null, $saved[$number]['ends_on'] ?? null], ARRAY_FILTER_USE_BOTH);
+
+            if ($moved !== [])
+            {
+                $changed[$year] = $moved;
+            }
+
+            $before = $dates === [] ? null : end($dates)['ends_on'];
+        }
+
+        if ($changed === [])
+        {
+            $this->done('No dates changed.', $back);
+        }
+
+        $years->saveTerms($changed);
+        $this->log($user, 'TERM_DATES_UPDATED', implode(' · ', array_map(fn (int $year, array $terms): string => "{$year}: " . word('term') . ' '
+            . implode(', ', array_keys($terms)), array_keys($changed), $changed)));
+        $this->done(word('term') . ' dates saved.', $back);
+    }
+
     private function guard(string $role): array
     {
         $user = $this->requireRole($role);
@@ -260,6 +307,33 @@ class AcademicController extends Controller
 
         return ['years' => $list, 'past' => $this->pastYears($years->termsBefore($current)), 'reopen' => $typed !== null];
     }
+   
+    // Earlier years, newest first. Years in a row with the same dates share one line
+    private function pastYears(array $years): array
+    {
+        $day    = fn (string $date): string => date(country('short_day_format'), strtotime($date));
+        $groups = [];
+
+        foreach ($years as $year => $terms)
+        {
+            $dates = array_map(fn (array $term): string => $day($term['starts_on']) . ' – ' . $day($term['ends_on']), $terms);
+            $last  = array_key_last($groups);
+
+            if ($last !== null && $groups[$last]['terms'] === $dates && $groups[$last]['to'] === $year - 1)
+            {
+                $groups[$last]['to'] = $year;
+            }
+            else
+            {
+                $groups[] = ['from' => $year, 'to' => $year, 'terms' => $dates];
+            }
+        }
+
+        return array_reverse(array_map(fn (array $group): array => [
+            'years' => $group['from'] === $group['to'] ? (string) $group['from'] : "{$group['from']} – {$group['to']}",
+            'terms' => $group['terms'],
+        ], $groups));
+    }
 
     // A grade may be without a stage for a while
     private function stageFor(int $gradeNumber, array $stages): ?array
@@ -273,6 +347,34 @@ class AcademicController extends Controller
         }
 
         return null;
+    }
+
+    // Drops blank names and keeps repeated names once, ignoring capitals
+    // A name keeps its id only if it is one of this stage's subjects and is used once
+    // That way a renamed subject keeps its teachers. Any other name is a new subject
+    private function matchSubjects(array $names, array $ids, array $existing): array
+    {
+        $subjects = [];
+        $used     = [];
+
+        foreach ($names as $index => $name)
+        {
+            $name = trim($name);
+            $key  = mb_strtolower($name);
+            $id   = (int) $ids[$index];
+
+            if ($name === '' || isset($subjects[$key]))
+            {
+                continue;
+            }
+
+            $id = isset($existing[$id]) && !isset($used[$id]) ? $id : null;
+            $used[$id ?? 0] = true;
+
+            $subjects[$key] = ['id' => $id, 'name' => $name];
+        }
+
+        return array_values($subjects);
     }
 
     // Chart data for one grade's classes, one subject and one term of this year
