@@ -51,6 +51,17 @@ class ChildProfileController extends ExtracurricularController
         $this->page('parent/child_profile', $user, $data);
     }
 
+    // POST /parent/child
+    public function choose(): never
+    {
+        $user = $this->requireRole('parent');
+        $id   = (int) $this->postText('choice', 11);
+
+        
+        $_SESSION['user']['child'] = $id;
+        $this->redirect($this->previousPage());
+    }
+
     private function achievements(array $child): array
     {
         $items = AchievementTimeline::forStudent($child['id']);
