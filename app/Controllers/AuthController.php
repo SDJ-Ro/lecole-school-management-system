@@ -140,6 +140,97 @@ class AuthController extends Controller
         ]);
     }
 
+    // POST /auth/{role}/signup. Step 1 checks the details and emails a code
+    public function handleSignup(string $role): never
+    {
+        $back       = "/auth/{$role}/signup";
+        $fullName   = $this->postText('full_name');
+        $identifier = $this->postText('identifier');
+        $password   = $this->postPassword('password');
+
+        $this->setFlash('full_name', $fullName);
+        $this->setFlash('identifier', $identifier);
+
+        $problems = UserModel::passwordProblems($password);
+
+        $users   = new UserModel();
+        $account = $users->findByIdentifier($identifier);
+        $support = school('support_email');
+
+
+
+
+        // The account is not changed until the code is verified
+        $_SESSION['activation'] = [
+            'account_id'    => (int) $account['id'],
+            'identifier'    => $account['identifier'],
+            'role'          => $role,
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+        ];
+
+        // A code sent less than a minute ago still works, so no new email goes out
+        // That way sending the form again and again can't flood the inbox
+        $justSent = (new VerificationCode())->secondsUntilResend((int) $account['id'], VerificationCode::ACTIVATE) > 0;
+        $email    = $justSent ? $users->emailFor($account) : $this->emailCode($account, VerificationCode::ACTIVATE);
+
+        $_SESSION['activation']['sent_to'] = $this->maskEmail($email)
+            . ($account['role'] === 'student' ? ' (your ' . strtolower(word('parent')) . "'s email)" : '');
+
+        $this->redirect("/auth/{$role}/signup");
+    }
+
+    // POST /auth/{role}/verify. Step 2 checks the code and activates the account
+    public function handleActivate(string $role): never
+    {
+        $back    = "/auth/{$role}/signup";
+        $pending = $_SESSION['activation'] ?? null;
+
+        if (!$pending || $pending['role'] !== $role)
+        {
+            $this->redirect("/auth/{$role}/signup?restart=1");
+        }
+
+        $code   = $this->postText('code', 10);
+        $result = (new VerificationCode())->check((int) $pending['account_id'], VerificationCode::ACTIVATE, $code);
+
+
+        $users = new UserModel();
+
+        unset($_SESSION['activation']);
+
+        $account = $users->findByIdentifier($pending['identifier']);
+        (new AuditLog())->record('ACCOUNT_ACTIVATED', (int) $account['id'], $account['identifier'], "{$role} portal");
+
+        $this->startSession($account);
+
+        $this->setFlash('notice', 'Welcome! Your account has been activated.');
+        $this->redirect("/{$role}");
+    }
+
+    // POST /auth/{role}/resend
+    public function resendActivation(string $role): never
+    {
+        $back    = "/auth/{$role}/signup";
+        $pending = $_SESSION['activation'] ?? null;
+
+        if (!$pending || $pending['role'] !== $role)
+        {
+            $this->redirect("/auth/{$role}/signup?restart=1");
+        }
+
+        $codes = new VerificationCode();
+        $wait  = $codes->secondsUntilResend((int) $pending['account_id'], VerificationCode::ACTIVATE);
+
+
+        $account = (new UserModel())->findByIdentifier($pending['identifier']);
+        $this->emailCode($account, VerificationCode::ACTIVATE);
+
+        $this->setFlash('notice', 'A fresh verification code was sent to your email.');
+        $this->redirect("/auth/{$role}/signup");
+    }
+
+    // POST /auth/{role}/forgot
+    // Every ID gets the same message and next step, so this never shows which IDs exist
     // POST /logout
     public function logout(): never
     {
