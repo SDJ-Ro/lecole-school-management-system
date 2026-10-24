@@ -231,6 +231,61 @@ class AuthController extends Controller
 
     // POST /auth/{role}/forgot
     // Every ID gets the same message and next step, so this never shows which IDs exist
+    public function handleForgot(string $role): never
+    {
+        $identifier = $this->postText('identifier');
+        $account    = (new UserModel())->findByIdentifier($identifier);
+        $canReset   = $account !== null && $account['role'] === $role && $account['activation_status'] === 'ACTIVE';
+
+        // At most one code a minute, so nobody can flood the inbox
+        if ($canReset && (new VerificationCode())->secondsUntilResend((int) $account['id'], VerificationCode::RESET) === 0)
+        {
+            $this->emailCode($account, VerificationCode::RESET);
+        }
+
+        $_SESSION['forgot'] = [
+            'account_id' => $canReset ? (int) $account['id'] : 0,   // Zero means no such account, so every code typed is wrong
+            'identifier' => $canReset ? $account['identifier'] : $identifier,
+            'role'       => $role,
+        ];
+        $this->setFlash('notice', "If an active account exists for {$identifier}, a 6-digit reset code was sent to its email.");
+        $this->redirect("/auth/{$role}?reset=1");
+    }
+
+    // POST /auth/{role}/reset
+    public function handleReset(string $role): never
+    {
+        $back     = "/auth/{$role}?reset=1";
+        $forgot   = $_SESSION['forgot'] ?? null;
+        $code     = $this->postText('code', 10);
+        $password = $this->postPassword('password');
+
+        if (!$forgot || $forgot['role'] !== $role)
+        {
+            $this->redirect("/auth/{$role}");
+        }
+
+        $problems = UserModel::passwordProblems($password);
+
+        // A made-up ID can only ever get "wrong", so saying "expired" would give away a real account
+        // Both get the same answer
+        $result = $forgot['account_id'] === 0
+            ? 'wrong'
+            : (new VerificationCode())->check($forgot['account_id'], VerificationCode::RESET, $code);
+
+
+        // Refused if the account was switched off after the code was sent
+        $users = new UserModel();
+        unset($_SESSION['forgot']);
+
+
+        (new AuditLog())->record('PASSWORD_RESET', (int) $forgot['account_id'], $forgot['identifier'], "{$role} portal");
+        $this->emailPasswordChanged($users->findByIdentifier($forgot['identifier']), 'with "Forgot Password?"');
+
+        $this->setFlash('notice', 'Your password has been reset. Please sign in.');
+        $this->redirect("/auth/{$role}?identifier=" . urlencode($forgot['identifier']));
+    }
+
     // POST /logout
     public function logout(): never
     {
@@ -269,6 +324,37 @@ class AuthController extends Controller
         $this->redirect($back);
     }
 
+    private function emailCode(array $account, string $purpose): ?string
+    {
+        $users = new UserModel();
+        $email = $users->emailFor($account);
+
+        if ($email === null)
+        {
+            return null;
+        }
+
+        $codes   = new VerificationCode();
+        $code    = $codes->create((int) $account['id'], $purpose);
+        $profile = $users->findProfile((int) $account['id']);
+        $name    = $profile['first_name'] ?? $account['identifier'];
+
+        $isReset = $purpose === VerificationCode::RESET;
+        $subject = school('name') . ($isReset ? " — Password Reset Code: {$code}" : " — Account Activation Code: {$code}");
+        $reason  = $isReset
+            ? 'We received a request to reset your password. Use the code below to complete the reset.'
+            : 'Thank you for activating your account. Enter this 6-digit verification code to complete activation.';
+
+        Mailer::send($email, $subject, 'code', [
+            'name'    => $name,
+            'reason'  => $reason,
+            'code'    => $code,
+            'minutes' => config('app.codes.expire_minutes', 15),
+        ]);
+
+        return $email;
+    }
+
     // The first name and photo are kept in the session for the sidebar
     // The Profile page must update them when they change
     private function startSession(array $account): void
@@ -286,5 +372,10 @@ class AuthController extends Controller
         $_SESSION['last_activity'] = time();
     }
 
+    private function maskEmail(string $email): string
+    {
+        [$user, $domain] = explode('@', $email, 2);
+        $visible = mb_substr($user, 0, min(2, mb_strlen($user)));
+        return $visible . '***@' . $domain;
     }
 }
