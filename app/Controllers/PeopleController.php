@@ -110,10 +110,73 @@ class PeopleController extends Controller
         $user   = $this->requireRole($role);
         $people = new PeopleModel();
         $person = $people->find((int) $this->queryText('id', 11));
-//172-175
+//172-184
 
         $this->sendProfile($person, null, '', $people->isClassTeacherOf($user['id'], $person['id']) ? null : 'subject_teacher');
     }
+        // POST /{role}/people/update, answers with JSON
+    // Sends back the redrawn profile, or the first problem found
+    public function update(string $role): never
+    {
+        $user   = $this->guard($role);
+        $back   = "/{$role}/people";
+        $people = new PeopleModel();
+        $person = $people->find((int) $this->postText('id', 11));
+//190-222
+
+        $labels = $this->editable($person['role']);
+        $values = [];
+
+        foreach ($labels as $field => $label)
+        {
+            $values[$field] = $this->postText($field, 1000);
+        }
+
+        $unlocked = $this->postText('age_unlocked', 1) === '1';   // Allows an unusual age
+        $problems = Validator::check($values, PersonFields::rules(array_keys($labels)), $labels)
+            ?: PersonFields::problems($person['role'], $person['id'], $values, $people, $unlocked);
+
+        // A student's main parent, picked from the search
+        // Picking the same parent again changes nothing
+        $parentId = $person['role'] === 'student' && $this->postText('parent_id', 11) !== '' ? (int) $this->postText('parent_id', 11) : null;
+
+        if ($parentId !== null && $people->parentRow($parentId) === null)
+        {
+            $problems[] = 'Please choose a ' . strtolower(word('parent')) . ' from the search.';
+        }
+
+        // Qualifications replace the old list only when the form sends them
+        // That way a request without them can't wipe the list
+        [$qualifications, $problem] = $person['role'] === 'teacher' && $this->postText('qualifications_sent', 1) === '1'
+            ? PersonFields::qualifications($this->postList('qualification_degree'), $this->postList('qualification_institution'), $this->postList('qualification_year'))
+            : [null, null];
+
+        if ($problem !== null)
+        {
+            $problems[] = $problem;
+        }
+//227-247
+
+        // Empty fields are saved as null
+        // Profile columns are kept apart from the role's details
+        $columns = array_map(fn (string $value): ?string => $value === '' ? null : $value, $values);
+        $profile = array_intersect_key($columns, array_flip(PeopleModel::PROFILE_COLUMNS));
+        $parent  = $parentId === (int) ($person['parents'][0]['id'] ?? 0) ? null : $parentId;
+
+        try
+        {
+            $people->update($person['id'], $person['role'], $profile, array_diff_key($columns, $profile), $parent, $qualifications);
+        }
+        catch (DomainException $full)
+        {
+            $this->refuse($full->getMessage(), $back, 422);   // The new class filled up in the meantime
+        }
+
+        $saved = $people->find($person['id']);
+        $this->log($user, 'PERSON_UPDATED', $saved['full_name'] . ($unlocked ? ' · age range unlocked' : ''));
+        $this->sendProfile($saved, $role, "{$saved['full_name']} saved.");
+    }
+
 //248-265
 // GET /{role}/people/handover, answers with JSON
     public function handoverForm(string $role): never
@@ -132,7 +195,7 @@ class PeopleController extends Controller
         ]);
         $this->sendJson(['ok' => true, 'html' => ob_get_clean()]);
     }
-//328-337
+//328-339
 // With no $editorRole the profile is view only
     // $partial asks for a shorter student profile, or null for all of it
     // Public because ExtracurricularController::member() uses it too
@@ -142,6 +205,8 @@ class PeopleController extends Controller
         $this->view('components/_person_profile', $this->profileData($person, $editorRole, $partial) + ['csrfField' => $this->csrfField()]);
         $this->sendJson(['ok' => true, 'message' => $message, 'html' => ob_get_clean()]);
     }
+    // Public because the parent's Child profile shows the same, view only
+    // With an $editorRole each card gets its edit box
 //543-547
 // An unknown id, someone who isn't a teacher, or a role without the teachers tab all get the same answer
     private function leavingTeacher(PeopleModel $people, int $id, string $back): array
