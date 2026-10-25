@@ -195,7 +195,7 @@ class PeopleController extends Controller
         ]);
         $this->sendJson(['ok' => true, 'html' => ob_get_clean()]);
     }
-//328-339
+//328-443
 // With no $editorRole the profile is view only
     // $partial asks for a shorter student profile, or null for all of it
     // Public because ExtracurricularController::member() uses it too
@@ -207,6 +207,110 @@ class PeopleController extends Controller
     }
     // Public because the parent's Child profile shows the same, view only
     // With an $editorRole each card gets its edit box
+        public function profileData(array $person, ?string $editorRole, ?string $partial = null): array
+    {
+        $canEdit = $editorRole !== null;
+        $role    = $person['role'];
+        $values  = PersonDetails::values($person);
+        $leave   = $partial === null ? ['cards' => [], 'tabs' => []] : config("people.partial.{$partial}");
+        $card    = fn (string $label, ?string $value, bool $wide = false, array $box = []): array =>
+            $box + ['label' => $label, 'icon' => null, 'value' => ($value ?? '') !== '' ? $value : '—', 'edit' => null, 'raw' => '', 'wide' => $wide];
+
+        $sections = [];
+
+        foreach (config("people.profile.{$role}") as [$title, $icon, $columns, $content])
+        {
+            // Drop what a partial profile leaves out
+            $kept = is_array($content)
+                ? array_values(array_filter($content, fn (array $field): bool => !in_array($field[1], $leave['cards'], true)))
+                : (in_array($content, $leave['cards'], true) ? [] : $content);
+
+            if ($kept === [])
+            {
+                continue;
+            }
+
+            $cards = is_array($kept)
+                ? array_map(fn (array $field): array => $card(words($field[0]), $values[$field[1]] ?? '', ($field[2] ?? '') === 'wide',
+                    $canEdit ? $this->editBox($field[3] ?? '', $person) : []), $kept)
+                : $this->listCards($kept, $person, $card, $editorRole);
+
+            $sections[] = ['title' => words($title), 'icon' => $icon, 'columns' => $columns, 'cards' => $cards];
+        }
+
+        $status = match ($person['activation_status'])
+        {
+            'INACTIVE' => ['Deactivated', 'terracotta'],
+            'PENDING'  => ['Pending', 'sand'],
+            default    => ['Active', 'moss'],
+        };
+
+        return [
+            'id'       => $person['id'],
+            'saveUrl'  => $canEdit ? "/{$editorRole}/people/update" : null,
+            'header'   => [
+                'role'    => $role,
+                'tone'    => config("people.tones.{$role}"),
+                'name'    => $person['full_name'],
+                'photo'   => $person['photo_url'],
+                'eyebrow' => match ($role)
+                {
+                    'student' => words('{Student} Profile'),
+                    'teacher' => words('{Teacher} Profile'),
+                    'parent'  => words('{Parent} / Guardian Profile'),
+                    default   => word('management') . ' Profile',
+                },
+                'sub'     => match ($role)
+                {
+                    'student' => trim($values['grade'] . ($values['class'] ? ' · ' . word('class') . " {$values['class']}" : ''), ' ·'),
+                    'teacher' => $values['subjects'] ?? '',
+                    'parent'  => $values['relationship'] ?? '',
+                    default   => $values['job_title'] ?? '',
+                },
+                'code'    => $values['code'],
+                'status'  => $status,
+            ],
+            'sections' => $sections,
+            'student'  => $role !== 'student' ? null : $this->studentTabs($person['id'], $editorRole, $leave['tabs']),
+        ];
+    }
+
+    // A tab that is switched off gets null
+    // Academic Watch is only included for someone who may lift it, while the student is on watch
+    // $leave lists the tabs a partial profile leaves out
+    private function studentTabs(int $id, ?string $editorRole, array $leave): array
+    {
+        $tabs  = array_map(fn (array $tab): string => $tab[0], array_filter(self::PROFILE_TABS, fn (array $tab): bool => $tab[1] === null || feature($tab[1])));
+        $tabs  = array_diff_key($tabs, array_flip($leave));
+        $books = isset($tabs['academics']) ? RecordBook::forStudent($id) : [];
+        $watch = $editorRole !== null && feature('extracurricular') && can('extracurricular.watch') ? AcademicWatch::of($id) : null;
+
+        return [
+            'tabs'        => $tabs,
+            'watch'       => $watch === null ? null : $watch + ['url' => "/{$editorRole}/extracurricular/watch"],
+            'book'        => isset($tabs['academics']) ? RecordBook::shown($books, null) : null,
+            'memberships' => isset($tabs['extracurriculars']) ? (new PeopleModel())->memberships($id) : null,
+            'timeline'    => isset($tabs['achievements']) ? AchievementTimeline::byYear(AchievementTimeline::forStudent($id, $books)) : null,
+            'leaving'     => $this->leaving($id, $editorRole),
+            // The "Left Without Notice" button, only while there is no leaving date yet
+            'leftUrl'     => $editorRole !== null && can('leaving.start') && ((new LeaveRequestModel())->latest($id)['status'] ?? '') !== 'approved'
+                ? "/{$editorRole}/leaving/left" : null,
+        ];
+    }
+
+    // A student's approved leave, or null
+    private function leaving(int $studentId, ?string $editorRole): ?array
+    {
+        $latest = feature('parent_consent') && can('leaving.see') ? (new LeaveRequestModel())->latest($studentId) : null;
+
+        if (($latest['status'] ?? '') !== 'approved')
+        {
+            return null;
+        }
+
+        return $latest + ['changeUrl' => $editorRole !== null && can('leaving.change') ? "/{$editorRole}/leaving" : null];
+    }
+
 //543-547
 // An unknown id, someone who isn't a teacher, or a role without the teachers tab all get the same answer
     private function leavingTeacher(PeopleModel $people, int $id, string $back): array
