@@ -310,6 +310,105 @@ class PeopleController extends Controller
 
         return $latest + ['changeUrl' => $editorRole !== null && can('leaving.change') ? "/{$editorRole}/leaving" : null];
     }
+//444-542
+    // While editing, one more wide card holds the qualification rows or the parent search
+    private function listCards(string $list, array $person, callable $card, ?string $editorRole): array
+    {
+        $cards = [];
+
+        if ($list === 'subjects')
+        {
+            $subjects = (new PeopleModel())->rowLists('teacher', [$person['id']])[$person['id']]['subjects'] ?? [];
+
+            foreach ($subjects as $subject => $classes)
+            {
+                $cards[] = $card($subject, implode(', ', $classes));
+            }
+        }
+
+        if ($list === 'qualifications')
+        {
+            foreach ($person['qualifications'] as $q)
+            {
+                $cards[] = $card($q['year_obtained'] !== null ? (string) $q['year_obtained'] : 'Qualification', $q['degree'] . ($q['institution'] ? " — {$q['institution']}" : ''));
+            }
+        }
+
+        if ($list === 'children')
+        {
+            foreach ($person['children'] as $child)
+            {
+                $cards[] = $card(word('class') . ' ' . ($child['class_name'] ?? '—'), $child['full_name']);
+            }
+        }
+
+        if ($list === 'parents')
+        {
+            foreach ($person['parents'] as $parent)
+            {
+                array_push($cards, $card('Name', $parent['full_name']), $card('Email', $parent['identifier']), $card('Mobile Number', $parent['phone']));
+            }
+        }
+
+        $cards = $cards === [] ? [$card('None', 'Nothing added yet.', true)] : $cards;
+
+        if ($editorRole !== null && $list === 'parents')
+        {
+            $main    = $person['parents'][0]['id'] ?? null;
+            $cards[] = $card(words('Change the Main {Parent}'), '', true, ['edit' => 'parent_id', 'box' => 'parent', 'editOnly' => true,
+                'raw' => ['row' => $main === null ? null : (new PeopleModel())->parentRow((int) $main), 'url' => "/{$editorRole}/people/parents"]]);
+        }
+
+        if ($editorRole !== null && $list === 'qualifications')
+        {
+            $cards[] = $card('Edit Qualifications', '', true, ['edit' => 'qualifications', 'box' => 'qualifications', 'editOnly' => true, 'raw' => $person['qualifications']]);
+        }
+
+        return $cards;
+    }
+
+    // Empty when the card isn't being edited
+    // 'raw' is the saved value, or a list of values for a card with two boxes
+    private function editBox(string $edit, array $person): array
+    {
+        if ($edit === '')
+        {
+            return [];
+        }
+
+        $names = explode(',', $edit);
+        $ages  = $edit === 'date_of_birth' ? PersonFields::ages($person['role']) : [];
+
+        return [
+            'edit'    => $edit,
+            'raw'     => count($names) > 1 ? array_map(fn (string $name): string => (string) $person[$name], $names) : (string) $person[$edit],
+            'box'     => config('people.fields')[$names[0]][0],
+            'options' => PersonFields::options($names[0], $person['class_id'] === null ? null : (int) $person['class_id']),
+            'minAge'  => $ages['min'] ?? '',
+            'maxAge'  => $ages['max'] ?? '',
+        ];
+    }
+
+    // Each field's label, for the messages
+    private function editable(string $role): array
+    {
+        $labels = [];
+
+        foreach (config("people.profile.{$role}") as [, , , $content])
+        {
+            foreach (is_array($content) ? $content : [] as $card)
+            {
+                $names = array_filter(explode(',', $card[3] ?? ''));
+
+                foreach ($names as $name)
+                {
+                    $labels[$name] = count($names) > 1 ? ucfirst(str_replace('_', ' ', $name)) : words($card[0]);
+                }
+            }
+        }
+
+        return $labels;
+    }
 
 //543-547
 // An unknown id, someone who isn't a teacher, or a role without the teachers tab all get the same answer
