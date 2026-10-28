@@ -284,7 +284,28 @@ class PeopleModel extends Model
 
         return array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
     }
-//309-333
+        // Setting closed_on marks the account as closed by the system
+    public function close(int $studentId, string $day): array
+    {
+        return $this->transaction(function () use ($studentId, $day): array
+        {
+            $alsoChanged = $this->setActive($studentId, false, null);
+            $this->db->prepare('UPDATE user_accounts SET closed_on = :day WHERE id = :id')->execute(['day' => $day, 'id' => $studentId]);
+
+            return $alsoChanged;
+        });
+    }
+
+    // Null when the system never closed the account
+    public function closedDay(int $accountId): ?string
+    {
+        $statement = $this->db->prepare('SELECT closed_on FROM user_accounts WHERE id = :id');
+        $statement->execute(['id' => $accountId]);
+
+        return $statement->fetchColumn() ?: null;
+    }
+
+
 // A parent with active children cannot be switched off, so every student keeps an active parent
     public function activeChildren(int $parentId): int
     {
@@ -469,6 +490,48 @@ public function teaching(int $teacherId): array
             return [$studentId, $parentId];
         });
     }
+
+//518-529
+    // Qualifications are replaced as a whole
+    // A parent id given here becomes the student's main parent
+    public function update(int $id, string $role, array $profile, array $details, ?int $parentId = null, ?array $qualifications = null): void
+    {
+        $this->transaction(function () use ($id, $role, $profile, $details, $parentId, $qualifications): void
+        {
+            $assignments = new Assignments();
+            $classId     = $role === 'student' && isset($details['class_id']) ? (int) $details['class_id'] : null;
+            unset($details['class_id']);   // The class is a place, not a detail
+
+            $nowIn = (int) $this->find($id)['class_id'];
+//545-572
+
+            $this->updateRow('profiles', $profile, $id);
+            $this->updateRow(self::DETAILS_TABLE[$role], $details, $id);
+
+            if ($qualifications !== null)
+            {
+                $this->db->prepare('DELETE FROM staff_qualifications WHERE account_id = :id')->execute(['id' => $id]);
+                $this->saveQualifications($id, $qualifications);
+            }
+
+            // A parent's email is also how they sign in
+            if ($role === 'parent' && isset($profile['personal_email']))
+            {
+                $this->db->prepare('UPDATE user_accounts SET identifier = :email WHERE id = :id')
+                    ->execute(['email' => strtolower($profile['personal_email']), 'id' => $id]);
+            }
+
+            // Also drops their old link so a former second parent isn't kept twice
+            if ($role === 'student' && $parentId !== null)
+            {
+                $this->db->prepare('DELETE FROM student_parents WHERE student_account_id = :student AND (is_primary = 1 OR parent_account_id = :parent)')
+                    ->execute(['student' => $id, 'parent' => $parentId]);
+                $this->db->prepare('INSERT INTO student_parents (student_account_id, parent_account_id, is_primary) VALUES (:student, :parent, 1)')
+                    ->execute(['student' => $id, 'parent' => $parentId]);
+            }
+        });
+    }
+
 //573-599
 // Each duty goes to the teacher taking it over, or to nobody yet
     // Then the account is switched off
@@ -519,6 +582,55 @@ public function teaching(int $teacherId): array
 
         return $email;
     }
+
+//600-631
+    // Switching a student off ends their memberships
+    // It also switches off a parent with no other child at the school
+    // Switching back on brings back that parent, but not the memberships
+    // With no person given, the system did it
+    // Returns the names of anyone else who changed with them
+    public function setActive(int $id, bool $active, ?int $by): array
+    {
+        return $this->transaction(function () use ($id, $active, $by): array
+        {
+            $alsoChanged = [];
+            $this->switchAccount($id, $active);
+
+            if (!$active)
+            {
+                (new ExtracurricularModel())->endMemberships(null, $id, 'left_school', $by);
+            }
+
+            foreach ($this->linked('student_account_id', 'parent_account_id', $id) as $parent)
+            {
+                $stillHere = $this->activeChildren((int) $parent['id']);
+
+                if (($active && $parent['activation_status'] === 'INACTIVE') || (!$active && $stillHere === 0))
+                {
+                    $this->switchAccount((int) $parent['id'], $active);
+                    $alsoChanged[] = $parent['full_name'];
+                }
+            }
+
+            return $alsoChanged;
+        });
+    }
+ 
+//655-668
+    // Empty degrees are left out
+    private function saveQualifications(int $id, array $qualifications): void
+    {
+        $insert = $this->db->prepare(
+            'INSERT INTO staff_qualifications (account_id, degree, institution, year_obtained, sort_order) VALUES (:id, :degree, :institution, :year, :position)'
+        );
+
+        foreach (array_values(array_filter($qualifications, fn (array $q): bool => ($q['degree'] ?? '') !== '')) as $position => $q)
+        {
+            $insert->execute(['id' => $id, 'degree' => $q['degree'], 'institution' => $q['institution'] ?: null,
+                'year' => $q['year_obtained'] ?: null, 'position' => $position]);
+        }
+    }
+
 //669-732
 // A student's parents or a parent's children
     // Both column names are fixed in this file, never from a form
@@ -583,7 +695,44 @@ public function teaching(int $teacherId): array
 
         return $statement->fetchColumn() !== false;
     }
+        // The table and column names come from our own code, never from users
+    private function insert(string $table, array $values): void
+    {
+        $columns = implode(', ', array_keys($values));
+        $holes   = implode(', ', array_map(fn (string $column): string => ":{$column}", array_keys($values)));
 
-    //753-754
+        $this->db->prepare("INSERT INTO {$table} ({$columns}) VALUES ({$holes})")->execute($values);
+    }
+
+    // The table and column names come from our own code, never from users
+    private function updateRow(string $table, array $values, int $id): void
+    {
+        if ($values === [])
+        {
+            return;
+        }
+
+        $set = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($values)));
+
+        $this->db->prepare("UPDATE {$table} SET {$set} WHERE account_id = :account_id")->execute($values + ['account_id' => $id]);    // The table and column names come from our own code, never from users
+    private function insert(string $table, array $values): void
+    {
+        $columns = implode(', ', array_keys($values));
+        $holes   = implode(', ', array_map(fn (string $column): string => ":{$column}", array_keys($values)));
+
+        $this->db->prepare("INSERT INTO {$table} ({$columns}) VALUES ({$holes})")->execute($values);
+    }
+
+    // The table and column names come from our own code, never from users
+    private function updateRow(string $table, array $values, int $id): void
+    {
+        if ($values === [])
+        {
+            return;
+        }
+
+        $set = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($values)));
+
+        $this->db->prepare("UPDATE {$table} SET {$set} WHERE account_id = :account_id")->execute($values + ['account_id' => $id]);
      }
 }
