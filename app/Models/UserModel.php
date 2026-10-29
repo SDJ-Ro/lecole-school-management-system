@@ -43,6 +43,41 @@ class UserModel extends Model
         return $statement->fetch() ?: null;
     }
 
+    // Only a PENDING account can be activated
+    public function activate(int $accountId, string $passwordHash): bool
+    {
+        $statement = $this->db->prepare(
+            "UPDATE user_accounts
+             SET password_hash = :hash, activation_status = 'ACTIVE', activated_at = NOW(),
+                 failed_login_count = 0, lock_expires_at = NULL
+             WHERE id = :id AND activation_status = 'PENDING'"
+        );
+        $statement->execute(['hash' => $passwordHash, 'id' => $accountId]);
+
+        return $statement->rowCount() === 1;
+    }
+
+    // Also clears any wrong-password lock
+    public function resetPassword(int $accountId, string $passwordHash): bool
+    {
+        $statement = $this->db->prepare(
+            "UPDATE user_accounts
+             SET password_hash = :hash, failed_login_count = 0, lock_expires_at = NULL, first_login_required = 0
+             WHERE id = :id AND activation_status = 'ACTIVE'"
+        );
+        $statement->execute(['hash' => $passwordHash, 'id' => $accountId]);
+
+        return $statement->rowCount() === 1;
+    }
+
+    public function changePassword(int $accountId, string $passwordHash): void
+    {
+        $statement = $this->db->prepare(
+            'UPDATE user_accounts SET password_hash = :hash, first_login_required = 0 WHERE id = :id'
+        );
+        $statement->execute(['hash' => $passwordHash, 'id' => $accountId]);
+    }
+
     // A student's mail goes to their primary parent
     // Anyone else's goes to their personal email, or else their sign-in email
     public function emailFor(array $account): ?string
@@ -71,6 +106,25 @@ class UserModel extends Model
     // Only these names reach the SQL
     private const PROFILE_COLUMNS = ['first_name', 'last_name', 'date_of_birth', 'gender', 'national_id', 'personal_email',
                                      'phone', 'address', 'emergency_name', 'emergency_phone'];
+
+    // Any key not in PROFILE_COLUMNS is ignored
+    public function updateProfile(int $accountId, array $fields): void
+    {
+        $fields = array_intersect_key($fields, array_flip(self::PROFILE_COLUMNS));
+
+        if ($fields === [])
+        {
+            return;
+        }
+
+        $sets = implode(', ', array_map(fn (string $column): string => "{$column} = :{$column}", array_keys($fields)));
+        $this->db->prepare("UPDATE profiles SET {$sets} WHERE account_id = :id")->execute($fields + ['id' => $accountId]);
+    }
+
+    public function setPhoto(int $accountId, ?string $url): void
+    {
+        $this->db->prepare('UPDATE profiles SET photo_url = :url WHERE account_id = :id')->execute(['url' => $url, 'id' => $accountId]);
+    }
 
     // A loosely typed student code is turned into the stored format
     // Emails become lower case
