@@ -11,6 +11,29 @@ class VerificationCode extends Model
     public const ACTIVATE = 'activate';
     public const RESET    = 'reset';
 
+    // Only the hash is stored, and the plain code is returned to be emailed
+    // A new code replaces any older one
+    public function create(int $accountId, string $purpose): string
+    {
+        $code = (string) random_int(100000, 999999);
+
+        $this->db->prepare('DELETE FROM verification_codes WHERE account_id = :account AND purpose = :purpose')
+            ->execute(['account' => $accountId, 'purpose' => $purpose]);
+
+        $this->db->prepare(
+            'INSERT INTO verification_codes (account_id, purpose, code_hash, attempts_left, expires_at)
+             VALUES (:account, :purpose, :hash, :attempts, NOW() + INTERVAL :minutes MINUTE)'
+        )->execute([
+            'account'  => $accountId,
+            'purpose'  => $purpose,
+            'hash'     => password_hash($code, PASSWORD_DEFAULT),
+            'attempts' => config('app.codes.max_attempts'),
+            'minutes'  => config('app.codes.expire_minutes'),
+        ]);
+
+        return $code;
+    }
+
     // A right code is used up, and a wrong one costs a try
     // An expired result also covers having no tries left
     public function check(int $accountId, string $purpose, string $typed): string
