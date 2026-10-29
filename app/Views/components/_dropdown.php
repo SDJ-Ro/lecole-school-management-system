@@ -41,3 +41,73 @@ $dClasses = 'c-dropdown c-dropdown--' . $dVariant
           . ($dTone !== '' ? ' c-dropdown--' . $dTone : '')
           . ($isMulti ? ' c-dropdown--multi' : '');
 ?>
+
+<div class="<?= e($dClasses) ?>"
+     id="<?= e($dId) ?>"
+     aria-label="<?= e($dLabel) ?>"
+     data-placeholder="<?= e($dHolder) ?>"
+     <?= $isMulti ? 'data-multi="true"' : '' ?>
+     <?= $dMissing !== '' ? 'data-required' : '' ?>
+     <?= $dName !== '' ? 'data-name="' . e($dName) . '"' : '' ?>>
+
+  <?php if ($isMulti): ?>
+    <div class="j-dropdown-hidden-inputs">
+      <?php foreach ($selectedValues as $sv): ?>
+        <input type="hidden" name="<?= e($dName) ?>" value="<?= e($sv) ?>" />
+      <?php endforeach; ?>
+    </div>
+
+    <div role="button" tabindex="0" class="c-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
+      <div class="c-dropdown__chips j-dropdown-chips">
+        <?php foreach ($selectedValues as $sv): ?>
+          <span class="c-chip">
+            <span><?= e($labels[$sv] ?? $sv) ?></span>
+            <span role="button" tabindex="0" class="c-chip__remove j-chip-remove" data-val="<?= e($sv) ?>" aria-label="Remove <?= e($labels[$sv] ?? $sv) ?>">
+              <?= icon('close', 10) ?>
+            </span>
+          </span>
+        <?php endforeach; ?>
+      </div>
+      <span class="c-dropdown__placeholder j-dropdown-placeholder" <?= $selectedValues !== [] ? 'hidden' : '' ?>><?= e($dHolder) ?></span>
+      <?= icon('chevronDown', 14, 'c-dropdown__chevron') ?>
+    </div>
+  <?php else: ?>
+    <?php if ($dName !== ''): ?>
+      <input type="hidden" name="<?= e($dName) ?>" value="<?= e($hasSelected ? $dVal : '') ?>" />
+    <?php endif; ?>
+
+    <button type="button" class="c-dropdown__trigger" aria-haspopup="listbox" aria-expanded="false">
+      <span class="c-dropdown__text">
+        <?php if ($dPrefix !== ''): ?>
+          <span class="c-dropdown__prefix"><?= e($dPrefix) ?>:</span>
+        <?php endif; ?>
+        <span class="c-dropdown__value<?= $hasSelected ? '' : ' c-dropdown__placeholder' ?>"><?= e($displayLabel) ?></span>
+      </span>
+      <?= icon('chevronDown', 14, 'c-dropdown__chevron') ?>
+    </button>
+  <?php endif; ?>
+
+  <div class="c-dropdown__menu" role="listbox" aria-label="<?= e($dLabel) ?>">
+    <?php foreach ($formattedOptions as $opt): ?>
+      <?php $isSelected = $isMulti ? in_array($opt['value'], $selectedValues, true) : ($hasSelected && $opt['value'] === (string) $dVal); ?>
+      <button type="button" class="c-dropdown__option<?= $isSelected ? ' c-is-selected' : '' ?>" <?= $opt['disabled'] ? 'disabled' : '' ?>
+              data-value="<?= e($opt['value']) ?>" data-label="<?= e($opt['label']) ?>" role="option" aria-selected="<?= $isSelected ? 'true' : 'false' ?>">
+        <?php if ($dVariant === 'teacher'): ?>
+          <span class="c-avatar" aria-hidden="true"><?= e($opt['value'] === '' ? '–' : initials($opt['label'])) ?></span>
+        <?php endif; ?>
+        <span class="c-dropdown__label">
+          <span><?= e($opt['label']) ?></span>
+          <?php if ($opt['sub'] !== ''): ?>
+            <span class="c-dropdown__sub"><?= e($opt['sub']) ?></span>
+          <?php endif; ?>
+        </span>
+        <?= icon('check', 14, 'c-dropdown__tick') ?>
+      </button>
+    <?php endforeach; ?>
+  </div>
+
+  <?php if ($dMissing !== ''): ?>
+    <p class="c-field__error j-dropdown-error" hidden><?= e($dMissing) ?></p>
+  <?php endif; ?>
+</div>
+<?php unset($dropdownId, $dropdownLabel, $placeholder, $options, $selectedValue, $name, $prefix, $variant, $tone, $isMultiSelect, $required); ?>
