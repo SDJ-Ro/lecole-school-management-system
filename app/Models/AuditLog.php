@@ -72,5 +72,19 @@ class AuditLog extends Model
         return $this->db->query('SELECT DISTINCT action FROM audit_log ORDER BY action')->fetchAll(\PDO::FETCH_COLUMN);
     }
 
+    public function record(string $action, ?int $accountId, ?string $identifier, string $details = ''): void
+    {
+        $statement = $this->db->prepare(
+            'INSERT INTO audit_log (account_id, identifier, action, ip_address, user_agent, details)
+             VALUES (:account, :identifier, :action, :ip, :agent, :details)'
+        );
+        $statement->execute([
+            'account'    => $accountId,
+            'identifier' => $identifier,
+            'action'     => $action,
+            'ip'         => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'agent'      => substr($_SERVER['HTTP_USER_AGENT'] ?? '', 0, 255),
+            'details'    => $details,
+        ]);
     }
 }
