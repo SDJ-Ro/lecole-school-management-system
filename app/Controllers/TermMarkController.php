@@ -56,6 +56,49 @@ class TermMarkController extends Controller
         ]);
     }
 
+    // POST /teacher/marks/save, answers with JSON
+    // Each mark is a number from 0 to 100, AB for absent, or empty
+    public function save(): never
+    {
+        $user = $this->requireRole('teacher');
+        $work = $this->workspace($user, (int) $this->postText('term', 2), true);
+        $id   = (int) $this->postText('student_id', 11);
+
+
+        $marks = [];
+
+        foreach ($work['subjects'] as $subjectId => $subject)
+        {
+            $typed = strtoupper($this->postText("mark_{$subjectId}", 3));
+
+            $marks[$subjectId] = match ($typed)
+            {
+                ''      => '',
+                'AB'    => null,
+                default => (int) $typed,
+            };
+        }
+
+        $student = $work['sheet'][$id];
+        $changes = (new TermMarkModel())->save($id, $work['year'], $work['term'], $marks, $this->postText('feedback', 500), $user['id']);
+
+        if ($work['publication'] !== null)
+        {
+            foreach ($changes as $subjectId => [$before, $after])
+            {
+                $this->log($user, 'MARK_CHANGED', "{$work['class']['name']} · {$student['name']} · {$work['subjects'][$subjectId]} "
+                    . mb_substr(word('term'), 0, 1) . "{$work['term']}: " . ($before === '' ? '—' : $before) . ' → ' . ($after === '' ? '—' : $after));
+            }
+
+            if ($changes !== [])
+            {
+                Notify::students([$id], 'A published ' . strtolower(word('term')) . " {$work['term']} mark was corrected.", 'marks');
+            }
+        }
+
+        $this->sendJson(['ok' => true, 'message' => 'Marks saved.', 'complete' => $this->workspace($user, $work['term'], true)['complete']]);
+    }
+
     // 'needed' holds the students who were in the class before the term started
     // When there is nothing to work on it returns the reason as text, and a POST is refused with it
     private function workspace(array $user, int $term, bool $posting = false): array|string
