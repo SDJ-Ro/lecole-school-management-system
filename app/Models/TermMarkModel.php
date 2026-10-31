@@ -78,6 +78,51 @@ class TermMarkModel extends Model
         return $students;
     }
 
+    // Each subject gets a mark, null for absent, or an empty text to remove the mark
+    // Returns the old and new value of every mark that changed
+    public function save(int $studentId, int $year, int $term, array $marks, string $comment, int $by): array
+    {
+        return $this->transaction(function () use ($studentId, $year, $term, $marks, $comment, $by): array
+        {
+            $keys   = ['student' => $studentId, 'year' => $year, 'term' => $term];
+            $before = $this->db->prepare('SELECT subject_id, mark FROM marks WHERE student_id = :student AND year = :year AND term = :term');
+            $before->execute($keys);
+            $before = array_column($before->fetchAll(), 'mark', 'subject_id');
+
+            $upsert = $this->db->prepare(
+                'INSERT INTO marks (student_id, subject_id, year, term, mark, entered_by) VALUES (:student, :subject, :year, :term, :mark, :by)
+                 ON DUPLICATE KEY UPDATE mark = VALUES(mark), entered_by = VALUES(entered_by)'
+            );
+            $remove = $this->db->prepare('DELETE FROM marks WHERE student_id = :student AND subject_id = :subject AND year = :year AND term = :term');
+            $shown  = fn (array $list, int $subject): string => !array_key_exists($subject, $list) || $list[$subject] === '' ? '' : (string) ($list[$subject] ?? 'AB');
+            $changes = [];
+
+            foreach ($marks as $subjectId => $mark)
+            {
+                $mark === '' ? $remove->execute($keys + ['subject' => $subjectId]) : $upsert->execute($keys + ['subject' => $subjectId, 'mark' => $mark, 'by' => $by]);
+
+                if ($shown($before, $subjectId) !== $shown($marks, $subjectId))
+                {
+                    $changes[$subjectId] = [$shown($before, $subjectId), $shown($marks, $subjectId)];
+                }
+            }
+
+            if ($comment === '')
+            {
+                $this->db->prepare('DELETE FROM term_comments WHERE student_id = :student AND year = :year AND term = :term')->execute($keys);
+            }
+            else
+            {
+                $this->db->prepare(
+                    'INSERT INTO term_comments (student_id, year, term, comment, written_by) VALUES (:student, :year, :term, :comment, :by)
+                     ON DUPLICATE KEY UPDATE comment = VALUES(comment), written_by = VALUES(written_by)'
+                )->execute($keys + ['comment' => $comment, 'by' => $by]);
+            }
+
+            return $changes;
+        });
+    }
+
     // Null means the marks are still a draft
     public function publication(int $classId, int $year, int $term): ?array
     {
@@ -179,6 +224,14 @@ class TermMarkModel extends Model
         $statement->execute(['year' => $year]);
 
         return array_map('floatval', array_column($statement->fetchAll(), 'average', 'student_id'));
+    }
+
+    public function publishedTerms(int $classId, int $year): array
+    {
+        $statement = $this->db->prepare('SELECT term, published_at FROM term_publications WHERE class_id = :class AND year = :year ORDER BY term');
+        $statement->execute(['class' => $classId, 'year' => $year]);
+
+        return array_column($statement->fetchAll(), null, 'term');
     }
 
     public function commentsOf(int $studentId): array
