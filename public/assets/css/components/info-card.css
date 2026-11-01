@@ -87,3 +87,61 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+.c-info-card--on-tint {
+  background: color-mix(in srgb, var(--white) 92%, transparent);
+  backdrop-filter: blur(4px);
+}
+.c-info-card__label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.c-info-card__label .c-icon {
+  flex-shrink: 0;
+  color: var(--text-faint);
+}
+
+.c-info-card__value {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--midnight);
+  word-break: break-word;
+}
+
+/* Hidden until the page is in edit mode */
+.c-info-card__box {
+  display: none;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+.c-info-card__input {
+  border-color: color-mix(in srgb, var(--skyblue) 50%, transparent);
+  background: color-mix(in srgb, var(--skyblue) 7%, transparent);
+  font-weight: 600;
+}
+
+.c-info-card__input:focus {
+  background: var(--white);
+}
+
+[data-editing="true"] .c-info-card--editable .c-info-card__value {
+  display: none;
+}
+
+[data-editing="true"] .c-info-card__box {
+  display: flex;
+}
+.c-info-card--edit-only {
+  display: none;
+}
+
+[data-editing="true"] .c-info-card--edit-only {
+  display: block;
+}
