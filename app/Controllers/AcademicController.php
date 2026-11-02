@@ -96,6 +96,58 @@ class AcademicController extends Controller
         ]);
     }
 
+    // POST /{role}/academic/grades/add. Adds a grade with its first class
+    public function addGrade(string $role): never
+    {
+        $user    = $this->guard($role);
+        $back    = $this->pageUrl($role);
+        $numbers = config('white_label.academic.grade_numbers');
+        $data    = ['number' => $this->postText('number', 3)];
+        $classes = new ClassModel();
+
+
+        $number = (int) $data['number'];
+
+
+        $id      = $classes->addGrade($number);
+        $covered = $this->stageFor($number, (new StageModel())->all()) !== null;
+        $this->log($user, 'GRADE_ADDED', grade_name($number));
+
+        // Say so when no curriculum covers the new grade yet, or its classes would just show "No subjects yet"
+        $this->done(grade_name($number) . words(' added, with its first {class}.') . ($covered ? '' : words(' Add a curriculum that covers it to choose its {subjects}.')), "{$back}#grade-{$id}");
+    }
+
+    // POST /{role}/academic/grades/delete. Deletes the whole grade or some of its classes
+    // Refused while students are in them, so a student never loses their class without notice
+    public function deleteGrade(string $role): never
+    {
+        $user    = $this->guard($role);
+        $back    = $this->pageUrl($role);
+        $classes = new ClassModel();
+        $grade   = $classes->findGrade((int) $this->postText('grade_id')) ?? $this->refuse('That ' . strtolower(word('grade')) . ' no longer exists.', $back, 404);
+        $name    = grade_name($grade['number']);
+
+
+        // Only this grade's own classes, and only empty ones
+        $chosen = [];
+
+        foreach (array_unique(array_map('intval', $this->postList('classes'))) as $classId)
+        {
+            $class = $classes->find($classId);
+
+
+
+
+            $chosen[$classId] = $class['name'];
+        }
+
+
+        $classes->deleteClasses(array_keys($chosen));
+        $this->log($user, 'CLASSES_DELETED', implode(', ', $chosen));
+        $this->done(implode(', ', $chosen) . ' deleted.', "{$back}#grade-{$grade['id']}");
+    }
+
+    // POST /{role}/academic/classes/save. Without an id it adds a new class
     // POST /{role}/academic/stages/save. Without an id it adds a new stage
     public function saveStage(string $role): never
     {
