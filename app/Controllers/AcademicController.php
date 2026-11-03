@@ -148,6 +148,94 @@ class AcademicController extends Controller
     }
 
     // POST /{role}/academic/classes/save. Without an id it adds a new class
+    public function saveClass(string $role): never
+    {
+        $user     = $this->guard($role);
+        $classes  = new ClassModel();
+        $id       = (int) $this->postText('id') ?: null;
+        $class    = $id === null ? null : ($classes->find($id) ?? $this->refuse('That ' . strtolower(word('class')) . ' no longer exists.', $this->pageUrl($role), 404));
+        $grade    = $classes->findGrade($class['grade_id'] ?? (int) $this->postText('grade_id')) ?? $this->refuse('That ' . strtolower(word('grade')) . ' no longer exists.', $this->pageUrl($role), 404);
+        $size     = config('white_label.academic.class_size');
+        $data     = [
+            'section'  => mb_strtoupper($this->postText('section', 10)),
+            'capacity' => $this->postText('capacity', 3),
+            'teacher'  => $this->postText('class_teacher_id', 11),
+        ];
+        $back     = $this->pageUrl($role) . "#grade-{$grade['id']}";
+        $refuse   = function (string $message) use ($data, $id, $grade, $back): never
+        {
+            $this->setFlash('class_form', $data + ['id' => $id, 'grade_id' => $grade['id'], 'prefix' => class_prefix($grade['number'])]);   // Reopens the editor
+            $this->refuse($message, $back, 422);
+        };
+
+        $name    = class_name($grade['number'], $data['section']);
+        $teacher = $data['teacher'] === '' ? null : (int) $data['teacher'];
+
+        if ($errors !== [])
+        {
+            $refuse(reset($errors));
+        }
+
+        if (!preg_match('/^[\p{L}\p{N}]+$/u', $data['section']))
+        {
+            $refuse('The section can only be letters and numbers (e.g. A).');
+        }
+
+        if ($classes->nameTaken($grade['id'], $name, $id))
+        {
+            $refuse(grade_name($grade['number']) . " already has {$name}.");
+        }
+
+        if ($class !== null && (int) $data['capacity'] < $class['students'])
+        {
+            $refuse("{$class['name']} already has {$class['students']} " . strtolower(plural('student')) . '.');
+        }
+
+        if ($teacher !== null && !isset($classes->teachers()[$teacher]))
+        {
+            $refuse('Please choose a ' . strtolower(word('teacher')) . ' from the list.');
+        }
+
+        if ($teacher !== null && ($other = $classes->classTeacherOf($teacher, $id)) !== null)
+        {
+            $refuse('Already the ' . strtolower(word('class') . ' ' . word('teacher')) . " of {$other}.");
+        }
+
+        $classes->saveClass($id, $grade['id'], $name, (int) $data['capacity'], $teacher);
+        $this->log($user, $id === null ? 'CLASS_ADDED' : 'CLASS_UPDATED', $name);
+        $this->done($id === null ? "{$name} added." : "{$name} saved.", $back);
+    }
+
+    // POST /{role}/academic/subject-teacher (JSON)
+    public function saveSubjectTeacher(string $role): never
+    {
+        $user    = $this->guard($role);
+        $back    = $this->pageUrl($role);
+        $classes = new ClassModel();
+        $class   = $classes->find((int) $this->postText('class_id')) ?? $this->refuse('That ' . strtolower(word('class')) . ' no longer exists.', $back, 404);
+        $stage   = $this->stageFor($class['grade_number'], (new StageModel())->all());
+        $subject = (int) $this->postText('subject_id');
+        $teacher = $this->postText('teacher_id', 11) === '' ? null : (int) $this->postText('teacher_id', 11);
+        $chosen  = $teacher === null ? null : ($classes->teachers()[$teacher] ?? null);
+        $max     = (int) config('white_label.academic.max_subjects_per_teacher');
+
+
+        $name = $stage['subjects'][$subject];
+
+
+
+        (new Assignments())->setSubjectTeacher($class['id'], $subject, $teacher);
+        $this->log($user, 'SUBJECT_TEACHER_SAVED', "{$class['name']} {$name}");
+
+        // Schools sometimes need a teacher to cover a gap, so a subject outside their list is only a warning
+        $theirs = array_map(fn (string $s): string => mb_strtolower(trim($s)), explode(',', (string) ($chosen['qualification'] ?? '')));
+        $note   = $chosen !== null && $theirs !== [''] && !in_array(mb_strtolower($name), $theirs, true)
+            ? " {$name} isn't one of {$chosen['name']}'s listed " . strtolower(plural('subject')) . '.'
+            : '';
+
+        $this->sendJson(['ok' => true, 'message' => "{$class['name']} {$name} saved.{$note}"]);
+    }
+
     // POST /{role}/academic/stages/save. Without an id it adds a new stage
     public function saveStage(string $role): never
     {
@@ -313,6 +401,12 @@ class AcademicController extends Controller
     private function pageUrl(string $role): string
     {
         return "/{$role}/academic";
+    }
+
+    private function done(string $message, string $url): never
+    {
+        $this->setFlash('notice', $message);
+        $this->redirect($url);
     }
 
     // This year and next year
