@@ -31,3 +31,29 @@
   background: var(--sunshine);
   color: var(--white);
 }
+.c-form-card__header--terracotta {
+  background: var(--terracotta);
+  color: var(--white);
+}
+
+.c-form-card__header--maroon {
+  background: var(--maroon);
+  color: var(--white);
+}
+
+.c-form-card__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.c-form-card__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
