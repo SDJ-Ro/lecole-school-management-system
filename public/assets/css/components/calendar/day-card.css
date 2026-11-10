@@ -107,3 +107,72 @@
   opacity: 0;
   animation: c-fade-in 220ms ease forwards;
 }
+.c-calendar__add-event-btn {
+  gap: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--white) 50%, transparent);
+  background: color-mix(in srgb, var(--white) 8%, transparent);
+  color: var(--sunshine);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background-color var(--speed) ease, border-color var(--speed) ease;
+}
+
+.c-calendar__add-event-btn:hover {
+  background: color-mix(in srgb, var(--white) 16%, transparent);
+  border-color: color-mix(in srgb, var(--white) 85%, transparent);
+}
+.c-calendar__no-more-events {
+  gap: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--white) 35%, transparent);
+  background: color-mix(in srgb, var(--white) 5%, transparent);
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.c-calendar__empty-box {
+  flex-direction: column;
+  border: 1px dashed color-mix(in srgb, var(--white) 25%, transparent);
+  background: color-mix(in srgb, var(--white) 4%, transparent);
+}
+
+.c-calendar__empty-box-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+  line-height: 1.4;
+}
+
+.c-calendar__empty-icon {
+  margin-bottom: 0.5rem;
+  color: color-mix(in srgb, var(--white) 40%, transparent);
+}
+
+.c-calendar__empty-title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.c-calendar__empty-subtext {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--white) 55%, transparent);
+}
+
+.c-calendar__no-more-icon {
+  color: color-mix(in srgb, var(--white) 60%, transparent);
+}
+
+@keyframes c-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.c-day-event-card__badge {
+  max-width: 130px;
+  border: 1px solid color-mix(in srgb, var(--sunshine) 35%, transparent);
+  background: color-mix(in srgb, var(--sunshine) 20%, transparent);
+  color: var(--sunshine);
+}
