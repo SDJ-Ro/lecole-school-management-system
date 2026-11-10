@@ -483,3 +483,97 @@
   cursor: pointer;
   transition: color var(--speed) ease, background-color var(--speed) ease;
 }
+
+.c-dropdown--calendar > .c-dropdown__trigger:hover {
+  background: color-mix(in srgb, var(--white) 10%, transparent);
+}
+
+/* Never cut short: "September" is a hair wider than its box */
+.c-dropdown--calendar .c-dropdown__text,
+.c-dropdown--calendar .c-dropdown__value {
+  overflow: visible;
+}
+
+.c-dropdown--calendar .c-dropdown__chevron {
+  height: 0.875rem;
+  width: 0.875rem;
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+}
+
+.c-dropdown--calendar > .c-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-menu);
+  overflow-y: auto;
+  max-height: 220px;
+  min-width: 100%;
+  width: max-content;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line-faint);
+  background: var(--mist);
+  box-shadow: var(--shadow-lg);
+  padding: 0.375rem;
+}
+
+.c-dropdown--calendar .c-dropdown__option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--radius-lg);
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--midnight);
+  cursor: pointer;
+  transition: background-color var(--speed) ease;
+  white-space: nowrap;
+}
+
+.c-dropdown--calendar .c-dropdown__option:hover {
+  background: var(--wash-strong);
+}
+
+.c-dropdown--calendar .c-dropdown__option.c-is-selected {
+  background: var(--midnight);
+  color: var(--white);
+  font-weight: 700;
+}
+.c-dropdown--tick {
+  min-width: 8rem;
+}
+
+.c-dropdown--tick .c-dropdown__option {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.c-dropdown--tick .c-dropdown__option:hover {
+  background: var(--wash);
+}
+
+.c-dropdown--tick .c-dropdown__option.c-is-selected {
+  background: color-mix(in srgb, var(--skyblue) 18%, transparent);
+  color: var(--deepsea);
+}
+
+.c-dropdown--tick .c-is-selected > .c-dropdown__tick {
+  display: inline-block;
+}
+
+/* When there is no room, the script lines the menu up on the right or opens it upwards */
+.c-dropdown__menu.c-dropdown__menu--end {
+  left: auto;
+  right: 0;
+}
+
+.c-dropdown__menu.c-dropdown__menu--up {
+  top: auto;
+  bottom: calc(100% + 4px);
+}
