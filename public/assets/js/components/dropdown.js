@@ -250,3 +250,80 @@
   {
     const root = e.target.closest('.c-dropdown');
  
+    if (e.key === 'Escape')
+    {
+      closeAllDropdowns();
+      root?.querySelector('.c-dropdown__trigger').focus();
+      return;
+    }
+
+    if (root && (e.key === 'ArrowDown' || e.key === 'ArrowUp'))
+    {
+      e.preventDefault();
+      moveThroughOptions(root, e.key === 'ArrowDown' ? 1 : -1);
+      return;
+    }
+
+    // The multi-select trigger and the chip remove buttons are not real buttons, so Enter and Space are handled here
+    const fakeButton = e.target.closest('.j-chip-remove, div.c-dropdown__trigger');
+
+    if (fakeButton && (e.key === 'Enter' || e.key === ' '))
+    {
+      e.preventDefault();
+      fakeButton.click();
+    }
+  });
+
+  // Uses the capture phase on window, so other submit handlers never see a send stopped by an empty required dropdown
+  window.addEventListener('submit', function (e)
+  {
+    const empty = [...e.target.querySelectorAll('.c-dropdown[data-required]')].filter(root => getDropdownValue(root) === '');
+
+    if (empty.length === 0)
+    {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+    empty.forEach(root => root.querySelector('.j-dropdown-error').hidden = false);
+    empty[0].querySelector('.c-dropdown__trigger').focus();
+  }, true);
+
+  document.addEventListener('dropdown:change', function (e)
+  {
+    const error = e.target.querySelector(':scope > .j-dropdown-error');
+
+    if (error)
+    {
+      error.hidden = true;
+    }
+  });
+
+  // reset() can't restore a hidden input, because setting its value also changes its default. So the first values are kept here.
+  const startValues = new Map([...document.querySelectorAll('.c-dropdown:not([data-multi]) > input[type="hidden"]')]
+    .map(input => [input, input.value]));
+
+  document.addEventListener('reset', function (e)
+  {
+    e.target.querySelectorAll('.c-dropdown:not([data-multi])').forEach(root =>
+    {
+      const input = root.querySelector(':scope > input[type="hidden"]');
+      const error = root.querySelector(':scope > .j-dropdown-error');
+
+      if (input && startValues.has(input))   // A dropdown without a name isn't sent, so it keeps its choice
+      {
+        startValues.get(input) === '' ? resetDropdown(root) : setDropdownValue(root, startValues.get(input));
+      }
+
+      if (error)
+      {
+        error.hidden = true;
+      }
+    });
+  });
+
+  function setDropdownMultiValues(dropdownId, values)
+  {
+    const root = byIdOrElement(dropdownId);
+    if (!root) return;
