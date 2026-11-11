@@ -19,3 +19,74 @@
     $selectedValue = (string) $filters['year'];
     require __DIR__ . '/_dropdown.php';
     ?>
+    
+    <?php if ($grades !== null): ?>
+      <?php
+      // Picking a new {grade} clears the {class} filter on the server
+      $dropdownId    = 'j-complaints-grade';
+      $dropdownLabel = words('Filter by {grade}');
+      $name          = 'grade';
+      $options       = [['value' => '', 'label' => words('All {Grades}')]];
+      foreach ($grades as $gradeId => $gradeName)
+      {
+          $options[] = ['value' => (string) $gradeId, 'label' => $gradeName];
+      }
+      $options[]     = ['value' => 'none', 'label' => words('No {Class}')];
+      $selectedValue = $filters['grade'];
+      require __DIR__ . '/_dropdown.php';
+      ?>
+
+      <?php if ($classes !== []): ?>
+        <?php
+        $dropdownId    = 'j-complaints-class';
+        $dropdownLabel = words('Filter by {class}');
+        $name          = 'class';
+        $options       = [['value' => '', 'label' => words('All {Classes}')]];
+        foreach ($classes as $classId => $className)
+        {
+            $options[] = ['value' => (string) $classId, 'label' => $className];
+        }
+        $selectedValue = $filters['class'];
+        require __DIR__ . '/_dropdown.php';
+        ?>
+      <?php endif; ?>
+    <?php endif; ?>
+
+    <?php
+    $dropdownId    = 'j-complaints-category';
+    $dropdownLabel = 'Filter by category';
+    $name          = 'category';
+    $options       = array_merge([['value' => '', 'label' => 'All Categories']], array_keys($categories));
+    $selectedValue = $filters['category'];
+    require __DIR__ . '/_dropdown.php';
+    ?>
+
+    <?php
+    $dropdownId    = 'j-complaints-status';
+    $dropdownLabel = 'Filter by status';
+    $name          = 'status';
+    $options       = [['value' => '', 'label' => 'All Statuses']];
+    foreach ($statuses as $statusKey => [$statusName])
+    {
+        $options[] = ['value' => $statusKey, 'label' => $statusName];
+    }
+    $selectedValue = $filters['status'];
+    require __DIR__ . '/_dropdown.php';
+    ?>
+  </div>
+</form>
+
+<?php if ($complaints === []): ?>
+  <div class="c-empty-box c-empty-box--titled">
+    <?= icon('complaints', 40) ?>
+    <p class="c-empty-box__title">No inquiries match your filter</p>
+    <p class="c-empty-box__text">Try adjusting your search terms or filter selections.</p>
+  </div>
+<?php else: ?>
+  <div class="l-complaints-list">
+    <?php foreach ($complaints as $complaintCard): ?>
+      <?php require __DIR__ . '/_complaint_card.php'; ?>
+    <?php endforeach; ?>
+  </div>
+<?php endif; ?>
+<?php unset($filters, $categories, $statuses, $complaints, $searchText, $canResolve, $statusKey, $statusName, $years, $grades, $classes, $gradeId, $gradeName, $classId, $className); ?>
