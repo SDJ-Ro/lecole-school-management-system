@@ -36,3 +36,31 @@ $complaintResolved = $complaintCard['status'] === 'resolved';
         <?php endif; ?>
       </p>
     </div>
+    
+    <?php if ($canResolve && !$complaintResolved): ?>
+      <button type="button" class="c-btn c-btn--outline j-resolve-open">Mark as Resolved</button>
+    <?php endif; ?>
+  </div>
+
+  <?php if ($complaintResolved && $complaintCard['response'] !== ''): ?>
+    <div class="c-complaint-card__answer">
+      <p class="c-complaint-card__answer-label"><?= e($canResolve ? words('Message to {Parent}:') : words('{Institution} Response:')) ?></p>
+      <p class="c-complaint-card__answer-text"><?= e($complaintCard['response']) ?></p>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($canResolve && !$complaintResolved): ?>
+    <form class="c-complaint-card__answer c-complaint-card__resolve j-resolve-form" method="post" action="/management/complaints/resolve" hidden
+          data-question-title="Resolve this inquiry?" data-question-button="Resolve" data-question-icon="checkCircle2" data-question-tone="success"
+          data-question-text="<?= e(words('Your answer is sent to the {parent} and the inquiry closes. It can\'t be reopened.')) ?>">
+      <?= $csrfField ?>
+      <input type="hidden" name="id" value="<?= e($complaintCard['id']) ?>">
+      <input type="text" class="c-field__input c-complaint-card__input" name="response" maxlength="<?= e(config('complaints.limits.response')) ?>" required autocomplete="off"
+             aria-label="<?= e(words('Message to the {parent}')) ?>"
+             placeholder="<?= e(words('Write a message to the {parent} explaining the resolution…')) ?>">
+      <button type="button" class="c-btn c-btn--close j-resolve-cancel" aria-label="Cancel"><?= icon('close', 16) ?></button>
+      <button type="submit" class="c-btn c-btn--moss c-complaint-card__send"><?= icon('send', 14) ?>Resolve</button>
+    </form>
+  <?php endif; ?>
+</article>
+<?php unset($complaintCard, $complaintStatus, $complaintIcon, $complaintResolved); ?>
