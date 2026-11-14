@@ -36,3 +36,34 @@
 .c-image-picker--box:hover .c-image-picker__preview {
   border-color: var(--sand);
 }
+
+.c-image-picker--row {
+  flex-wrap: wrap;
+}
+
+.c-image-picker--row .c-image-picker__preview {
+  width: 220px;
+  height: 130px;
+  border: 1px solid var(--alabaster);
+  background: var(--ivory);
+}
+
+.c-image-picker--row .c-image-picker__empty {
+  font-size: 0.75rem;
+  color: var(--text-hint);
+}
+
+.c-image-picker__side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.c-image-picker__button {
+  align-self: flex-start;
+}
+
+.c-image-picker__hint {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
