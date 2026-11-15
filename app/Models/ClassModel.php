@@ -185,5 +185,56 @@ class ClassModel extends Model
         return $statement->fetchAll(\PDO::FETCH_COLUMN);
     }
 
+    // A new grade comes with its first class, so it is ready to use
+    public function addGrade(int $number): int
+    {
+        return $this->transaction(function () use ($number): int
+        {
+            $this->db->prepare('INSERT INTO grades (sort_order) VALUES (:number)')->execute(['number' => $number]);
+            $gradeId = (int) $this->db->lastInsertId();
+            $size    = (int) config('white_label.academic.class_size.max');
+
+            $this->saveClass(null, $gradeId, class_name($number, config('white_label.academic.first_section')), $size, null);
+
+            return $gradeId;
+        });
+    }
+
+    // The caller first checks nobody was ever in them
+    public function deleteGrade(int $id): void
+    {
+        $this->transaction(function () use ($id): void
+        {
+            $this->db->prepare('DELETE FROM classes WHERE grade_id = :id')->execute(['id' => $id]);
+            $this->db->prepare('DELETE FROM grades WHERE id = :id')->execute(['id' => $id]);
+        });
+    }
+
+    public function saveClass(?int $id, int $gradeId, string $name, int $capacity, ?int $teacherId): int
+    {
+        return $this->transaction(function () use ($id, $gradeId, $name, $capacity, $teacherId): int
+        {
+            $values = ['name' => $name, 'capacity' => $capacity];
+
+            if ($id === null)
+            {
+                $this->db->prepare('INSERT INTO classes (grade_id, name, capacity) VALUES (:grade, :name, :capacity)')->execute($values + ['grade' => $gradeId]);
+                $id = (int) $this->db->lastInsertId();
+            }
+            else
+            {
+                $this->db->prepare('UPDATE classes SET name = :name, capacity = :capacity WHERE id = :id')->execute($values + ['id' => $id]);
+            }
+
+            (new Assignments())->setClassTeacher($id, $teacherId);
+
+            return $id;
+        });
+    }
+
+    // Only for classes nobody was ever in
+    public function deleteClasses(array $ids): void
+    {
+        $this->db->exec('DELETE FROM classes WHERE id IN (' . self::idList($ids) . ')');
     }
 }
