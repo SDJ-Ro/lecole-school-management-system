@@ -327,3 +327,99 @@
   {
     const root = byIdOrElement(dropdownId);
     if (!root) return;
+
+    let list = [].concat(values ?? []).map(String);
+    if (list.length === 0 && allValueOf(root)) list = [allValueOf(root)];
+    showMultiValues(root, list);
+  }
+
+  function setDropdownValue(dropdownId, value)
+  {
+    const root = byIdOrElement(dropdownId);
+    if (!root) return;
+
+    if (isMulti(root))
+    {
+      setDropdownMultiValues(root, value);
+      return;
+    }
+
+    const option = optionsOf(root).find(opt => opt.dataset.value === String(value ?? ''));
+    if (option) showSingleValue(root, option);
+  }
+
+  function getDropdownValue(dropdownId)
+  {
+    const root = byIdOrElement(dropdownId);
+    if (!root) return '';
+
+    const chosen = optionsOf(root).filter(opt => opt.classList.contains('c-is-selected')).map(opt => opt.dataset.value);
+    return isMulti(root) ? chosen : (chosen[0] ?? '');
+  }
+
+  function resetDropdown(dropdownId)
+  {
+    const root = byIdOrElement(dropdownId);
+    if (!root) return;
+
+    if (isMulti(root))
+    {
+      showMultiValues(root, []);
+      return;
+    }
+
+    const value = root.querySelector('.c-dropdown__value');
+    const input = root.querySelector('input[type="hidden"]');
+
+    optionsOf(root).forEach(opt =>
+    {
+      opt.classList.remove('c-is-selected');
+      opt.setAttribute('aria-selected', 'false');
+    });
+    value.textContent = root.dataset.placeholder;
+    value.classList.add('c-dropdown__placeholder');
+
+    if (input)
+    {
+      input.value = '';
+    }
+  }
+
+  // Must match the option HTML the server draws. Names are set as text, so they can't add HTML.
+  function setDropdownOptions(dropdownId, options, chosen)
+  {
+    const root = byIdOrElement(dropdownId);
+    if (!root) return;
+
+    root.querySelector('.c-dropdown__menu').replaceChildren(...options.map(opt =>
+    {
+      const value = String(typeof opt === 'object' ? (opt.value ?? opt.label) : opt);
+      const option = document.createElement('button');
+      const label = document.createElement('span');
+      const text = document.createElement('span');
+
+      option.type = 'button';
+      option.className = 'c-dropdown__option';
+      option.dataset.value = value;
+      option.dataset.label = typeof opt === 'object' ? (opt.label ?? value) : value;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', 'false');
+      label.className = 'c-dropdown__label';
+      text.textContent = option.dataset.label;
+      label.append(text);
+      option.append(label);
+      option.insertAdjacentHTML('beforeend', TICK);
+      return option;
+    }));
+
+    resetDropdown(root);
+    if (chosen !== undefined) setDropdownValue(root, chosen);
+  }
+
+  window.setDropdownValue = setDropdownValue;
+  window.getDropdownValue = getDropdownValue;
+  window.setDropdownMultiValues = setDropdownMultiValues;
+  window.setDropdownOptions = setDropdownOptions;
+  window.resetDropdown = resetDropdown;
+  window.getSafeViewportBounds = getSafeViewportBounds;
+})();
