@@ -186,3 +186,130 @@
   height: 2.5rem;
 }
 
+.c-nav-item__label {
+  position: relative;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.75rem;
+}
+.c-sidebar__profile-wrap {
+  overflow: hidden;
+  border-top: 1px solid color-mix(in srgb, var(--white) 10%, transparent);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.c-sidebar__child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+}
+
+.c-sidebar__child-label {
+  margin: 0;
+}
+
+.c-profile-btn {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--white) 8%, transparent);
+  background: color-mix(in srgb, var(--white) 10%, transparent);
+  padding: 0.5rem 0.625rem;
+  color: var(--white);
+  transition: background-color var(--speed) ease, border-color var(--speed) ease;
+}
+
+.c-profile-btn:hover {
+  background: color-mix(in srgb, var(--white) 18%, transparent);
+  border-color: color-mix(in srgb, var(--white) 15%, transparent);
+}
+
+.c-profile-btn.c-is-selected {
+  border-color: color-mix(in srgb, var(--skyblue) 50%, transparent);
+  background: color-mix(in srgb, var(--white) 20%, transparent);
+}
+
+.c-profile-btn__avatar {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  border: 2px solid color-mix(in srgb, var(--white) 25%, transparent);
+  object-fit: cover;
+}
+
+.c-profile-btn__meta {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.c-profile-btn__name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--white);
+}
+.c-profile-btn__status-dot {
+  flex-shrink: 0;
+  height: 0.5rem;
+  width: 0.5rem;
+  margin-left: auto;
+  border-radius: var(--radius-full);
+  background: var(--online);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--online) 30%, transparent);   /* a soft halo, not a shadow */
+}
+
+.c-logout-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--white) 70%, transparent);
+  transition: background-color var(--speed) ease, color var(--speed) ease;
+}
+
+.c-logout-btn:hover {
+  background: color-mix(in srgb, var(--white) 8%, transparent);
+  color: var(--white);
+}
+
+.c-logout-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.c-logout-btn__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.c-sidebar.c-is-collapsed .c-profile-btn,
+.c-sidebar.c-is-collapsed .c-logout-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 auto;
+  padding: 0;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
