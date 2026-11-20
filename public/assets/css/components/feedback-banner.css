@@ -52,3 +52,42 @@
   height: 1.75rem;
   border-radius: var(--radius-full);
 }
+
+.c-feedback-banner--success {
+  border-color: color-mix(in srgb, var(--moss) 35%, transparent);
+}
+
+.c-feedback-banner--success .c-feedback-banner__icon {
+  background: color-mix(in srgb, var(--moss) 15%, transparent);
+  color: var(--moss);
+}
+
+.c-feedback-banner--error {
+  border-color: color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.c-feedback-banner--error .c-feedback-banner__icon {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+}
+
+.c-feedback-banner--info {
+  border-color: color-mix(in srgb, var(--skyblue) 35%, transparent);
+}
+
+.c-feedback-banner--info .c-feedback-banner__icon {
+  background: color-mix(in srgb, var(--skyblue) 25%, transparent);
+  color: var(--deepsea);
+}
+
+.c-feedback-banner__text {
+  flex: 1 1 auto;
+  margin: 0;
+  word-break: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-feedback-banner {
+    transition: none;
+  }
+}
