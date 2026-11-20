@@ -94,3 +94,68 @@
   color: var(--white);
   box-shadow: var(--shadow-sm);
 }
+
+.c-question__pill:has(:disabled) {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.c-question__pill:has(:focus-visible) {
+  box-shadow: var(--ring);
+}
+
+.c-question__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Has a border too, so it is as tall as Cancel */
+.c-question__confirm {
+  min-width: 6.5rem;
+  border: 1px solid var(--question-color);
+  background: var(--question-color);
+}
+
+.c-question__confirm:hover {
+  background: var(--question-color);
+  filter: brightness(0.9);
+}
+.c-question__confirm .c-icon {
+  width: 15px;
+  height: 15px;
+}
+.c-question--wide .c-question__icon {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.c-question--wide .c-btn {
+  flex: 1;
+}
+
+.c-question--wide .c-question__cancel {
+  background: var(--white);
+}
+
+.c-question--wide .c-question__cancel:hover {
+  background: var(--ivory);
+}
+.c-pop-up--question.c-question--danger {
+  --question-color: var(--danger);
+  --question-soft: color-mix(in srgb, var(--danger) 8%, transparent);
+}
+
+.c-pop-up--question.c-question--warning {
+  --question-color: var(--terracotta);
+  --question-soft: color-mix(in srgb, var(--terracotta) 12%, transparent);
+}
+
+.c-pop-up--question.c-question--success {
+  --question-color: var(--moss);
+  --question-soft: color-mix(in srgb, var(--moss) 12%, transparent);
+}
