@@ -38,3 +38,72 @@
         </form>
       </div>
     </div>
+
+    <div class="c-curriculum-card__subjects">
+      <?php foreach (array_values($stage['subjects']) as $index => $subjectName): ?>
+        <span class="c-chip c-curriculum-card__subject c-curriculum-card__subject--<?= e($index % 5) ?>"><?= e($subjectName) ?></span>
+      <?php endforeach; ?>
+    </div>
+  </article>
+  <?php unset($stageTitle, $stageCount, $index, $subjectName); ?>
+
+<?php else: ?>
+  <?php $gradeNumbers = config('white_label.academic.grade_numbers'); ?>
+  <form class="c-curriculum-card c-curriculum-card--editor" id="j-stage-editor" method="post" action="<?= e("{$pageUrl}/stages/save") ?>" hidden data-warn-unsaved
+        data-shrink-title="Remove <?= e(words('{subject} {teacher}')) ?> choices?"
+        data-shrink-one="<?= e(words('1 {subject} {teacher} choice will be removed: a {class} outside the new range, or a {subject} you took out.')) ?>"
+        data-shrink-many="<?= e(words(' {subject} {teacher} choices will be removed: {classes} outside the new range, or {subjects} you took out.')) ?>"
+        <?php if ($stageForm !== null): ?>data-reopen="<?= e(json_encode($stageForm)) ?>"<?php endif; ?>>
+    <?= $csrfField ?>
+    <input type="hidden" name="id" value="">
+
+    <div class="c-curriculum-card__field">
+      <span class="c-label"><?= e(word('grade')) ?> Range</span>
+      <div class="c-curriculum-card__range-row">
+        <?php foreach (['first_grade' => 'From', 'last_grade' => 'To'] as $field => $fieldLabel): ?>
+          <div class="c-curriculum-card__range-pick">
+            <span class="c-curriculum-card__small"><?= e($fieldLabel) ?></span>
+            <?php
+            $dropdownId    = "j-stage-{$field}";
+            $dropdownLabel = "{$fieldLabel} " . strtolower(word('grade'));
+            $options       = array_map(fn (int $n): array => ['value' => (string) $n, 'label' => grade_name($n)], range($gradeNumbers['first'], $gradeNumbers['last']));
+            $selectedValue = (string) $gradeNumbers['first'];
+            $name          = $field;
+            require __DIR__ . '/_dropdown.php';
+            ?>
+          </div>
+        <?php endforeach; ?>
+        <span class="c-chip c-curriculum-card__range-label j-stage-range" data-grade="<?= e(word('grade')) ?>" data-grades="<?= e(plural('grade')) ?>"
+              data-names="<?= e(json_encode((object) config('white_label.academic.grade_names'))) ?>"></span>
+      </div>
+    </div>
+
+    <label class="c-curriculum-card__field">
+      <span class="c-label">Description</span>
+      <input class="c-field__input c-field__input--small" name="description" maxlength="255" placeholder="e.g. Exam preparation and specialisation.">
+    </label>
+
+    <div class="c-curriculum-card__field">
+      <span class="c-label"><?= e(plural('subject')) ?></span>
+      <div class="c-curriculum-card__chips j-stage-chips"></div>
+      <div class="c-curriculum-card__add">
+        <input class="c-field__input c-field__input--small j-stage-new-subject" maxlength="100" placeholder="<?= e(words('Add a {subject}, e.g. Geography')) ?>" aria-label="<?= e(words('New {subject}')) ?>">
+        <button type="button" class="c-btn c-btn--small c-curriculum-card__add-btn j-stage-add-subject"><?= icon('plus', 12) ?>Add</button>
+      </div>
+      <template id="j-stage-chip">
+        <span class="c-chip c-curriculum-card__chip">
+          <input type="hidden" name="subject_ids[]" value="">
+          <input class="c-curriculum-card__chip-name j-stage-chip-name" name="subjects[]" maxlength="100" aria-label="<?= e(words('{Subject} name')) ?>">
+          <button type="button" class="c-curriculum-card__chip-remove j-stage-remove-subject" aria-label="<?= e(words('Remove {subject}')) ?>"><?= icon('close', 10) ?></button>
+        </span>
+      </template>
+    </div>
+
+    <div class="c-curriculum-card__footer">
+      <button type="button" class="c-btn c-btn--outline c-btn--small j-stage-editor-cancel">Cancel</button>
+      <button type="submit" class="c-btn c-btn--solid c-btn--small"><?= icon('check', 14) ?>Save</button>
+    </div>
+  </form>
+  <?php unset($gradeNumbers, $field, $fieldLabel); ?>
+<?php endif; ?>
+<?php unset($curriculumVariant, $stage); ?>

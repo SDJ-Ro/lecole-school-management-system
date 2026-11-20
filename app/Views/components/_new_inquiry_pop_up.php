@@ -38,3 +38,25 @@ ob_start();
         ?>
       </div>
     </div>
+
+    <label class="c-field">
+      <span class="c-label c-field__label">Message</span>
+      <textarea class="c-field__input c-field__input--area" name="message" rows="5" maxlength="<?= e(config('complaints.limits.body')) ?>" required
+                placeholder="Describe your inquiry or concern in detail…"></textarea>
+    </label>
+  </div>
+
+  <div class="c-pop-up__footer">
+    <button type="button" class="c-btn c-btn--outline j-pop-up-close">Cancel</button>
+    <button type="submit" class="c-btn c-btn--solid"<?= $children === [] ? ' disabled' : '' ?>><?= icon('send', 16) ?><span>Submit Inquiry</span></button>
+  </div>
+</form>
+<?php
+$popUpContent     = ob_get_clean();
+$popUpId          = 'j-new-inquiry';
+$popUpVariant     = 'inquiry';
+$popUpIcon        = 'complaints';
+$popUpEyebrow     = 'Communication';
+$popUpTitle       = 'New Inquiry or Complaint';
+$popUpDescription = words('Direct communication with {institution} departments and administration.');
+require __DIR__ . '/_pop_up.php';
