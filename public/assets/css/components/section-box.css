@@ -36,3 +36,33 @@
   background: color-mix(in srgb, var(--skyblue) 75%, transparent);
   color: var(--midnight);
 }
+
+.c-section-box--sky .c-section-box__button {
+  background: var(--skyblue);
+  color: var(--midnight);
+  box-shadow: var(--shadow-sm);
+}
+
+.c-section-box--sky .c-section-box__button:hover {
+  background: var(--skyblue-deep);
+}
+
+.c-section-box--cherry .c-section-box__head {
+  border-bottom: 1px solid color-mix(in srgb, var(--cherry) 55%, transparent);
+  background: color-mix(in srgb, var(--cherry) 30%, transparent);
+}
+
+.c-section-box--cherry .c-section-box__icon {
+  color: var(--maroon);
+}
+
+.c-section-box--cherry .c-section-box__button {
+  border: 1px solid color-mix(in srgb, var(--maroon) 20%, transparent);
+  background: var(--white);
+  color: var(--maroon);
+}
+
+.c-section-box--cherry .c-section-box__button:hover {
+  border-color: var(--maroon);
+}
+
