@@ -32,6 +32,7 @@
       picker.querySelector('.c-image-picker__empty').hidden = true;
     }
 
+    
     if (input.matches('[data-gallery-add]'))
     {
       const list     = document.getElementById(input.dataset.galleryAdd);
