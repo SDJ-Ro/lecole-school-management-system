@@ -203,3 +203,144 @@ body :disabled {
 
 /* Scrollbar, for Chrome and Safari only */
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--deepsea) 20%, transparent);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--deepsea) 35%, transparent);
+}
+
+
+/* Helpers */
+
+.wrap {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .wrap {
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrap {
+    padding: 0 2.5rem;
+  }
+}
+
+/* The body in front makes hidden win over a component's own display rule */
+body [hidden] {
+  display: none;
+}
+
+.c-icon-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.c-icon {
+  display: inline-block;
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* Scroll reveal. reveal.js adds is-visible when the element scrolls into view */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+
+/* Tones. A tile background with a matching text colour */
+
+.tone-tan {
+  background: var(--tan);
+  color: var(--midnight);
+}
+
+.tone-maroon {
+  background: var(--maroon);
+  color: var(--alabaster);
+}
+
+.tone-terracotta {
+  background: var(--terracotta);
+  color: var(--cream);
+}
+
+.tone-lightblue {
+  background: var(--lightblue);
+  color: var(--midnight);
+}
+
+.tone-sunshine {
+  background: var(--sunshine);
+  color: var(--midnight);
+}
+
+
+/* App shell */
+.c-app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--cream);
+  color: var(--midnight);
+}
+
+/* 16rem is the width of the sidebar */
+.c-main {
+  flex: 1;
+  min-width: 0;
+  max-width: calc(100vw - 16rem);
+  min-height: 100vh;
+  margin-left: 16rem;
+  padding: 2rem;
+  overflow-x: clip;
+  overflow-y: auto;
+  transition: margin-left 300ms ease;
+}
+
+@keyframes c-fade-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes c-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
