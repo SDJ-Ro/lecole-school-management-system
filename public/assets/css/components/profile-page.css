@@ -21,3 +21,56 @@
   border-color: color-mix(in srgb, var(--sunshine) 35%, transparent);
   background: color-mix(in srgb, var(--sunshine) 9%, transparent);
 }
+
+.c-profile-tinted--terracotta {
+  border-color: color-mix(in srgb, var(--terracotta) 35%, transparent);
+  background: color-mix(in srgb, var(--terracotta) 9%, transparent);
+}
+
+.c-profile-tinted--midnight {
+  border-color: var(--line-strong);
+  background: var(--wash-strong);
+}
+.c-profile-pwd {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--line-faint);
+  padding-top: 1rem;
+}
+
+.c-profile-pwd[hidden] {
+  display: none;
+}
+
+.c-profile-pwd__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.c-profile-pwd__input {
+  background: color-mix(in srgb, var(--alabaster) 30%, transparent);
+}
+
+.c-profile-pwd__input:focus {
+  background: var(--white);
+}
+
+.c-profile-pwd__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+.c-profile-actions {
+  display: none;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--line-faint);
+  padding-top: 1rem;
+}
+
+.c-profile-page[data-editing="true"] .c-profile-actions {
+  display: flex;
+}
