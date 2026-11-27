@@ -153,3 +153,107 @@
   color: var(--white);
 }
 
+.c-print__marks td {
+  border: 1px solid var(--alabaster);
+  padding: 8px 12px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text-soft);
+}
+
+.c-print__marks th:first-child,
+.c-print__marks td:first-child {
+  text-align: left;
+}
+
+.c-print__marks td:first-child {
+  font-weight: 700;
+  color: var(--midnight);
+}
+
+.c-print__marks td:nth-child(2) {
+  font-weight: 700;
+  color: var(--maroon);
+}
+
+.c-print__marks tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--cream) 40%, transparent);
+}
+
+.c-print__feedback {
+  margin: 14px 0 24px;
+  border: 1px solid var(--alabaster);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  background: var(--cream);
+}
+
+.c-print__feedback-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 6px;
+}
+
+.c-print__feedback-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--maroon);
+}
+
+.c-print__feedback-date {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.c-print__feedback-text {
+  margin: 0;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.c-print__feedback-author {
+  margin: 6px 0 0;
+  font-size: 9.5px;
+  color: var(--text-soft);
+}
+
+.c-print__signatures {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 36px;
+  padding-top: 12px;
+}
+
+.c-print__signature {
+  width: 200px;
+  margin: 0;
+  border-top: 1px solid var(--midnight);
+  padding-top: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.c-print__signature span {
+  display: block;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-faint);
+}
+
+.c-print__footer {
+  margin-top: 24px;
+  border-top: 1px solid var(--alabaster);
+  padding-top: 8px;
+  font-size: 8.5px;
+  color: var(--text-faint);
+}
